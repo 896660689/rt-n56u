@@ -423,6 +423,7 @@ EOF
 
 # ================================= 启动 SS ===============================
 ssp_start() { 
+	ulimit -n 65536
     ss_enable=`nvram get ss_enable`
 if rules; then
 		if start_redir_tcp; then
