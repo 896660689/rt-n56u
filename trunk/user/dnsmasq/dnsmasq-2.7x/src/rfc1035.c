@@ -656,19 +656,10 @@ int extract_addresses(struct dns_header *header, size_t qlen, char *name, time_t
 		  GETSHORT(aqtype, p1); 
 		  GETSHORT(aqclass, p1);
 		  GETLONG(attl, p1);
-		  unsigned long mttl = 0;
 		  if ((daemon->max_ttl != 0) && (attl > daemon->max_ttl) && !is_sign)
 		    {
-		      mttl = daemon->max_ttl;
-		    }
-		  if ((daemon->min_ttl != 0) && (attl < daemon->min_ttl) && !is_sign)
-        {
-		      mttl = daemon->min_ttl;
-		    }
-		  if (mttl != 0)
-		    {
 		      (p1) -= 4;
-		      PUTLONG(mttl, p1);
+		      PUTLONG(daemon->max_ttl, p1);
 		    }
 		  GETSHORT(ardlen, p1);
 		  endrr = p1+ardlen;
@@ -743,19 +734,10 @@ int extract_addresses(struct dns_header *header, size_t qlen, char *name, time_t
 	      GETSHORT(aqtype, p1); 
 	      GETSHORT(aqclass, p1);
 	      GETLONG(attl, p1);
-	      unsigned long mttl = 0;
 	      if ((daemon->max_ttl != 0) && (attl > daemon->max_ttl) && !is_sign)
 		{
-		  mttl = daemon->max_ttl;
-		}
-	      if ((daemon->min_ttl != 0) && (attl < daemon->min_ttl) && !is_sign)
-		{
-		  mttl = daemon->min_ttl;
-		}
-	      if (mttl != 0)
-		{
 		  (p1) -= 4;
-		  PUTLONG(mttl, p1);
+		  PUTLONG(daemon->max_ttl, p1);
 		}
 	      GETSHORT(ardlen, p1);
 	      endrr = p1+ardlen;
@@ -1898,15 +1880,6 @@ size_t answer_request(struct dns_header *header, char *limit, size_t qlen,
 		log_query(F_CONFIG | F_NEG, name, &addr, NULL);
 	    }
 	}
-
-      //patch to filter aaaa forwards
-      if (qtype == T_AAAA && option_bool(OPT_FILTER_AAAA) ){
-	      //return a null reply
-	      ans = 1;
-	      if (!dryrun) log_query(F_CONFIG | F_IPV6 | F_NEG, name, &addr, NULL);
-	      break;
-      }
-      //end of patch
 
       if (!ans)
 	return 0; /* failed to answer a question */
