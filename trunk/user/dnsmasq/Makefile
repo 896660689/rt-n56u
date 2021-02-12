@@ -1,4 +1,4 @@
-SRC_NAME=dnsmasq-2.7x
+SRC_NAME=dnsmasq-2.8x
 THISDIR = $(shell pwd)
 
 COPTS := -DHAVE_BROKEN_RTC -DNO_INOTIFY -DNO_AUTH -DNO_LOOP
@@ -20,7 +20,5 @@ clean:
 	rm -f dnsmasq
 
 romfs:
-	cp $(SRC_NAME)/src/dnsmasq .
-	$(STRIP) dnsmasq
-	$(ROMFSINST) /usr/sbin/dnsmasq
+	$(ROMFSINST) $(SRC_NAME)/src/dnsmasq /usr/sbin/dnsmasq
 	$(ROMFSINST) -p +x $(THISDIR)/dnsmasq.sh /usr/bin/dnsmasq.sh
