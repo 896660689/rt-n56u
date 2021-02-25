@@ -2557,7 +2557,7 @@ static void skb_update_prio(struct sk_buff *skb)
 #endif
 
 static DEFINE_PER_CPU(int, xmit_recursion);
-#define RECURSION_LIMIT 10
+#define RECURSION_LIMIT 8
 
 /**
  *	dev_loopback_xmit - loop back @skb
@@ -5137,6 +5137,18 @@ int dev_change_flags(struct net_device *dev, unsigned int flags)
 }
 EXPORT_SYMBOL(dev_change_flags);
 
+static int __dev_set_mtu(struct net_device *dev, int new_mtu)
+{
+	const struct net_device_ops *ops = dev->netdev_ops;
+
+	if (ops->ndo_change_mtu)
+		return ops->ndo_change_mtu(dev, new_mtu);
+
+	/* Pairs with all the lockless reads of dev->mtu in the stack */
+	ACCESS_ONCE(dev->mtu) = new_mtu;
+	return 0;
+}
+
 /**
  *	dev_set_mtu - Change maximum transfer unit
  *	@dev: device
@@ -5146,8 +5158,7 @@ EXPORT_SYMBOL(dev_change_flags);
  */
 int dev_set_mtu(struct net_device *dev, int new_mtu)
 {
-	const struct net_device_ops *ops = dev->netdev_ops;
-	int err;
+	int err, orig_mtu;
 
 	if (new_mtu == dev->mtu)
 		return 0;
@@ -5159,14 +5170,20 @@ int dev_set_mtu(struct net_device *dev, int new_mtu)
 	if (!netif_device_present(dev))
 		return -ENODEV;
 
-	err = 0;
-	if (ops->ndo_change_mtu)
-		err = ops->ndo_change_mtu(dev, new_mtu);
-	else
-		dev->mtu = new_mtu;
+	orig_mtu = dev->mtu;
+	err = __dev_set_mtu(dev, new_mtu);
 
-	if (!err && dev->flags & IFF_UP)
-		call_netdevice_notifiers(NETDEV_CHANGEMTU, dev);
+	if (!err) {
+		err = call_netdevice_notifiers(NETDEV_CHANGEMTU, dev);
+		err = notifier_to_errno(err);
+		if (err) {
+			/* setting mtu back and notifying everyone again,
+			 * so that they have a chance to revert changes.
+			 */
+			__dev_set_mtu(dev, orig_mtu);
+			call_netdevice_notifiers(NETDEV_CHANGEMTU, dev);
+		}
+	}
 	return err;
 }
 EXPORT_SYMBOL(dev_set_mtu);
@@ -6007,6 +6024,8 @@ int register_netdevice(struct net_device *dev)
 	ret = notifier_to_errno(ret);
 	if (ret) {
 		rollback_registered(dev);
+		rcu_barrier();
+
 		dev->reg_state = NETREG_UNREGISTERED;
 	}
 	/*
