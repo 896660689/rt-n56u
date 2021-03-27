@@ -72,7 +72,7 @@ static int wl_modified = 0;
 static int rt_modified = 0;
 static u64 restart_needed_bits = 0;
 
-static char post_buf[32768] = {0};
+static char post_buf[65535] = {0};
 static char next_host[128] = {0};
 static char SystemCmd[128] = {0};
 static int  group_del_map[MAX_GROUP_COUNT+2];
@@ -95,7 +95,12 @@ nvram_commit_safe(void)
 void
 sys_reboot(void)
 {
+#ifdef MTD_FLASH_32M_REBOOT_BUG
+	doSystem("/sbin/mtd_storage.sh %s", "save");
+	system("/bin/mtd_write -r unlock mtd1");
+#else
 	kill(1, SIGTERM);
+#endif
 }
 
 char *
@@ -1193,7 +1198,7 @@ update_variables_ex(int eid, webs_t wp, int argc, char **argv)
 		else {
 			char group_id[64];
 			snprintf(group_id, sizeof(group_id), "%s", websGetVar(wp, "group_id", ""));
-			
+
 			if (strlen(action_mode) > 0) {
 				if (!strcmp(action_mode, " Add ")) {
 					result = apply_cgi_group(wp, sid, NULL, group_id, GROUP_FLAG_ADD);
@@ -1233,7 +1238,7 @@ update_variables_ex(int eid, webs_t wp, int argc, char **argv)
 						nvram_set_int_temp(group_id, 0);
 						nvram_clr_group_temp(v);
 					}
-					
+
 					if (nvram_modified)
 						websWrite(wp, "<script>done_committing();</script>\n");
 					else
@@ -1931,6 +1936,15 @@ static int shadowsocks_action_hook(int eid, webs_t wp, int argc, char **argv)
 static int shadowsocks_status_hook(int eid, webs_t wp, int argc, char **argv)
 {
 	int ss_status_code = pids("ss-redir");
+	if (ss_status_code == 0){
+		ss_status_code = pids("ssr-redir");
+	}
+	if (ss_status_code == 0){
+		ss_status_code = pids("v2ray");
+	}
+	if (ss_status_code == 0){
+		ss_status_code = pids("trojan");
+	}
 	websWrite(wp, "function shadowsocks_status() { return %d;}\n", ss_status_code);
 	int ss_tunnel_status_code = pids("ss-local");
 	websWrite(wp, "function shadowsocks_tunnel_status() { return %d;}\n", ss_tunnel_status_code);
@@ -1987,6 +2001,51 @@ static int dnsproxy_status_hook(int eid, webs_t wp, int argc, char **argv)
 {
 	int status_code = pids("dnsproxy");
 	websWrite(wp, "function dnsproxy_status() { return %d;}\n", status_code);
+	return 0;
+}
+static int dns2tcp_status_hook(int eid, webs_t wp, int argc, char **argv)
+{
+	int status_code = pids("dns2tcp");
+	websWrite(wp, "function dns2tcp_status() { return %d;}\n", status_code);
+	return 0;
+}
+#endif
+
+#if defined (APP_ADBYBY)
+static int adbyby_action_hook(int eid, webs_t wp, int argc, char **argv)
+{
+	int needed_seconds = 3;
+	char *ad_action = websGetVar(wp, "connect_action", "");
+
+	if (!strcmp(ad_action, "updateadb")) {
+		notify_rc(RCN_RESTART_UPDATEADB);
+	}
+	websWrite(wp, "<script>restart_needed_time(%d);</script>\n", needed_seconds);
+	return 0;
+}
+
+static int adbyby_status_hook(int eid, webs_t wp, int argc, char **argv)
+{
+	int ad_status_code = pids("adbyby");
+	websWrite(wp, "function adbyby_status() { return %d;}\n", ad_status_code);
+	return 0;
+}
+#endif
+
+#if defined (APP_WYY)
+static int wyy_status_hook(int eid, webs_t wp, int argc, char **argv)
+{
+	int wyy_status_code = pids("wyy");
+	websWrite(wp, "function wyy_status() { return %d;}\n", wyy_status_code);
+	return 0;
+}
+#endif
+
+#if defined (APP_SMARTDNS)
+static int smartdns_status_hook(int eid, webs_t wp, int argc, char **argv)
+{
+	int smartdns_status_code = pids("smartdns");
+	websWrite(wp, "function smartdns_status() { return %d;}\n", smartdns_status_code);
 	return 0;
 }
 #endif
@@ -2160,6 +2219,26 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 #else
 	int found_app_shadowsocks = 0;
 #endif
+#if defined(APP_ADBYBY)
+	int found_app_adbyby = 1;
+#else
+	int found_app_adbyby = 0;
+#endif
+#if defined(APP_WYY)
+	int found_app_wyy = 1;
+#else
+	int found_app_wyy = 0;
+#endif
+#if defined(APP_SMARTDNS)
+	int found_app_smartdns = 1;
+#else
+	int found_app_smartdns = 0;
+#endif
+#if defined(APP_ADGUARDHOME)
+	int found_app_adguardhome = 1;
+#else
+	int found_app_adguardhome = 0;
+#endif
 #if defined(APP_XUPNPD)
 	int found_app_xupnpd = 1;
 #else
@@ -2326,6 +2405,10 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		"function found_app_ttyd() { return %d;}\n"
 		"function found_app_napt66() { return %d;}\n"
 		"function found_app_shadowsocks() { return %d;}\n"
+		"function found_app_adbyby() { return %d;}\n"
+		"function found_app_wyy() { return %d;}\n"
+		"function found_app_smartdns() { return %d;}\n"
+		"function found_app_adguardhome() { return %d;}\n"
 		"function found_app_xupnpd() { return %d;}\n",
 		found_utl_hdparm,
 		found_app_ovpn,
@@ -2344,6 +2427,10 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		found_app_ttyd,
 		found_app_napt66,
 		found_app_shadowsocks,
+		found_app_adbyby,
+		found_app_wyy,
+		found_app_smartdns,
+		found_app_adguardhome,
 		found_app_xupnpd
 	);
 
@@ -4003,6 +4090,16 @@ struct ej_handler ej_handlers[] =
 	{ "shadowsocks_action", shadowsocks_action_hook},
 	{ "shadowsocks_status", shadowsocks_status_hook},
 	{ "rules_count", rules_count_hook},
+#endif
+#if defined (APP_ADBYBY)
+	{ "adbyby_action", adbyby_action_hook},
+	{ "adbyby_status", adbyby_status_hook},
+#endif
+#if defined (APP_WYY)
+	{ "wyy_status", wyy_status_hook},
+#endif
+#if defined (APP_SMARTDNS)
+	{ "smartdns_status", smartdns_status_hook},
 #endif
 	{ "openssl_util_hook", openssl_util_hook},
 	{ "openvpn_srv_cert_hook", openvpn_srv_cert_hook},
