@@ -3869,11 +3869,9 @@ s32 exfat_find_dir_entry(struct super_block *sb, CHAIN_T *p_dir, UNI_NAME_T *p_u
 					is_feasible_entry = FALSE;
 				}
 			}
-
 			i += step;
 			dentry += step;
 		}
-
 		i -= dentries_per_clu;
 
 		if (p_dir->dir == CLUSTER_32(0))
@@ -5122,3 +5120,4 @@ s32 multi_sector_write(struct super_block *sb, u32 sec, struct buffer_head *bh, 
 
 	return ret;
 } /* end of multi_sector_write */
+

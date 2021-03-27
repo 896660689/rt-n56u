@@ -1,8 +1,8 @@
 ##################################################################
-# Board PID # Board Name	# PRODUCT # Note
+# Board PID # Board Name # PRODUCT # Note
 ##################################################################
-# PSG	# PHICOMM PSG-K2P	# MT7621 #
+# PSG	 # PHICOMM PSG-K2 # MT7620 #
 ##################################################################
 
-CFLAGS += -DBOARD_K2P -DBOARD_MT7615_DBDC
-BOARD_NUM_USB_PORTS=0
+CFLAGS += -DBOARD_K2
+BOARD_NUM_USB_PORTS=1
