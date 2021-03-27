@@ -56,13 +56,13 @@ function initial(){
 function applyRule(){
 	if(validForm()){
 		showLoading();
-		
+
 		if(document.form.http_passwd2.value.length > 0)
 			document.form.http_passwd.value = document.form.http_passwd2.value;
 		document.form.action_mode.value = " Apply ";
 		document.form.current_page.value = "/Advanced_System_Content.asp";
 		document.form.next_page.value = "";
-		
+
 		document.form.submit();
 	}
 }
@@ -76,10 +76,10 @@ function validForm(){
 
 	if(document.form.http_passwd2.value != document.form.v_password2.value){
 		showtext($("alert_msg"),"*<#File_Pop_content_alert_desc7#>");
-		
+
 		document.form.http_passwd2.focus();
 		document.form.http_passwd2.select();
-		
+
 		return false;
 	}
 
@@ -124,9 +124,9 @@ function blanktest(obj, flag){
 			obj.value = decodeURIComponent(value2);
 		else
 			obj.value = "";
-		
+
 		alert("<#JS_Shareblanktest#>");
-		
+
 		return false;
 	}
 
@@ -135,7 +135,8 @@ function blanktest(obj, flag){
 
 function openLink(s) {
 	var link_params = "toolbar=yes,location=yes,directories=no,status=yes,menubar=yes,scrollbars=yes,resizable=yes,copyhistory=no,width=640,height=480";
-	var tourl = "http://support.ntp.org/bin/view/Servers/WebHome";
+//	var tourl = "http://support.ntp.org/bin/view/Servers/WebHome";
+	var tourl = "http://ntp.org.cn/";
 	link = window.open(tourl, "NTPLink", link_params);
 	if (!link.opener) link.opener = self;
 }
@@ -371,6 +372,15 @@ function openLink(s) {
                                             <th colspan="2" style="background-color: #E3E3E3;"><#t2Misc#></th>
                                         </tr>
                                         <tr>
+                                            <th><#Restart_mode#></th>
+                                            <td>
+                                                <select name="reboot_mode" class="input">
+                                                    <option value="0" <% nvram_match_x("", "reboot_mode", "0","selected"); %>><#System_default#></option>
+                                                    <option value="1" <% nvram_match_x("", "reboot_mode", "1","selected"); %>>mtd_write -r unlock mtd1</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
                                             <th width="50%"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,11,1)"><#LANHostConfig_x_ServerLogEnable_itemname#></a></th>
                                             <td>
                                                 <input type="text" maxlength="15" class="input" size="15" name="log_ipaddr" style="width: 145px" value="<% nvram_get_x("", "log_ipaddr"); %>" onKeyPress="return is_ipaddr(this,event);" />&nbsp;:
@@ -434,3 +444,4 @@ function openLink(s) {
 </div>
 </body>
 </html>
+

@@ -55,9 +55,9 @@ function initial(){
 		}
 	}
 
-	if (support_2g_stream_tx()<4) 
+	if (support_2g_stream_tx()<4)
 		document.form.rt_stream_tx.remove(3);
-	if (support_2g_stream_tx()<3) 
+	if (support_2g_stream_tx()<3)
 		document.form.rt_stream_tx.remove(2);
 	if (support_2g_stream_tx()<2) {
 		document.form.rt_stream_tx.remove(1);
@@ -100,11 +100,11 @@ function change_wmm() {
 function applyRule(){
 	if(validForm()){
 		showLoading();
-		
+
 		document.form.action_mode.value = " Apply ";
 		document.form.current_page.value = "/Advanced_WAdvanced2g_Content.asp";
 		document.form.next_page.value = "";
-		
+
 		document.form.submit();
 	}
 }
@@ -335,15 +335,6 @@ function done_validating(action){
                                                 <select name="rt_HT_AutoBA" class="input">
                                                     <option value="0" <% nvram_match_x("","rt_HT_AutoBA", "0","selected"); %>><#btn_Disable#></option>
                                                     <option value="1" <% nvram_match_x("","rt_HT_AutoBA", "1","selected"); %>><#btn_Enable#> (*)</option>
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th><#WLANConfig11n_amsdu#></th>
-                                            <td>
-                                                <select name="rt_HT_AMSDU" class="input">
-                                                    <option value="0" <% nvram_match_x("", "rt_HT_AMSDU", "0", "selected"); %>><#btn_Disable#> (*)</option>
-                                                    <option value="1" <% nvram_match_x("", "rt_HT_AMSDU", "1", "selected"); %>><#btn_Enable#></option>
                                                 </select>
                                             </td>
                                         </tr>

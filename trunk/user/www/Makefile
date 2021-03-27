@@ -7,9 +7,7 @@ ROMFS_DIR = $(ROOTDIR)/romfs
 include $(ROOTDIR)/user/shared/boards.mk
 
 PROJECT_HOME_URL="https:\/\/bitbucket.org\/padavan\/rt-n56u\/"
-PROJECT_HOME_URL_MOD="https:\/\/github.com\/hanwckf\/rt-n56u\/"
-
-LABEL_COPYRIGHT_TEXT='© 2011-2021 <a href="https:\/\/bitbucket.org\/padavan\/rt-n56u" target="blank">Padavan<\/a> \& N56U project community \& by <a href="https:\/\/github.com\/hanwckf\/rt-n56u" target="blank">hanwckf<\/a>'
+LABEL_COPYRIGHT_TEXT="© 2011-2016 Padavan \& N56U project community"
 
 BOARD_PATTERN=s/ZVMODELVZ/$(CONFIG_FIRMWARE_PRODUCT_ID)/g
 COPYR_PATTERN=s/ZVCOPYRVZ/$(LABEL_COPYRIGHT_TEXT)/g
@@ -180,24 +178,6 @@ ifneq ($(STORAGE_ENABLED),y)
 	rm -rf $(INSTALLDIR)/www/aidisk
 	rm -rf $(INSTALLDIR)/www/images/AiDisk
 	rm -rf $(INSTALLDIR)/www/images/Tree
-endif
-ifneq ($(CONFIG_FIRMWARE_INCLUDE_SCUTCLIENT),y)
-	rm -f $(INSTALLDIR)/www/scutclient.asp
-	rm -f $(INSTALLDIR)/www/scutclient_log.asp
-	rm -f $(INSTALLDIR)/www/scutclient_action.asp
-endif
-ifneq ($(CONFIG_FIRMWARE_INCLUDE_MENTOHUST),y)
-	rm -f $(INSTALLDIR)/www/mentohust.asp
-	rm -f $(INSTALLDIR)/www/mentohust_log.asp
-	rm -f $(INSTALLDIR)/www/mentohust_action.asp
-endif
-ifneq ($(CONFIG_FIRMWARE_INCLUDE_DNSFORWARDER),y)
-	rm -f $(INSTALLDIR)/www/dns-forwarder.asp
-endif
-ifneq ($(CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS),y)
-	rm -f $(INSTALLDIR)/www/Shadowsocks.asp
-	rm -f $(INSTALLDIR)/www/Shadowsocks_action.asp
-	rm -f $(INSTALLDIR)/www/Shadowsocks_log.asp
 endif
 
 clean:

@@ -79,6 +79,9 @@ function initial(){
 	if (support_5g_txbf())
 		showhide_div("row_txbf", 1);
 
+	if (support_5g_band_steering())
+		showhide_div("row_band_steering", 1);
+
 	if (support_5g_mumimo())
 		showhide_div("row_mumimo", 1);
 
@@ -102,11 +105,11 @@ function change_wmm() {
 function applyRule(){
 	if(validForm()){
 		showLoading();
-		
+
 		document.form.action_mode.value = " Apply ";
 		document.form.current_page.value = "/Advanced_WAdvanced_Content.asp";
 		document.form.next_page.value = "";
-		
+
 		document.form.submit();
 	}
 }
@@ -328,15 +331,6 @@ function done_validating(action){
                                                 </select>
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <th><#WLANConfig11n_amsdu#></th>
-                                            <td>
-                                                <select name="wl_HT_AMSDU" class="input">
-                                                    <option value="0" <% nvram_match_x("", "wl_HT_AMSDU", "0", "selected"); %>><#btn_Disable#> (*)</option>
-                                                    <option value="1" <% nvram_match_x("", "wl_HT_AMSDU", "1", "selected"); %>><#btn_Enable#></option>
-                                                </select>
-                                            </td>
-                                        </tr>
                                         <tr id="row_greenfield">
                                             <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 3, 19);"><#WLANConfig11b_x_HT_OpMode_itemname#></a></th>
                                             <td>
@@ -373,12 +367,21 @@ function done_validating(action){
                                               </select>
                                             </td>
                                         </tr>
+                                        <tr id="row_band_steering" style="display:none">
+                                            <th><#WLANConfig11n_band_steering#></th>
+                                            <td>
+                                                <select name="wl_band_steering" class="input">
+                                                    <option value="0" <% nvram_match_x("","wl_band_steering", "0","selected"); %>><#btn_Disable#> (*)</option>
+                                                    <option value="1" <% nvram_match_x("","wl_band_steering", "1","selected"); %>><#btn_Enable#></option>
+                                                </select>
+                                            </td>
+                                        </tr>
                                         <tr id="row_mumimo" style="display:none">
                                             <th><#WLANConfig11n_mumimo#></th>
                                             <td>
                                                 <select name="wl_mumimo" class="input">
-                                                    <option value="0" <% nvram_match_x("","wl_mumimo", "0","selected"); %>><#btn_Disable#> (*)</option>
-                                                    <option value="1" <% nvram_match_x("","wl_mumimo", "1","selected"); %>><#btn_Enable#></option>
+                                                    <option value="0" <% nvram_match_x("","wl_mumimo", "0","selected"); %>><#btn_Disable#></option>
+                                                    <option value="1" <% nvram_match_x("","wl_mumimo", "1","selected"); %>><#btn_Enable#> (*)</option>
                                                 </select>
                                             </td>
                                         </tr>

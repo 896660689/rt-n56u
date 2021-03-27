@@ -118,16 +118,16 @@ function applyRule(){
 		    document.form.wl_radio_time2_x_startmin,
 		    document.form.wl_radio_time2_x_endhour,
 		    document.form.wl_radio_time2_x_endmin);
-		
+
 		showLoading();
-		
+
 		document.form.action_mode.value = " Apply ";
 		document.form.current_page.value = "/Advanced_Wireless_Content.asp";
 		document.form.next_page.value = "";
-		
+
 		if(auth_mode == "wpa" || auth_mode == "wpa2" || auth_mode == "radius")
 			document.form.next_page.value = "/Advanced_WSecurity_Content.asp";
-		
+
 		inputCtrl(document.form.wl_crypto, 1);
 		inputCtrl(document.form.wl_wpa_psk, 1);
 		inputCtrl(document.form.wl_wep_x, 1);
@@ -138,7 +138,7 @@ function applyRule(){
 		inputCtrl(document.form.wl_key4, 1);
 		inputCtrl(document.form.wl_phrase_x, 1);
 		inputCtrl(document.form.wl_wpa_gtk_rekey, 1);
-		
+
 		document.form.submit();
 	}
 }
@@ -208,7 +208,7 @@ function validForm(){
 	if(auth_mode == "psk"){
 		if(!validate_psk(document.form.wl_wpa_psk))
 			return false;
-		
+
 		if(!validate_range(document.form.wl_wpa_gtk_rekey, 0, 2592000))
 			return false;
 	}
@@ -233,12 +233,12 @@ function change_key_des(){
 	var objs = getElementsByName_iefix("span", "key_des");
 	var wep_type = document.form.wl_wep_x.value;
 	var str = "";
-	
+
 	if(wep_type == "1")
 		str = "(<#WLANConfig11b_WEPKey_itemtype1#>)";
 	else if(wep_type == "2")
 		str = "(<#WLANConfig11b_WEPKey_itemtype2#>)";
-	
+
 	for(var i = 0; i < objs.length; ++i)
 		showtext(objs[i], str);
 }
@@ -248,7 +248,7 @@ function validate_wlphrase(s, v, obj){
 		is_wlphrase(s, v, obj);
 		return(false);
 	}
-	
+
 	return true;
 }
 
@@ -540,20 +540,6 @@ function validate_wlphrase(s, v, obj){
                                             <td>
                                                 <input type="text" maxlength="3" size="3" name="wl_TxPower" class="input" value="<% nvram_get_x("", "wl_TxPower"); %>" onKeyPress="return is_number(this,event);" onblur="return validate_range(this, 0, 100);" />
                                                 &nbsp;<span style="color:#888;">[0..100]</span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 0, 25);"><#WLANConfig11b_KickStaRssiLow_itemname#></a></th>
-                                            <td>
-                                                <input type="text" maxlength="4" size="4" name="wl_KickStaRssiLow" class="input" value="<% nvram_get_x("", "wl_KickStaRssiLow"); %>" />
-                                                &nbsp;<span style="color:#888;">[-100..0]</span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 0, 26);"><#WLANConfig11b_AssocReqRssiThres_itemname#></a></th>
-                                            <td>
-                                                <input type="text" maxlength="4" size="4" name="wl_AssocReqRssiThres" class="input" value="<% nvram_get_x("", "wl_AssocReqRssiThres"); %>" />
-                                                &nbsp;<span style="color:#888;">[-100..0]</span>
                                             </td>
                                         </tr>
                                         <tr>

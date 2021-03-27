@@ -56,6 +56,9 @@ function initial(){
 
 	fill_info();
 
+	if ($j('tr:visible').length > 16)
+		$("row_more_links").style.display = "none";
+
 	id_update_wanip = setTimeout("update_wanip();", 2500);
 }
 
@@ -219,7 +222,7 @@ function fill_wan_bytes(rx,tx,now){
 		last_bytes_rx = rx;
 		last_bytes_tx = tx;
 		last_time = now;
-		
+
 		$("WANBytesRX").innerHTML = '<i class="icon-arrow-down"></i>'+bytesToIEC(rx,2);
 		$("WANBytesTX").innerHTML = '<i class="icon-arrow-up"></i>'+bytesToIEC(tx,2);
 		$("WANBRateRX").innerHTML = '<i class="icon-arrow-down"></i>'+kbitsToRate(diff_rx,2);
@@ -306,7 +309,7 @@ function submitInternet(v){
     <td id="wan_status" colspan="3"></td>
   </tr>
   <tr>
-    <th><#Connectiontype#>:</th>
+    <th><#Connectiontype#></th>
     <td colspan="3"><span id="WANType"></span></td>
   </tr>
   <tr id="row_uptime" style="display:none">
@@ -352,7 +355,7 @@ function submitInternet(v){
     <td colspan="3"><span id="MANGW4"></span></td>
   </tr>
   <tr>
-    <th>DNS:</th>
+    <th><#DNS#></th>
     <td colspan="3"><span id="WANDNS"></span></td>
   </tr>
   <tr>
@@ -384,3 +387,4 @@ function submitInternet(v){
 
 </body>
 </html>
+
