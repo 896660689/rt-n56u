@@ -145,15 +145,43 @@ get_eeprom_params(void)
 	char country_code[4];
 	char regspec_code[8];
 	char wps_pin[12];
-	char productid[16];
-	char fwver[16], fwver_sub[32];
+	char productid[25];
+	char fwver[8], fwver_sub[32];
 
+	memset(buffer, 0xff, ETHER_ADDR_LEN);
+#if defined (VENDOR_TPLINK)
+	i_ret = flash_mtd_read("Romfile", 0xf100, buffer, ETHER_ADDR_LEN);
+	// Try Factory partition
+	if (i_ret < 0)
+		i_ret = flash_mtd_read(MTD_PART_NAME_FACTORY, 0xf100, buffer, ETHER_ADDR_LEN);
+	if (i_ret >=0 && !(buffer[0] & 0x01)) {
+		ether_etoa(buffer, macaddr_lan);
+		ether_etoa(buffer, macaddr_rt);
+		i_ret = flash_mtd_read(MTD_PART_NAME_FACTORY, OFFSET_MAC_ADDR_WSOC, buffer_compare, ETHER_ADDR_LEN);
+		if (i_ret >= 0 && memcmp(buffer, buffer_compare, ETHER_ADDR_LEN) != 0) {
+			// write mac to ralink eeprom 2,4 Ghz
+			flash_mtd_write(MTD_PART_NAME_FACTORY, OFFSET_MAC_ADDR_WSOC, buffer, ETHER_ADDR_LEN);
+		}
+		buffer[5] += 1;
+		ether_etoa(buffer, macaddr_wan);
+		buffer[5] -= 2;
+		ether_etoa(buffer, macaddr_wl);
+#if defined (BOARD_HAS_5G_RADIO)
+		i_ret = flash_mtd_read(MTD_PART_NAME_FACTORY, OFFSET_MAC_ADDR_INIC, buffer_compare, ETHER_ADDR_LEN);
+		if (i_ret >= 0 && memcmp(buffer, buffer_compare, ETHER_ADDR_LEN) != 0) {
+			// write mac to ralink eeprom 5 Ghz
+			flash_mtd_write(MTD_PART_NAME_FACTORY, OFFSET_MAC_ADDR_INIC, buffer, ETHER_ADDR_LEN);
+		}
+#endif
+	} else {
+		// no Romfile partition or error. Switch to ralink standart
+	}
+#endif
 #if (BOARD_5G_IN_SOC || !BOARD_HAS_5G_RADIO)
 	i_offset = OFFSET_MAC_ADDR_WSOC;
 #else
 	i_offset = OFFSET_MAC_ADDR_INIC;
 #endif
-	memset(buffer, 0xff, ETHER_ADDR_LEN);
 	i_ret = flash_mtd_read(MTD_PART_NAME_FACTORY, i_offset, buffer, ETHER_ADDR_LEN);
 	if (i_ret >= 0 && !(buffer[0] & 0x01))
 		ether_etoa(buffer, macaddr_wl);
@@ -252,7 +280,7 @@ get_eeprom_params(void)
 			if ((unsigned char)regspec_code[i] > 0x7f)
 				regspec_code[i] = 0;
 		}
-		
+
 		if (!check_regspec_code(regspec_code))
 			strcpy(regspec_code, "CE");
 	}
@@ -312,12 +340,12 @@ get_eeprom_params(void)
 	} else {
 		strncpy(productid, buffer + 4, 12);
 		productid[12] = 0;
-		
+
 		if(valid_subver(buffer[27]))
 			sprintf(fwver_sub, "%d.%d.%d.%d%c", buffer[0], buffer[1], buffer[2], buffer[3], buffer[27]);
 		else
 			sprintf(fwver_sub, "%d.%d.%d.%d", buffer[0], buffer[1], buffer[2], buffer[3]);
-		
+
 		sprintf(fwver, "%d.%d.%d.%d", buffer[0], buffer[1], buffer[2], buffer[3]);
 	}
 
@@ -362,7 +390,7 @@ get_eeprom_params(void)
 					count_0xff++;
 			}
 		}
-		
+
 		nvram_wlan_set_int(1, "txbf_en", (count_0xff == 33) ? 0 : 1);
 	}
 
@@ -419,29 +447,164 @@ restart_all_sysctl(void)
 #endif
 }
 
+/* dell 2017-0410 cn */
+
+static int hex_char_to_int(const uint8_t *hex)
+{
+	int val;
+	if (*hex >= '0' && *hex <= '9')
+	{
+		val = (*hex - '0') * 16;
+	}
+	else
+	{
+		val = (*hex - 'A' + 10) * 16;
+	}
+
+	if (*(hex + 1) >= '0' && *(hex + 1) <= '9')
+	{
+		val += (*(hex + 1) - '0');
+	}
+	else
+	{
+		val += (*(hex + 1) - 'A' + 10);
+	}
+	return val;
+}
+
+/* dell 2017-0410 cn */
+
+static int can_be_chinese_utf8(const uint8_t *str, int sz)
+{
+	int len = strlen (str);
+	if (sz < 6)
+		{
+		return 0;
+	}
+	if ((len >= 6) && (hex_char_to_int(str) >= 0xe4 && hex_char_to_int(str) <= 0xe9)
+		&& (hex_char_to_int(str + 2) >= 0x80 && hex_char_to_int(str + 2) <= 0xbf)
+		&& (hex_char_to_int(str + 4) >= 0x80 && hex_char_to_int(str + 4) <= 0xbf) )
+		{
+		return 1;
+	}
+	if ( ((sz - len >= 2) && (len >= 4)) && (hex_char_to_int(str - 2) >= 0xe4 && hex_char_to_int(str - 2) <= 0xe9)
+		&& (hex_char_to_int(str) >= 0x80 && hex_char_to_int(str) <= 0xbf)
+		&& (hex_char_to_int(str + 2) >= 0x80 && hex_char_to_int(str + 2) <= 0xbf) )
+		{
+		return 1;
+	}
+	if (((sz - len >= 4) && (len >= 2))
+		&& (hex_char_to_int(str - 4) >= 0xe4 && hex_char_to_int(str - 4) <= 0xe9 )
+		&& ((hex_char_to_int(str - 2) >= 0x80 && hex_char_to_int(str - 2) <= 0xbf)
+		|| (hex_char_to_int(str) >= 0x80 && hex_char_to_int(str) <= 0xbf)))
+		{
+		return 1;
+	}
+	return 0;
+}
+
+/* dell 2017-0410 cn */
+
+static int can_be_ascii_utf8(const uint8_t *str, int sz)
+{
+	int len = strlen (str);
+	uint8_t the_char = hex_char_to_int (str);
+	/*printf("ascii detect: ascii_val: %d, canbe char: %c\n", the_char, the_char);*/
+	if ((len >= 2)
+		&& (the_char >= '0' && the_char <= '9')
+		|| (the_char >= 'A' && the_char <= 'Z')
+		|| (the_char >= 'a' && the_char <= 'z')
+		|| the_char == '!' || the_char == '*'
+		|| the_char == '(' || the_char == ')'
+		|| the_char == '_' || the_char == '-'
+		|| the_char == '\'' || the_char == '.')
+		{
+		return 1;
+	}
+	return 0;
+}
+
+/* dell 2017-0410 cn */
+
+static int is_valid_hex_string(uint8_t *input)
+{
+	int i;
+	int input_len, input_hex_len;
+	char *input_ptr;
+
+	//detect from index 2, skip char "0x"
+	input_ptr = input + 2;
+	input_len = strlen(input);
+	input_hex_len = input_len - 2;
+	int is_valid_ascii_or_Chinese = 1;
+	//0xAA
+	if (input_len > 4 && input_len % 2 == 0 && input[0] == '0' && input[1] == 'x')
+	{
+		for (i = 2; i < input_len; i += 2)
+		{
+			if (!( ((*input_ptr >= '0' && *input_ptr <= '9') || ( *input_ptr >= 'A' && *input_ptr <= 'F'))
+				&& ((*(input_ptr + 1) >= '0' && *(input_ptr + 1) <= '9') || ( *(input_ptr + 1) >= 'A' && *(input_ptr + 1) <= 'F'))) )
+			{
+				is_valid_ascii_or_Chinese = 0;
+				break;
+			}
+			if (!can_be_chinese_utf8(input_ptr, input_hex_len) && !can_be_ascii_utf8(input_ptr, input_hex_len))
+			{
+				is_valid_ascii_or_Chinese = 0;
+				break;
+			}
+		}
+	}
+	else
+	{
+		is_valid_ascii_or_Chinese = 0;
+	}
+	return is_valid_ascii_or_Chinese;
+}
+
+/* dell 2017-0410 cn */
+
 void
-char_to_ascii(char *output, char *input)
+char_to_ascii(char *output, uint8_t *input)
 {
 	int i;
 	char tmp[10];
 	char *ptr;
+	int input_len;
 
 	ptr = output;
+	input_len = strlen(input);
 
-	for ( i=0; i<strlen(input); i++ ) {
-		if ((input[i]>='0' && input[i] <='9')
-		   ||(input[i]>='A' && input[i]<='Z')
-		   ||(input[i] >='a' && input[i]<='z')
-		   || input[i] == '!' || input[i] == '*'
-		   || input[i] == '(' || input[i] == ')'
-		   || input[i] == '_' || input[i] == '-'
-		   || input[i] == '\'' || input[i] == '.') {
-			*ptr = input[i];
-			ptr ++;
-		} else {
-			sprintf(tmp, "%%%.02X", input[i]);
+	if (is_valid_hex_string(input))
+	{
+		for (i = 2; i < input_len; i += 2)
+		{
+			sprintf(tmp, "%%%c%c", input[i], input[i + 1]);
 			strcpy(ptr, tmp);
 			ptr += 3;
+		}
+	}
+	else
+	{
+		for (i = 0; i < strlen(input); i++)
+		{
+			if ((input[i] >= '0' && input[i] <= '9')
+				||(input[i] >= 'A' && input[i] <= 'Z')
+				||(input[i] >= 'a' && input[i] <= 'z')
+				|| input[i] == '!' || input[i] == '*'
+				|| input[i] == '(' || input[i] == ')'
+				|| input[i] == '_' || input[i] == '-'
+				|| input[i] == '\'' || input[i] == '.')
+			{
+				*ptr = input[i];
+				ptr ++;
+			}
+			else
+			{
+				sprintf(tmp, "%%%.02X", input[i]);
+				strcpy(ptr, tmp);
+				ptr += 3;
+			}
 		}
 	}
 	*(ptr) = '\0';
@@ -457,7 +620,9 @@ fput_string(const char *name, const char *value)
 		fputs(value, fp);
 		fclose(fp);
 		return 0;
-	} else {
+	}
+	else
+	{
 		return errno;
 	}
 }
@@ -511,14 +676,14 @@ load_user_config(FILE *fp, const char *dir_name, const char *file_name, const ch
 			    line[0] == '#' ||
 			    line[0] == ';')
 				continue;
-			
+
 			if (forbid_list && is_param_forbidden(line, forbid_list))
 				continue;
-			
+
 			line[strlen(line) - 1] = '\n';
 			fprintf(fp, line);
 		}
-		
+
 		fclose(fp_user);
 	}
 }
@@ -676,7 +841,7 @@ void umount_rwfs_partition(void)
 
 	if (check_if_dir_exist(mp_rwfs)) {
 		doSystem("/usr/bin/opt-umount.sh %s %s", "/dev/ubi", mp_rwfs);
-		
+
 		if (umount(mp_rwfs) == 0)
 			rmdir(mp_rwfs);
 	}
@@ -721,27 +886,27 @@ kill_services(char* svc_name[], int wtimeout, int forcekill)
 	if (wtimeout < 1)
 		wtimeout = 1;
 
-	for (i=0;svc_name[i] && *svc_name[i];i++)
+	for (i = 0;svc_name[i] && *svc_name[i];i++)
 		doSystem("killall %s %s", "-q", svc_name[i]);
 
-	for (k=0;k<wtimeout;k++) {
+	for (k = 0;k<wtimeout;k++) {
 		i_waited = 0;
-		for (i=0;svc_name[i] && *svc_name[i];i++) {
+		for (i = 0;svc_name[i] && *svc_name[i];i++) {
 			if (pids(svc_name[i])) {
 				i_waited = 1;
 				break;
 			}
 		}
-		
+
 		if (!i_waited)
 			break;
-		
+
 		sleep(1);
 	}
 
 	if (forcekill) {
 		i_killed = 0;
-		for (i=0;svc_name[i] && *svc_name[i];i++) {
+		for (i = 0;svc_name[i] && *svc_name[i];i++) {
 			if (pids(svc_name[i])) {
 				i_killed = 1;
 				doSystem("killall %s %s", "-SIGKILL", svc_name[i]);
@@ -760,7 +925,7 @@ kill_process_pidfile(char *pidfile, int wtimeout, int forcekill)
 	if (wtimeout < 1)
 		wtimeout = 1;
 
-	for (i=0; i<wtimeout; i++) {
+	for (i = 0; i<wtimeout; i++) {
 		if (kill_pidfile(pidfile) != 0)
 			break;
 		result = 0; // process exist
@@ -838,7 +1003,7 @@ rename_if_dir_exist(const char *dir, const char *subdir)
 {
 	DIR *dirp;
 	struct dirent *direntp;
-	char oldpath[257], newpath[257];
+	char oldpath[64], newpath[64];
 
 	if (!dir || !subdir)
 		return 0;
@@ -864,7 +1029,7 @@ if_dircase_exist(const char *dir, const char *subdir)
 {
 	DIR *dirp;
 	struct dirent *direntp;
-	char oldpath[257];
+	char oldpath[64];
 
 	if (!dir || !subdir)
 		return NULL;
@@ -902,3 +1067,4 @@ get_hotplug_action(const char *action)
 
 	return 1;
 }
+

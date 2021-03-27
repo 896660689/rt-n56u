@@ -1,10 +1,12 @@
-SRC_NAME := redsocks-19b822e
-THISDIR := $(shell pwd)
+SRC_NAME=redsocks-19b822e
+SRC_URL=https://github.com/SuzukiHonoka/redsocks_for_mipsel/releases/download/release-0.5-11-g19b822e/redsocks
 
-all:
+THISDIR = $(shell pwd)
+
+all: download_test
 	$(MAKE) -C $(SRC_NAME)
 
-clean:
+download_test:
 	( if [ -f $(SRC_NAME)/Makefile ] ; then \
 		$(MAKE) -C $(SRC_NAME) clean ; \
 	fi )
@@ -12,4 +14,3 @@ clean:
 romfs:
 	$(ROMFSINST) $(THISDIR)/$(SRC_NAME)/redsocks /usr/bin/redsocks
 	cp -fP $(STAGEDIR)/lib/libevent_core-2.1.so.* $(ROMFSDIR)/lib
-#	$(ROMFSINST) -p +x $(THISDIR)/redsocks.sh /usr/bin/redsocks.sh
