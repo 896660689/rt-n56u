@@ -251,7 +251,7 @@ func_chnroute_file(){
 }
 
 func_gfwlist_file(){
-    /etc/storage/shadowsocks/update_gfwlist.sh force &
+    /bin/sh /etc/storage/shadowsocks/update_gfwlist.sh force &
     sleep 2
     func_gfwlist_import
     sh $SSR_HOME/ss-gfwlist.sh -f
