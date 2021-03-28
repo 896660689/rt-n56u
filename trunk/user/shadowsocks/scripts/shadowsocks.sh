@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2021-03-26
+# Compile:by-lanse	2021-03-29
 
 export PATH=$PATH:/etc/storage/shadowsocks
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etc/storage/shadowsocks
@@ -251,7 +251,7 @@ func_chnroute_file(){
 }
 
 func_gfwlist_file(){
-    /bin/sh /etc/storage/shadowsocks/update_gfwlist.sh force &
+    sh $SSR_HOME/update_gfwlist.sh force &
     sleep 2
     func_gfwlist_import
     sh $SSR_HOME/ss-gfwlist.sh -f
@@ -297,12 +297,12 @@ func_cron(){
         then
             sed -i '/v2ray-watchdog/d' "$TIME_SCRIPT"
             cat >> "$TIME_SCRIPT" << EOF
-*/3 * * * * $SSR_HOME/v2ray-watchdog 2>&1 >/dev/null &
+*/3 * * * * sh $SSR_HOME/v2ray-watchdog 2>&1 >/dev/null &
 EOF
         else
             sed -i '/ssr-watchcat/d' "$TIME_SCRIPT"
             cat >> "$TIME_SCRIPT" << EOF
-*/3 * * * * $SSR_HOME/ssr-watchcat 2>&1 >/dev/null &
+*/3 * * * * sh $SSR_HOME/ssr-watchcat 2>&1 >/dev/null &
 EOF
         fi
     fi
