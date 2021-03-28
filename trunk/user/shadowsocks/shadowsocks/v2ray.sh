@@ -214,7 +214,7 @@ func_start(){
 
 func_stop(){
     func_Del_rule &
-    sleep 2 && ipset -X gfwlist 2>/dev/null &
+    sleep 2 && ipset -X chnroute 2>/dev/null &
     if [ $(nvram get ss_enable) = "0" ]
     then
         [ -d "$v2_home" ] && rm -rf $v2_home
