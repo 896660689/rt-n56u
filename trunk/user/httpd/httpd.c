@@ -638,6 +638,19 @@ send_error( int status, const char *title, const char *extra_header, const char 
 	fflush( conn_fp );
 }
 
+static void
+send_authenticate( FILE *conn_fp )
+{
+	char header[128], *realm;
+
+	realm = nvram_safe_get("computer_name");
+	if (strlen(realm) < 1)
+		realm = nvram_safe_get("productid");
+
+	snprintf(header, sizeof(header), "WWW-Authenticate: Basic realm=\"%s\"", realm);
+	send_error( 401, "Unauthorized", header, "Authorization required.", conn_fp );
+}
+
 static int
 auth_check( const char *authorization )
 {
@@ -967,19 +980,16 @@ handle_request(FILE *conn_fp, const conn_item_t *item)
 	do_logout = (strcmp(file, "Logout.asp") == 0) ? 1 : 0;
 
 	if (handler->need_auth && login_state > 1 && !do_logout) {
-		if (login_state == 2){					if (login_state == 2){
-			if(auth_check(authorization)){
-				http_login(&conn_ip);
-				send_headers( 200, "OK", NULL, NULL, NULL, conn_fp );
-				return;
-			}else {
-				http_logout(&conn_ip);
-				if (method_id == HTTP_METHOD_POST)
-					eat_post_data(conn_fp, clen);
-				file = "Login.asp";
-				query = NULL;
-			}
+		if (!auth_check(authorization)) {
+			http_logout(&conn_ip);
+			if (method_id == HTTP_METHOD_POST)
+				eat_post_data(conn_fp, clen);
+			send_authenticate(conn_fp);
+			return;
 		}
+
+		if (login_state == 2)
+			http_login(&conn_ip);
 	}
 
 	if (method_id == HTTP_METHOD_POST) {
