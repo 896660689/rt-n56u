@@ -14,7 +14,7 @@ endif
 clean:
 
 romfs:
-	chmod -R +x ./adbyby
+	chmod -R a+x ./adbyby/*
 	$(ROMFSINST) $(THISDIR)/adbyby.tar.gz /etc_ro/adbyby.tar.gz
 	$(ROMFSINST) -p +x $(THISDIR)/adbyby.sh /usr/bin/adbyby.sh
 	$(ROMFSINST) $(THISDIR)/Advanced_adbyby.asp /www/Advanced_adbyby.asp
