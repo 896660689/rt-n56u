@@ -99,7 +99,7 @@ clean_ss:
 
 romfs:
 ifeq ($(CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS),y)
-	chmod -R +x ./shadowsocks
+	chmod -R a+x ./shadowsocks/*
 	chmod -R +x ./scripts
 	$(ROMFSINST) $(THISDIR)/scripts/ /usr/bin/
 	$(ROMFSINST) $(THISDIR)/shadowsocks.tar.gz /etc_ro/shadowsocks.tar.gz
