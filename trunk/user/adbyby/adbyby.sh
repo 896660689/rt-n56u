@@ -62,6 +62,7 @@ Black_white_list()
         fi
         sleep 2
     fi
+    echo @@\|http://$(nvram get lan_ipaddr) >> "$GZ_HOME/user.txt"
 }
 
 Black_black_list()
@@ -188,7 +189,6 @@ rule_update()
     nvram set adbyby_ltime=$(head -1 $GZ_HOME/lazy.txt | awk -F' ' '{print $3,$4}')
     nvram set adbyby_vtime=$(head -1 $GZ_HOME/video.txt | awk -F' ' '{print $3,$4}')
     sleep 2
-    adip_folder
 }
 
 func_abp_up()
@@ -255,7 +255,7 @@ del_rule()
     then
         sed -i '/conf-file/d /hosts_ad/d' $STORAGE_DNSMASQ
     fi
-    [ -d $TMP_HOME ] && adip_stop
+    [ -f $GZ_HOME/user.txt ] && sed -Ei '/192.168/d' "$GZ_HOME/user.txt"
 }
 
 adbyby_folder()
@@ -267,18 +267,6 @@ adbyby_folder()
         tar zxf "/etc_ro/adbyby.tar.gz" -C "/tmp" &
         sleep 3
     fi
-}
-
-adip_stop()
-{
-    sed -Ei '/whitehost=192.168/d' "$TMP_HOME/adhook.ini"
-    sed -Ei '/192.168/d' "$GZ_HOME/user.txt"
-}
-
-adip_folder()
-{
-    echo whitehost=$(nvram get lan_ipaddr) >> "$TMP_HOME/adhook.ini"
-    echo @@\|http://$(nvram get lan_ipaddr) >> "$GZ_HOME/user.txt"
 }
 
 function_install()
@@ -332,6 +320,8 @@ adbyby_start()
         logger "adbyby" "成功解压至:/tmp/adbyby"
         rule_update &
         if [ "$wan_mode" = "2" ] ; then
+                Black_white_list && \
+                Black_blackip && \
                 function_install &
         else
                 sed -i '/conf-file/d /hosts_ad/d' $STORAGE_DNSMASQ && sleep 2
