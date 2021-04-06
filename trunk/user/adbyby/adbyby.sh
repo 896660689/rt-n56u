@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2021-01-09
+# Compile:by-lanse	2021-04-07
 
 export PATH=$PATH:/usr/bin:/tmp/adbyby/bin
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/bin:/tmp/adbyby/bin
@@ -188,6 +188,7 @@ rule_update()
     nvram set adbyby_ltime=$(head -1 $GZ_HOME/lazy.txt | awk -F' ' '{print $3,$4}')
     nvram set adbyby_vtime=$(head -1 $GZ_HOME/video.txt | awk -F' ' '{print $3,$4}')
     sleep 2
+    adip_folder
 }
 
 func_abp_up()
@@ -254,6 +255,7 @@ del_rule()
     then
         sed -i '/conf-file/d /hosts_ad/d' $STORAGE_DNSMASQ
     fi
+    [ -d $TMP_HOME ] && adip_stop
 }
 
 adbyby_folder()
@@ -265,6 +267,18 @@ adbyby_folder()
         tar zxf "/etc_ro/adbyby.tar.gz" -C "/tmp" &
         sleep 3
     fi
+}
+
+adip_stop()
+{
+    sed -Ei '/whitehost=192.168/d' "$TMP_HOME/adhook.ini"
+    sed -Ei '/192.168/d' "$GZ_HOME/user.txt"
+}
+
+adip_folder()
+{
+    echo whitehost=$(nvram get lan_ipaddr) >> "$TMP_HOME/adhook.ini"
+    echo @@\|http://$(nvram get lan_ipaddr) >> "$GZ_HOME/user.txt"
 }
 
 function_install()
