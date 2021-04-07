@@ -62,7 +62,6 @@ Black_white_list()
         fi
         sleep 2
     fi
-    echo @@\|http://$(nvram get lan_ipaddr) >> "$GZ_HOME/user.txt"
 }
 
 Black_black_list()
@@ -320,8 +319,7 @@ adbyby_start()
         logger "adbyby" "成功解压至:/tmp/adbyby"
         rule_update &
         if [ "$wan_mode" = "2" ] ; then
-                Black_white_list && \
-                Black_blackip && \
+                echo @@\|http://$(nvram get lan_ipaddr) >> "$GZ_HOME/user.txt"
                 function_install &
         else
                 sed -i '/conf-file/d /hosts_ad/d' $STORAGE_DNSMASQ && sleep 2
