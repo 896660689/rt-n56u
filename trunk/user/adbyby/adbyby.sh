@@ -254,7 +254,7 @@ del_rule()
     then
         sed -i '/conf-file/d /hosts_ad/d' $STORAGE_DNSMASQ
     fi
-    [ -f $GZ_HOME/user.txt ] && sed -Ei '/192.168/d' "$GZ_HOME/user.txt"
+    #[ -f $GZ_HOME/user.txt ] && sed -Ei '/192.168/d' "$GZ_HOME/user.txt"
 }
 
 adbyby_folder()
@@ -319,7 +319,7 @@ adbyby_start()
         logger "adbyby" "成功解压至:/tmp/adbyby"
         rule_update &
         if [ "$wan_mode" = "2" ] ; then
-                echo @@\|http://$(nvram get lan_ipaddr) >> "$GZ_HOME/user.txt"
+                #echo @@\|http://$(nvram get lan_ipaddr) >> "$GZ_HOME/user.txt"
                 function_install &
         else
                 sed -i '/conf-file/d /hosts_ad/d' $STORAGE_DNSMASQ && sleep 2
