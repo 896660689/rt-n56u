@@ -254,7 +254,6 @@ del_rule()
     then
         sed -i '/conf-file/d /hosts_ad/d' $STORAGE_DNSMASQ
     fi
-    #[ -f $GZ_HOME/user.txt ] && sed -Ei '/192.168/d' "$GZ_HOME/user.txt"
 }
 
 adbyby_folder()
@@ -296,17 +295,67 @@ EOF
     fi
 }
 
+ipt_adip()
+{
+ipset -! restore <<-EOF
+    create adbyby hash:net hashsize 64
+    $(gen_lan_ip | sed -e "s/^/add adbyby /")
+EOF
+}
+
+gen_lan_ip(){
+cat <<-EOF | grep -E "^([0-9]{1,3}\.){3}[0-9]{1,3}"
+    0.0.0.0/8
+    10.0.0.0/8
+    127.0.0.0/8
+    169.254.0.0/16
+    172.16.0.0/12
+    192.0.2.0/24
+    192.168.0.0/16
+    224.0.0.0/4
+    240.0.0.0/4
+EOF
+}
+
+ipt_adtm()
+{
+ipt_ad="iptables -t nat"
+	$ipt_ad -N ADBYBY
+	$ipt_ad -A ADBYBY -d 0.0.0.0/8 -j RETURN
+	$ipt_ad -A ADBYBY -d 10.0.0.0/8 -j RETURN
+	$ipt_ad -A ADBYBY -d 127.0.0.0/8 -j RETURN
+	$ipt_ad -A ADBYBY -d 169.254.0.0/16 -j RETURN
+	$ipt_ad -A ADBYBY -d 172.16.0.0/12 -j RETURN
+	$ipt_ad -A ADBYBY -d 192.168.0.0/16 -j RETURN
+	$ipt_ad -A ADBYBY -d 224.0.0.0/4 -j RETURN
+	$ipt_ad -A ADBYBY -d 240.0.0.0/4 -j RETURN
+
+	logger -t "adbyby" "添加8118透明代理端口。"
+	iptables -t nat -I PREROUTING -p tcp --dport 80 -j ADBYBY
+
+	iptables-save | grep -E "ADBYBY|^\*|^COMMIT" | sed -e "s/^-A \(OUTPUT\|PREROUTING\)/-I \1 1/" > /tmp/adbyby.save
+    if [ -f "/tmp/adbyby.save" ]
+    then
+        logger -t "adbyby" "保存adbyby防火墙规则成功！"
+    else
+        logger -t "adbyby" "保存adbyby防火墙规则失败！可能会造成重启后过滤广告失效，需要手动关闭再打开ADBYBY！"
+    fi
+}
+
 ipt_restore()
 {
     port=$(iptables -t nat -L | grep 'ports 8118' | wc -l)
     if [ $port -ge 1 ] ; then
         iptables -t nat -D PREROUTING -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 8118
+        iptables -t nat -D PREROUTING -p tcp --dport 80 -j ADBYBY 2>/dev/null
     fi
     sleep 1
     ipset flush blackip 2>/dev/null &
+    ipset flush adbyby 2>/dev/null &
     iptables -D FORWARD -m set --match-set blackip dst -j DROP 2>/dev/null
     iptables -D OUTPUT -m set --match-set blackip dst -j DROP 2>/dev/null
-    sleep 2
+    sleep 2 && iptables-save -c | grep -v ADBYBY | iptables-restore -c && sleep 1
+    sleep 2 && restart_dhcpd
 }
 
 adbyby_start()
@@ -319,7 +368,6 @@ adbyby_start()
         logger "adbyby" "成功解压至:/tmp/adbyby"
         rule_update &
         if [ "$wan_mode" = "2" ] ; then
-                #echo @@\|http://$(nvram get lan_ipaddr) >> "$GZ_HOME/user.txt"
                 function_install &
         else
                 sed -i '/conf-file/d /hosts_ad/d' $STORAGE_DNSMASQ && sleep 2
@@ -334,7 +382,9 @@ adbyby_start()
                         function_install &
                     fi
                 else
-                    ipt_restore
+                    ipt_adip && \
+                    ipt_adtm && \
+                    ipt_restore &
                 fi
                 rule_hosts &
                 func_adblock_gz &
@@ -358,13 +408,15 @@ adbyby_stop()
         nvram set adbyby_adb=$(grep -v '^!' $HOSTS_HOME/dnsmasq.adblock | wc -l) &
         nvram set adbyby_hostsad=$(grep -v '^!' $HS_TV/hosts | wc -l) &
         nvram set adbyby_tvbox=$(grep -v '^!' $HS_TV/tvhosts | wc -l) &
-        [ -f /var/log/adbyby_watchdog.log ] && rm -f /var/log/adbyby_watchdog.log
         sleep 2 && rm -rf $ADBYBY_HOME &
         sleep 2 && rm -rf $HOSTS_HOME &
-        rm -f /tmp/adbyby.updated
+        [ -f "/tmp/adbyby.save" ] && rm -rf /tmp/adbyby.save
+        [ -f /tmp/adbyby.updated] && rm -f /tmp/adbyby.updated
+        [ -f /var/log/adbyby_watchdog.log ] && rm -f /var/log/adbyby_watchdog.log
         sleep 2
     fi
     ipset -X blackip 2>/dev/null &
+    ipset -X adbyby 2>/dev/null &
     nvram set adbyby_ltime=0
     nvram set adbyby_vtime=0
     logger "adbyby" "Adbyby已关闭."
