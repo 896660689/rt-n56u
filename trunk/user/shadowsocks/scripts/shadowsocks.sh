@@ -370,6 +370,7 @@ func_start(){
             loger $ss_bin "ShadowsocksR Start up" || { ss-rules -f && loger $ss_bin "ShadowsocksR Start fail!"; }
         fi
         func_cron && \
+        [ -d /tmp/adbyby ] && sh /tmp/adbyby/ad_watchcat 2>&1 >/dev/null
         restart_firewall &
         logger -t "[ShadowsocksR]" "开始运行…"
     else
