@@ -340,6 +340,14 @@ EOF
     return 0
 }
 
+ipt_up()
+{
+    ipt_restore
+    Black_blackip
+    ipt_nw_file
+    func_nw_ipt
+}
+
 adbyby_start()
 {
     if [ "$adbyby_enable" = "1" ] ; then
@@ -416,6 +424,9 @@ restart)
     ;;
 updateadb)
     func_abp_up
+    ;;
+iptrules)
+    ipt_up
     ;;
 *)
     echo "check"
