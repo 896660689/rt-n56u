@@ -305,7 +305,40 @@ ipt_restore()
     ipset flush blackip 2>/dev/null &
     iptables -D FORWARD -m set --match-set blackip dst -j DROP 2>/dev/null
     iptables -D OUTPUT -m set --match-set blackip dst -j DROP 2>/dev/null
-    sleep 2 && restart_dhcpd
+    iptables -t nat -D PREROUTING -p tcp --dport 80 -j ADBYBY 2>/dev/null
+    sleep 2
+    iptables-save -c | grep -v ADBYBY | iptables-restore -c && sleep 2
+    restart_dhcpd
+}
+
+ipt_nw_file()
+{
+    FWI="/tmp/adbyby_iptables.save"
+    [ -n "$FWI" ] && echo '# firewall include file' >$FWI && \
+    chmod +x $FWI
+    return 0
+}
+
+func_nw_ipt()
+{
+    ipt_ad="iptables -t nat"
+    $ipt_ad -N ADBYBY
+    $ipt_ad -A ADBYBY -d 0.0.0.0/8 -j RETURN
+    $ipt_ad -A ADBYBY -d 10.0.0.0/8 -j RETURN
+    $ipt_ad -A ADBYBY -d 127.0.0.0/8 -j RETURN
+    $ipt_ad -A ADBYBY -d 192.168.0.0/16 -j RETURN
+    $ipt_ad -A ADBYBY -d 224.0.0.0/4 -j RETURN
+    $ipt_ad -A ADBYBY -d 240.0.0.0/4 -j RETURN
+    $ipt_ad -I PREROUTING -p tcp --dport 80 -j ADBYBY
+    iptables-save | grep -E "ADBYBY|^\*|^COMMIT" | sed -e "s/^-A \(OUTPUT\|PREROUTING\)/-I \1 1/" > /tmp/adbyby.save
+
+    cat <<-CAT >>$FWI
+    iptables-restore -n <<-EOF
+$(iptables-save | grep -E "ADBYBY|^\*|^COMMIT" |\
+sed -e "s/^-A \(OUTPUT\|PREROUTING\)/-I \1 1/")
+EOF
+    CAT
+    return 0
 }
 
 adbyby_start()
@@ -318,6 +351,8 @@ adbyby_start()
         logger "adbyby" "成功解压至:/tmp/adbyby"
         rule_update && \
         Black_blackip && \
+        ipt_nw_file && \
+        func_nw_ipt && \
         if [ "$wan_mode" = "2" ] ; then
                 function_install &
         else
@@ -359,6 +394,7 @@ adbyby_stop()
         sleep 2 && rm -rf $ADBYBY_HOME &
         sleep 2 && rm -rf $HOSTS_HOME &
         [ -f /tmp/adbyby.updated] && rm -f /tmp/adbyby.updated
+        [ -f "adbyby_iptables.save" ] && rm -rf adbyby_iptables.save
         [ -f /var/log/adbyby_watchdog.log ] && rm -f /var/log/adbyby_watchdog.log
         sleep 2
     fi
