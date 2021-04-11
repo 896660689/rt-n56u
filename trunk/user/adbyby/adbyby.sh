@@ -118,7 +118,6 @@ Black_blackip()
         sleep 2
         iptables -I FORWARD -m set --match-set blackip dst -j DROP
         iptables -I OUTPUT -m set --match-set blackip dst -j DROP
-        sleep 2
     fi
 }
 
@@ -317,16 +316,16 @@ adbyby_start()
         wait
         echo "Adbyby Unzip End !"
         logger "adbyby" "成功解压至:/tmp/adbyby"
-        rule_update &
+        rule_update && \
+        Black_blackip && \
         if [ "$wan_mode" = "2" ] ; then
                 function_install &
         else
                 sed -i '/conf-file/d /hosts_ad/d' $STORAGE_DNSMASQ && sleep 2
                 [ ! -d "$HS_TV" ] && mkdir -p "$HS_TV" && chmod +X "$HS_TV"
-                add_cron && \
+                add_cron &
                 Black_white_list && \
                 Black_black_list && \
-                Black_blackip && \
                 Black_custom &
                 if [ "$wan_mode" = "0" ] ; then
                     if [ -z "$(pidof adbyby)" ] ; then
@@ -340,7 +339,7 @@ adbyby_start()
         fi
         wait
         echo "Adbyby Started..."
-        logger "adbyby" "Adbyby 启动并开始运行."
+        restart_dhcpd && logger "adbyby" "Adbyby 启动并开始运行."
     fi
 }
 
