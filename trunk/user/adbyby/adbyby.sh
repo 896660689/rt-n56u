@@ -329,15 +329,14 @@ func_nw_ipt()
     $ipt_ad -A ADBYBY -d 224.0.0.0/4 -j RETURN
     $ipt_ad -A ADBYBY -d 240.0.0.0/4 -j RETURN
     $ipt_ad -I PREROUTING -p tcp --dport 80 -j ADBYBY
-    iptables-save | grep -E "ADBYBY|^\*|^COMMIT" | sed -e "s/^-A \(OUTPUT\|PREROUTING\)/-I \1 1/" > /tmp/adbyby_iptables.save
 
-    cat <-CAT >>$FWI
+    cat <<-CAT >>$FWI
     iptables-restore -n <<-EOF
 $(iptables-save | grep -E "ADBYBY|^\*|^COMMIT" |\
 sed -e "s/^-A \(OUTPUT\|PREROUTING\)/-I \1 1/")
 EOF
-    CAT
-    return 0
+CAT
+return 0
 }
 
 ipt_up()
