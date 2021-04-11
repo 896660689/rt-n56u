@@ -222,7 +222,6 @@ EOF
 conf-file=$HOSTS_HOME
 EOF
         sleep 2 && logger "AD" "HOSTS 规则加载完成."
-        restart_dhcpd
     else
         sed -i '/conf-file/d' "$STORAGE_DNSMASQ"
         sed -i '/adblock.sh/d' "$TIME_SCRIPT"
@@ -330,9 +329,9 @@ func_nw_ipt()
     $ipt_ad -A ADBYBY -d 224.0.0.0/4 -j RETURN
     $ipt_ad -A ADBYBY -d 240.0.0.0/4 -j RETURN
     $ipt_ad -I PREROUTING -p tcp --dport 80 -j ADBYBY
-    iptables-save | grep -E "ADBYBY|^\*|^COMMIT" | sed -e "s/^-A \(OUTPUT\|PREROUTING\)/-I \1 1/" > /tmp/adbyby.save
+    iptables-save | grep -E "ADBYBY|^\*|^COMMIT" | sed -e "s/^-A \(OUTPUT\|PREROUTING\)/-I \1 1/" > /tmp/adbyby_iptables.save
 
-    cat <<-CAT >>$FWI
+    cat <-CAT >>$FWI
     iptables-restore -n <<-EOF
 $(iptables-save | grep -E "ADBYBY|^\*|^COMMIT" |\
 sed -e "s/^-A \(OUTPUT\|PREROUTING\)/-I \1 1/")
@@ -394,7 +393,7 @@ adbyby_stop()
         sleep 2 && rm -rf $ADBYBY_HOME &
         sleep 2 && rm -rf $HOSTS_HOME &
         [ -f /tmp/adbyby.updated] && rm -f /tmp/adbyby.updated
-        [ -f "adbyby_iptables.save" ] && rm -rf adbyby_iptables.save
+        [ -f /tmp/adbyby_iptables.save ] && rm -rf /tmp/adbyby_iptables.save
         [ -f /var/log/adbyby_watchdog.log ] && rm -f /var/log/adbyby_watchdog.log
         sleep 2
     fi
