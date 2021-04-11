@@ -274,6 +274,7 @@ function_install()
             sleep 2
             port=$(iptables -t nat -L | grep 'ports 8118' | wc -l)
             if [ $port -eq 0 ] ; then
+                ipt_up && \
                 iptables -t nat -A PREROUTING -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 8118
             fi
             if grep -q "ad_watchcat" "$TIME_SCRIPT"
@@ -356,9 +357,6 @@ adbyby_start()
         echo "Adbyby Unzip End !"
         logger "adbyby" "成功解压至:/tmp/adbyby"
         rule_update && \
-        Black_blackip && \
-        ipt_nw_file && \
-        func_nw_ipt && \
         if [ "$wan_mode" = "2" ] ; then
                 function_install &
         else
