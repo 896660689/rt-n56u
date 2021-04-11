@@ -367,22 +367,23 @@ adbyby_stop()
     nvram set adbyby_vtime=0
     logger "adbyby" "Adbyby已关闭."
 }
-
-case "$1" in
-start)
-    adbyby_start
-    ;;
-stop)
-    adbyby_stop
-    ;;
-restart)
-    adbyby_stop
-    adbyby_start
-    ;;
-updateadb)
-    func_abp_up
-    ;;
-*)
-    echo "check"
-    ;;
+echo
+read -e -p " 请输入[start stop restart updateadb]:" num
+case "$num" in
+	start)
+	adbyby_start
+	;;
+	stop)
+	adbyby_stop
+	;;
+	restart)
+	adbyby_stop
+	adbyby_start
+	;;
+	updateadb)
+	func_abp_up
+	;;
+	*)
+	echo "请输入正确代码[start stop restart updateadb]"
+	;;
 esac
