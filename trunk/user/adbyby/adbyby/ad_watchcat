@@ -51,6 +51,7 @@ fi
 port=$(iptables -t nat -L | grep 'ports 8118' | wc -l)
 if [ $port -lt 1 ] ; then
 	loger "注意: adbyby 防火墙转发规则丢失,将添加规则!"
+	/bin/sh /usr/bin/adbyby.sh iptrules
 	iptables -t nat -A PREROUTING -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 8118
 	logger "注意: adbyby 防火墙转发规则丢失,将添加规则"
 fi
