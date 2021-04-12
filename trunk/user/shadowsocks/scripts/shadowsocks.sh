@@ -126,10 +126,6 @@ func_ss_Close(){
         killall pdnsd >/dev/null 2>&1 &
         sleep 2
     fi
-    iptables -t nat -X gfwlist >/dev/null 2>&1
-    iptables-save -c | grep -v "gfwlist" | iptables-restore -c && sleep 2
-    ipset flush gfwlist 2>/dev/null &
-    sleep 2
     if grep -q "ssr-watchcat" "$TIME_SCRIPT"
     then
         sed -i '/ssr-watchcat/d' "$TIME_SCRIPT" >/dev/null 2>&1
@@ -315,6 +311,14 @@ dog_restart(){
     sleep 2 && $ss_bin -c $ss_json -b 0.0.0.0 -l $SS_LOCAL_PORT_LINK >/dev/null 2>&1 &
 }
 
+ipt_ss_del()
+{
+    ipset flush gfwlist 2>/dev/null &
+    ipset -X gfwlist 2>/dev/null &
+    iptables-save -c | grep -v "gfwlist" | iptables-restore -c && sleep 2
+    restart_dhcpd
+}
+
 func_sshome_file(){
     [ ! -f "$ss_folder" ] && sleep 8
     if [ ! -d "$SSR_HOME" ] ; then
@@ -381,15 +385,14 @@ func_start(){
 func_stop(){
     nvram set ss-tunnel_enable=0
     /usr/bin/ss-tunnel.sh stop &
-    sleep 1 && /bin/sh $SSR_HOME/v2ray.sh stop &
-    sleep 1 && /bin/sh $SSR_HOME/redsocks.sh stop &
-    sleep 1 && /bin/sh $SSR_HOME/chinadns-ng.sh stop &
-    sleep 1 && func_ss_Close &
-    sleep 1 && func_ss_down &
-    wait
-    echo ""
-    ipset -X gfwlist 2>/dev/null &
-    restart_dhcpd && logger -t "[ShadowsocksR]" "已停止运行!"
+    /bin/sh $SSR_HOME/v2ray.sh stop &
+    /bin/sh $SSR_HOME/redsocks.sh stop &
+    /bin/sh $SSR_HOME/chinadns-ng.sh stop &
+    sleep 2
+    func_ss_Close && \
+    ipt_ss_del && \
+    func_ss_down &
+    sleep 2 && logger -t "[ShadowsocksR]" "已停止运行!"
 }
 
 case "$1" in
