@@ -348,8 +348,8 @@ return 0
 
 ipt_up()
 {
-    ipt_restore && sleep 2
-    Black_blackip && \
+    ipt_restore && \
+    Black_blackip && sleep 2
     ipt_nw_file && \
     func_nw_ipt &
 }
