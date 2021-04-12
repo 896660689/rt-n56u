@@ -313,10 +313,11 @@ dog_restart(){
 
 ipt_ss_del()
 {
-    ipset flush gfwlist 2>/dev/null &
-    ipset -X gfwlist 2>/dev/null &
     iptables-save -c | grep -v "gfwlist" | iptables-restore -c && sleep 2
-    restart_dhcpd
+    for setname in $(ipset -n list | grep "gfwlist"); do
+        ipset destroy "$setname" 2>/dev/null
+    done
+    sleep 1 && restart_dhcpd
 }
 
 func_sshome_file(){
