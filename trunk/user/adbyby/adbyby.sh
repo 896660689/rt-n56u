@@ -269,6 +269,9 @@ add_rule()
 	$ipt_n -A ADBYBY -d 224.0.0.0/4 -j RETURN
 	$ipt_n -A ADBYBY -d 240.0.0.0/4 -j RETURN
 	ip_rule
+	if [ $(ipset list music -name -quiet | grep music) ]; then
+	$ipt_n -A ADBYBY -m set --match-set music dst -j RETURN
+	fi
 	logger -t "adbyby" "添加8118透明代理端口。"
 	$ipt_n -I PREROUTING -p tcp --dport 80 -j ADBYBY
 	iptables-save | grep -E "ADBYBY|^\*|^COMMIT" | sed -e "s/^-A \(OUTPUT\|PREROUTING\)/-I \1 1/" > /tmp/adbyby.save
