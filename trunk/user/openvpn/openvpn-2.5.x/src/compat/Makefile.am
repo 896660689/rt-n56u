@@ -12,4 +12,23 @@
 MAINTAINERCLEANFILES = \
 	$(srcdir)/Makefile.in
 
-SUBDIRS = compat openvpn openvpnmsica openvpnserv plugins tapctl
+EXTRA_DIST = \
+	compat.vcxproj \
+	compat.vcxproj.filters \
+	PropertySheet.props \
+	Debug.props \
+	Release.props
+
+noinst_LTLIBRARIES = libcompat.la
+
+libcompat_la_SOURCES = \
+	compat.h \
+	compat-dirname.c \
+	compat-basename.c \
+	compat-gettimeofday.c \
+	compat-daemon.c \
+	compat-inet_ntop.c \
+	compat-inet_pton.c \
+	compat-lz4.c compat-lz4.h \
+	compat-strsep.c \
+	compat-versionhelpers.h
