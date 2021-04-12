@@ -1,10 +1,10 @@
-SRC_NAME=openvpn-2.5.x
+SRC_NAME=openvpn-2.4.x
 
-CFLAGS += -ffunction-sections -fdata-sections -fvisibility=hidden
+CFLAGS += -ffunction-sections -fdata-sections
 LDFLAGS += -Wl,--gc-sections
 
 all: config_test
-	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
+	$(MAKE) -C $(SRC_NAME)
 
 config_test:
 	( if [ -f ./config_done ]; then \
@@ -41,6 +41,7 @@ configure:
 		--enable-ssl \
 		--enable-crypto \
 		--enable-lzo \
+		--disable-lz4 \
 		--with-crypto-library=openssl \
 		OPENSSL_CRYPTO_CFLAGS="-I$(STAGEDIR)/include" \
 		OPENSSL_CRYPTO_LIBS="-L$(STAGEDIR)/lib -lcrypto" \
