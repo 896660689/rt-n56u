@@ -272,9 +272,14 @@ function_install()
         if [ $pids -eq 0 ] ; then
             $TMP_HOME/adbyby &
             sleep 2
+            poip=$(iptables -t nat -L | grep 'ports ADBYBY' | wc -l)
+            if [ $poip -eq 0 ] ; then
+                ipt_up
+            fi
+            wait
+            echo "Adbyby ipt_ad !"
             port=$(iptables -t nat -L | grep 'ports 8118' | wc -l)
             if [ $port -eq 0 ] ; then
-                ipt_up && \
                 iptables -t nat -A PREROUTING -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 8118
             fi
             if grep -q "ad_watchcat" "$TIME_SCRIPT"
@@ -302,7 +307,10 @@ ipt_restore()
         iptables -t nat -D PREROUTING -p tcp --dport 80 -j ADBYBY 2>/dev/null
     fi
     sleep 1
-    ipset flush blackip 2>/dev/null &
+    iptables-save -c | grep -v blackip | iptables-restore -c && sleep 1
+    for setname in $(ipset -n list | grep "blackip"); do
+        ipset destroy "$setname" 2>/dev/null
+    done
     iptables -D FORWARD -m set --match-set blackip dst -j DROP 2>/dev/null
     iptables -D OUTPUT -m set --match-set blackip dst -j DROP 2>/dev/null
     iptables -t nat -D PREROUTING -p tcp --dport 80 -j ADBYBY 2>/dev/null
@@ -402,7 +410,6 @@ adbyby_stop()
         [ -f /var/log/adbyby_watchdog.log ] && rm -f /var/log/adbyby_watchdog.log
         sleep 2
     fi
-    ipset -X blackip 2>/dev/null &
     nvram set adbyby_ltime=0
     nvram set adbyby_vtime=0
     logger "adbyby" "Adbyby已关闭."
