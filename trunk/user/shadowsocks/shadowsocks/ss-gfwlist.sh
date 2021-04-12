@@ -56,10 +56,6 @@ conf-dir=/etc/storage/gfwlist/" > $DNSMASQ_TMP
 }
 
 flush_rules() {
-	iptables-save -c | grep -v "gfwlist" | iptables-restore -c
-	for setname in $(ipset -n list | grep "gfwlist"); do
-		ipset destroy "$setname" 2>/dev/null
-	done
 	FWI="/tmp/shadowsocks_iptables.save"
 	[ -n "$FWI" ] && echo '# firewall include file' >$FWI && \
 	chmod +x $FWI
