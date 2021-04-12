@@ -216,7 +216,9 @@ func_start(){
 
 func_stop(){
     func_Del_rule &
-    sleep 2 && ipset -X chnroute 2>/dev/null &
+    for setname in $(ipset -n list | grep "chnroute"); do
+        ipset flush chnroute 2>/dev/null &
+    done
     if [ $(nvram get ss_enable) = "0" ]
     then
         [ -d "$v2_home" ] && rm -rf $v2_home
