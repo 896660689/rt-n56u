@@ -274,10 +274,8 @@ function_install()
             sleep 2
             poip=$(iptables -t nat -L | grep 'ports ADBYBY' | wc -l)
             if [ $poip -eq 0 ] ; then
-                ipt_up
+                ipt_up &
             fi
-            wait
-            echo "Adbyby ipt_ad !"
             port=$(iptables -t nat -L | grep 'ports 8118' | wc -l)
             if [ $port -eq 0 ] ; then
                 iptables -t nat -A PREROUTING -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 8118
