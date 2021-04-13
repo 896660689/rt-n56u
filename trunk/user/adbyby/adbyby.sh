@@ -370,7 +370,7 @@ adbyby_start()
                 add_cron &
                 Black_white_list && \
                 Black_black_list && \
-                Black_custom &
+                Black_custom && \
                 Black_blackip && sleep 2
                 if [ "$wan_mode" = "0" ] ; then
                     if [ -z "$(pidof adbyby)" ] ; then
