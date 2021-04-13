@@ -349,7 +349,6 @@ return 0
 ipt_up()
 {
     ipt_restore && \
-    Black_blackip && sleep 2
     ipt_nw_file && \
     func_nw_ipt &
 }
@@ -372,6 +371,7 @@ adbyby_start()
                 Black_white_list && \
                 Black_black_list && \
                 Black_custom &
+                Black_blackip && sleep 2
                 if [ "$wan_mode" = "0" ] ; then
                     if [ -z "$(pidof adbyby)" ] ; then
                         function_install &
