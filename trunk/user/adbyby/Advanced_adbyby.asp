@@ -97,13 +97,12 @@ function applyRule(){
 	document.form.action_mode.value = " Apply ";
 	document.form.current_page.value = "/Advanced_adbyby.asp";
 	document.form.next_page.value = "";
-
 	document.form.submit();
 }
 
 function submitInternet(v){
 	showLoading();
-	document.adbyby_action.action = "Ad_action.asp";
+	document.adbyby_action.action = "adbyby_action.asp";
 	document.adbyby_action.connect_action.value = v;
 	document.adbyby_action.submit();
 }
