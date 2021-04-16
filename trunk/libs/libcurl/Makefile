@@ -1,5 +1,5 @@
-SRC_NAME=curl-7.76.0
-SRC_URL=https://github.com/curl/curl/releases/download/curl-7_76_0/curl-7.76.0.tar.xz
+SRC_NAME=curl-7.76.1
+SRC_URL=https://github.com/curl/curl/releases/download/curl-7_76_1/curl-7.76.1.tar.xz
 
 LDFLAGS += -Wl,-rpath-link=$(STAGEDIR)/lib
 
@@ -51,16 +51,14 @@ configure:
 		--disable-libcurl-option \
 		--disable-threaded-resolver \
 		--without-gnutls \
-		--without-ca-bundle \
 		--without-libidn \
 		--without-libssh2 \
 		--without-krb4 \
 		--without-nss \
-		--with-ca-bundle=/etc/ssl/certs/ca-certificates.crt \
-                --with-ssl \
 		--with-random=/dev/urandom \
 		--with-zlib=$(STAGEDIR) \
 		--with-ssl=$(STAGEDIR) \
+		--with-ca-bundle=/etc/ssl/cert.pem \
 		--host=$(HOST_TARGET) \
 		--build=$(HOST_BUILD) ; \
 	)
