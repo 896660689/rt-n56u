@@ -18,5 +18,5 @@ romfs:
 	$(ROMFSINST) $(THISDIR)/adbyby.tar.gz /etc_ro/adbyby.tar.gz
 	$(ROMFSINST) -p +x $(THISDIR)/adbyby.sh /usr/bin/adbyby.sh
 	$(ROMFSINST) $(THISDIR)/Advanced_adbyby.asp /www/Advanced_adbyby.asp
-	$(ROMFSINST) $(THISDIR)/Ad_action.asp /www/adbyby_action.asp
+	$(ROMFSINST) $(THISDIR)/adbyby_action.asp /www/adbyby_action.asp
 
