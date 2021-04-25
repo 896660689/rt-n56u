@@ -362,7 +362,7 @@ func_start(){
             logger -t "[v2ray]" "开始部署 [v2ray] 代理模式..."
             func_v2fly && \
             func_redsocks && sleep 2
-            func_chinadns_ng && \
+            func_chinadns_ng &
         else
             echo -e "\033[41;37m 部署 [ShadowsocksR] 文件,请稍后...\e[0m\n"
             func_gen_ss_json && \
