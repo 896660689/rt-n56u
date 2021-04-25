@@ -1111,7 +1111,6 @@ void announce_802_3_packet(
 				FOE_MAGIC_TAG(RTPKT_TO_OSPKT(pRxPkt)) = 0;
 				RtmpOsPktRcvHandle(pRxPkt);
 			}
-			
 			return;
 		}
 #endif /* CONFIG_FAST_NAT_SUPPORT */
