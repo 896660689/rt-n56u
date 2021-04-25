@@ -2437,16 +2437,8 @@ PNDIS_PACKET RtmpOsPktIappMakeUp(
 #endif /* IAPP_SUPPORT */
 
 
-#if 0
-#ifdef CONFIG_FAST_NAT_SUPPORT
-VOID RtmpOsPktNatMagicTag(IN PNDIS_PACKET pNetPkt)
-{
-	struct sk_buff *pRxPkt = RTPKT_TO_OSPKT(pNetPkt);
 
-	FOE_MAGIC_TAG(pRxPkt) = FOE_MAGIC_EXTIF;
-}
-#endif /*CONFIG_FAST_NAT_SUPPORT*/
-#endif
+
 /*
  * ========================================================================
  * Routine Description:
