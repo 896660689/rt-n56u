@@ -236,11 +236,6 @@ VOID RtmpOsPktReserve(PNDIS_PACKET pNetPkt, UINT len);
 VOID RtmpOsPktProtocolAssign(PNDIS_PACKET pNetPkt);
 VOID RtmpOsPktInfPpaSend(PNDIS_PACKET pNetPkt);
 VOID RtmpOsPktRcvHandle(PNDIS_PACKET pNetPkt);
-#if 0
-#ifdef CONFIG_FAST_NAT_SUPPORT
-VOID RtmpOsPktNatMagicTag(PNDIS_PACKET pNetPkt);
-#endif /*CONFIG_FAST_NAT_SUPPORT*/
-#endif
 VOID RtmpOsPktInit(PNDIS_PACKET pNetPkt, PNET_DEV pNetDev, UCHAR *buf, USHORT len);
 
 PNDIS_PACKET RtmpOsPktIappMakeUp(PNET_DEV pNetDev, UINT8 *pMac);
@@ -869,4 +864,3 @@ VOID wifi_dump_info(VOID);
 INT32 CFG80211OS_UpdateRegRuleByRegionIdx(IN VOID *pCB, IN VOID *pChDesc2G, IN VOID *pChDesc5G);
 
 #endif /* __RT_OS_UTIL_H__ */
-
