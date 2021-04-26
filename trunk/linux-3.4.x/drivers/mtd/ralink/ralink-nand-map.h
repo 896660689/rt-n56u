@@ -34,62 +34,62 @@
 
 static struct mtd_partition rt2880_partitions[] = {
 	{
-		name:   "Bootloader",			/* mtdblock0 */
-		size:   NAND_MTD_BOOT_PART_SIZE,	/* 512K */
+		name:   "Bootloader",
+		size:   NAND_MTD_BOOT_PART_SIZE,
 		offset: 0,
 	}, {
-		name:   "BootEnv",			/* mtdblock1 */
-		size:   NAND_MTD_BOOTENV_PART_SIZE,	/* 256K */
+		name:   "BootEnv",
+		size:   NAND_MTD_BOOTENV_PART_SIZE,
 		offset: MTDPART_OFS_APPEND,
 #if (!defined (CONFIG_MTD_CONFIG_PART_BELOW) && !defined (CONFIG_MTD_NETGEAR_LAYOUT))
 	}, {
-		name:   "Config",			/* mtdblock2 */
-		size:   NAND_MTD_CONFIG_PART_SIZE,	/* 1024K */
+		name:   "Config",
+		size:   NAND_MTD_CONFIG_PART_SIZE,
 		offset: MTDPART_OFS_APPEND,
 #endif
 #if !defined (CONFIG_MTD_NETGEAR_LAYOUT)
 	}, {
-		name:   "Factory",			/* mtdblock3 */
-		size:   NAND_MTD_FACTORY_PART_SIZE,	/* 256K */
+		name:   "Factory",
+		size:   NAND_MTD_FACTORY_PART_SIZE,
 		offset: MTDPART_OFS_APPEND,
 #endif
 	}, {
-		name:   "Kernel",			/* mtdblock4 */
-		size:   NAND_MTD_KERNEL_PART_SIZE,	/* 16M */
+		name:   "Kernel",
+		size:   NAND_MTD_KERNEL_PART_SIZE,
 		offset: NAND_MTD_KERNEL_PART_OFFSET,
 #if defined (CONFIG_RT2880_ROOTFS_IN_FLASH)
 	}, {
-		name:   "RootFS",			/* mtdblock5 */
+		name:   "RootFS",
 		size:   0,				/* calc */
 		offset: MTDPART_OFS_APPEND,
 #endif
 #if (defined (CONFIG_MTD_CONFIG_PART_BELOW) || defined(CONFIG_MTD_NETGEAR_LAYOUT))
 	}, {
-		name:   "Config",			/* mtdblockX */
-		size:   NAND_MTD_CONFIG_PART_SIZE,	/* 1024K */
+		name:   "Config",
+		size:   NAND_MTD_CONFIG_PART_SIZE,
 		offset: MTDPART_OFS_APPEND,
 #endif
 	}, {
-		name:   "Storage",			/* mtdblock6 */
-		size:   NAND_MTD_STORE_PART_SIZE,	/* 2M */
+		name:   "Storage",
+		size:   NAND_MTD_STORE_PART_SIZE,
 		offset: MTDPART_OFS_APPEND,
 #if defined (CONFIG_MTD_NETGEAR_LAYOUT)
 	}, {
-		name:   "Factory",			/* mtdblockY */
-		size:   NAND_MTD_FACTORY_PART_SIZE,	/* 2M */
+		name:   "Factory",
+		size:   NAND_MTD_FACTORY_PART_SIZE,
 		offset: NAND_MTD_FACTORY_OFFSET,
 	}, {
-		name:   "RWFS",				/* mtdblock7 */
+		name:   "RWFS",
 		size:   0,				/* calc */
 		offset: NAND_MTD_RWFS_PART_OFFSET,
 #else
 	}, {
-		name:   "RWFS",				/* mtdblock7 */
+		name:   "RWFS",
 		size:   0,				/* calc */
 		offset: MTDPART_OFS_APPEND,
 #endif
 	}, {
-		name:   "Firmware_Stub",		/* mtdblock8 */
+		name:   "Firmware_Stub",
 		size:   NAND_MTD_KERNEL_PART_SIZE,	/* Kernel+RootFS */
 		offset: NAND_MTD_KERNEL_PART_OFFSET,
 	}
