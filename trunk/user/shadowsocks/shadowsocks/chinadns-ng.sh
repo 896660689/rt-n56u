@@ -125,15 +125,15 @@ func_start(){
 }
 
 func_stop(){
-    func_del_rule && sleep 1
-    func_del_ipt && sleep 1
+    func_del_rule && \
+    func_del_ipt && \
+    logger -t "[CHINADNS-NG]" "已停止运行 !"
     if [ $(nvram get ss_mode) = "3" ]
     then
         echo "V2RAY Not closed "
     else
         [ -f /tmp/cdn.txt ] && rm -rf /tmp/cdn.txt
     fi
-    sleep 1 && logger -t "[CHINADNS-NG]" "已停止运行 !"
 }
 
 case "$1" in
