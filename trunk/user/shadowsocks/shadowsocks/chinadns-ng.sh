@@ -116,7 +116,7 @@ func_start(){
     #func_cdn_file &
     wait
     echo ""
-    func_del_ipt
+    func_del_ipt && \
     func_cnng_file
     func_lan_ip && \
     flush_ipt_file && \
