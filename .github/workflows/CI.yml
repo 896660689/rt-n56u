@@ -26,7 +26,7 @@ jobs:
           - build_variant: "mt7628"
             targets: "HC5761A"
           - build_variant: "mt7621"
-            targets: "K2P-5.0 K2P"
+            targets: "K2P"
     steps:
       - uses: actions/checkout@v2
       - name: Prepare environment
