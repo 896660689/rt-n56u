@@ -2531,4 +2531,3 @@ module_exit(exit_exfat);
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("exFAT Filesystem Driver");
 MODULE_ALIAS("exfat");
-
