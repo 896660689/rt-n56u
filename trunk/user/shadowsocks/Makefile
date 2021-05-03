@@ -116,3 +116,4 @@ ifeq ($(CONFIG_FIRMWARE_INCLUDE_SSSERVER),y)
 endif
 	$(ROMFSINST) $(THISDIR)/Shadowsocks.asp /www/Shadowsocks.asp
 	$(ROMFSINST) $(THISDIR)/Shadowsocks_action.asp /www/Shadowsocks_action.asp
+	$(ROMFSINST) $(THISDIR)/SSR_URL_Analysis.asp.asp /www/SSR_URL_Analysis.asp.asp
