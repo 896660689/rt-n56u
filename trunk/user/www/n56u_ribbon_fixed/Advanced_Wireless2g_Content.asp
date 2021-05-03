@@ -38,6 +38,11 @@ function initial(){
 	show_menu(5,1,1);
 	show_footer();
 
+	if (!support_2g_11ax()){
+		var o1 = document.form.rt_gmode;
+		o1.remove(0);
+	}
+
 	document.form.rt_radio_date_x_Sun.checked = getDateCheck(document.form.rt_radio_date_x.value, 0);
 	document.form.rt_radio_date_x_Mon.checked = getDateCheck(document.form.rt_radio_date_x.value, 1);
 	document.form.rt_radio_date_x_Tue.checked = getDateCheck(document.form.rt_radio_date_x.value, 2);
@@ -387,6 +392,7 @@ function validate_wlphrase(s, v, obj){
                                             <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 0, 4);"><#WLANConfig11b_x_Mode11g_itemname#></a></th>
                                             <td>
                                                 <select name="rt_gmode" class="input" onChange="return change_common_rt(this, 'WLANConfig11b', 'rt_gmode')">
+                                                    <option value="6" <% nvram_match_x("","rt_gmode", "6","selected"); %>>b/g/n/ax Mixed</option>
                                                     <option value="2" <% nvram_match_x("","rt_gmode", "2","selected"); %>>b/g/n Mixed</option>
                                                     <option value="1" <% nvram_match_x("","rt_gmode", "1","selected"); %>>b/g Mixed</option>
                                                     <option value="5" <% nvram_match_x("","rt_gmode", "5","selected"); %>>g/n Mixed (*)</option>
@@ -540,6 +546,20 @@ function validate_wlphrase(s, v, obj){
                                             <td>
                                                 <input type="text" maxlength="3" size="3" name="rt_TxPower" class="input" value="<% nvram_get_x("", "rt_TxPower"); %>" onKeyPress="return is_number(this,event);" onblur="return validate_range(this, 0, 100);" />
                                                 &nbsp;<span style="color:#888;">[0..100]</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 0, 25);"><#WLANConfig11b_KickStaRssiLow_itemname#></a></th>
+                                            <td>
+                                                <input type="text" maxlength="4" size="4" name="rt_KickStaRssiLow" class="input" value="<% nvram_get_x("", "rt_KickStaRssiLow"); %>" />
+                                                &nbsp;<span style="color:#888;">[-100..0]</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 0, 26);"><#WLANConfig11b_AssocReqRssiThres_itemname#></a></th>
+                                            <td>
+                                                <input type="text" maxlength="4" size="4" name="rt_AssocReqRssiThres" class="input" value="<% nvram_get_x("", "rt_AssocReqRssiThres"); %>" />
+                                                &nbsp;<span style="color:#888;">[-100..0]</span>
                                             </td>
                                         </tr>
                                         <tr>
