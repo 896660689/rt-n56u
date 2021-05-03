@@ -205,6 +205,16 @@ function getHash(){
                                 <div>
                                     <ul class="nav nav-tabs" style="margin-bottom: 10px;">
                                         <li class="active">
+                                            <a href="Shadowsocks.asp"><#menu5_16#></a>
+                                        </li>
+                                        <li id="ssrurllink" style="display:none">
+                                            <a href="SSR_URL_Analysis.asp"><#menu5_16_44#></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <ul class="nav nav-tabs" style="margin-bottom: 10px;">
+                                        <li class="active">
                                             <a id="tab_ss_add" href="#add"><#Client_settings#></a>
                                         </li>
                                         <li>
