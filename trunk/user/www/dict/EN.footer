@@ -860,6 +860,7 @@ menu5_16_40=DNS Analytic method
 menu5_16_41=Proxy pattern
 menu5_16_42=DNS FORWARDER
 menu5_16_43=PDNSD
+menu5_16_44=SSR URL ANALYSIS
 ChnRoute=ChinaIP model
 GfwList=Gfwlist model
 V2ray=V2ray model
