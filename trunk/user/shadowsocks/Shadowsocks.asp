@@ -41,7 +41,7 @@ $j(document).ready(function(){
 
 function initial(){
 	show_banner(2);
-	show_menu(5,11,1);
+	show_menu(11,-1,0);
 	show_footer();
 	var o1 = document.form.ss_method;
 	var o2 = document.form.ss_mode;
@@ -64,7 +64,6 @@ function initial(){
 	switch_ss_router_proxy();
 	switch_ss_type();
 	showTab(getHash());
-	ssrurl();
 }
 
 function switch_ss_router_proxy(){
@@ -131,10 +130,6 @@ function showTab(curHash){
 		}
 	}
 	window.location.hash = curHash;
-}
-
-function ssrurl(){
-showhide_div('ssrurllink', found_SSR_URL_Analysis());
 }
 
 function getHash(){
@@ -212,7 +207,7 @@ function getHash(){
                                         <li class="active">
                                             <a href="Shadowsocks.asp"><#menu5_16#></a>
                                         </li>
-                                        <li id="ssrurllink" style="display:none">
+                                        <li id="ssrurllink">
                                             <a href="SSR_URL_Analysis.asp"><#menu5_16_44#></a>
                                         </li>
                                     </ul>
@@ -242,7 +237,6 @@ function getHash(){
                                 </div>
                                 <div id="wnd_ss_add">
                                     <table width="100%" cellpadding="4" cellspacing="0" class="table">
-                                        <div class="alert alert-info" style="margin: 8px;">可选---Shadowsocks -- ShadowsocksR---科学上网</div>
                                         <tr>
                                             <th width="50%"><#menu5_16_2#></th>
                                             <td>
@@ -423,7 +417,6 @@ function getHash(){
 
                                 <div id="wnd_ss_ssl" style="display:none;">
                                     <table width="100%" cellpadding="4" cellspacing="0" class="table">
-                                        <div class="alert alert-info" style="margin: 8px;"><#Node_type#></div>
                                         <tr>
                                             <th width="50%" ><#menu5_16_30#></th>
                                             <td style="border-top: -1 none;" colspan="2">
@@ -622,7 +615,6 @@ function getHash(){
 
                                 <div id="wnd_ss_cli" style="display:none;">
                                     <table width="100%" cellpadding="4" cellspacing="0" class="table">
-                                        <div class="alert alert-info" style="margin: 8px;"><#Server_settings_rule_update#></div>
                                         <tr>
                                             <th width="50%"><#InetControl#></th>
                                             <td style="border-top: -1 none;" colspan="2">
