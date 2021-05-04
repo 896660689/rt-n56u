@@ -64,6 +64,7 @@ function initial(){
 	switch_ss_router_proxy();
 	switch_ss_type();
 	showTab(getHash());
+	ssrurl();
 }
 
 function switch_ss_router_proxy(){
@@ -130,6 +131,10 @@ function showTab(curHash){
 		}
 	}
 	window.location.hash = curHash;
+}
+
+function ssrurl(){
+showhide_div('ssrurllink', found_SSR_URL_Analysis());
 }
 
 function getHash(){
