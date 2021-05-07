@@ -335,8 +335,8 @@ function validForm(){
 				alert("<#LANHostConfig_x_DDNS_alarm_14#>");
 				o4.focus();
 				o4.select();
-			}else{
 				return false;
+			}else{
 				o3.value = o4.value+".asuscomm.com";
 			}
 		}else{
