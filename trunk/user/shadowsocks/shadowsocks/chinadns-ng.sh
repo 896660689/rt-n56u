@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2020-03-24
+# Compile:by-lanse	2020-05-08
 
 modprobe xt_set
 modprobe ip_set_hash_ip
@@ -45,7 +45,7 @@ func_cnng_file(){
 no-resolv
 server=127.0.0.1#65353
 EOF
-restart_dhcpd
+sleep 2
 }
 
 func_lan_ip(){
@@ -84,6 +84,7 @@ then
 else
     v2_address=$(cat $STORAGE_V2SH | grep "address" | awk -F '[:/]' '{print $2}')
 fi
+sleep 2
 ipt="iptables -t nat"
 
 $ipt -N CNNG_OUT
