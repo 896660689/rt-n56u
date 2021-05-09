@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2021-03-29
+# Compile:by-lanse	2021-05-10
 
 export PATH=$PATH:/etc/storage/shadowsocks
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etc/storage/shadowsocks
@@ -362,6 +362,8 @@ func_start(){
             logger -t "[v2ray]" "开始部署 [v2ray] 代理模式..."
             func_v2fly && \
             func_redsocks &
+            wait
+            echo ""
             func_chinadns_ng &
         else
             echo -e "\033[41;37m 部署 [ShadowsocksR] 文件,请稍后...\e[0m\n"
