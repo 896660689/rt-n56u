@@ -874,8 +874,9 @@ struct nvram_pair router_defaults[] = {
 	{ "vpnc_ov_port", "1194" },
 	{ "vpnc_ov_auth", "0" },
 	{ "vpnc_ov_mdig", "1" },
-	{ "vpnc_ov_ciph", "3" },
-	{ "vpnc_ov_clzo", "2" },
+	{ "vpnc_ov_ciph", "15" },
+	{ "vpnc_ov_ncp_clist", DEF_OVPNC_CIPH_LIST },
+	{ "vpnc_ov_compress", "2" },
 	{ "vpnc_ov_atls", "0" },
 
 	{ 0, 0 }
