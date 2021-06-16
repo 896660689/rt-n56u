@@ -36,8 +36,9 @@ jobs:
       - uses: actions/checkout@v2
       - name: Prepare environment
         run: |
-          sudo apt update
-          sudo apt install libtool-bin gperf python3-docutils autopoint gettext
+          sudo apt-get update
+          sudo apt-get upgrade
+          sudo apt-get install libtool-bin gperf python3-docutils autopoint gettext help2man
       - name: Run shellcheck
         run: sh ./trunk/tools/shellcheck.sh
       - name: Prepare toolchain
