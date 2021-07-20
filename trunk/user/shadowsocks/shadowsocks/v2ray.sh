@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2021-03-21
+# Compile:by-lanse	2021-07-20
 
 v2_home="/tmp/v2fly"
 v2_json="$v2_home/config.json"
