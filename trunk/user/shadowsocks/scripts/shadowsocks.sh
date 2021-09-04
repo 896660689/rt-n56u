@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2021-05-10
+# Compile:by-lanse	2021-09-05
 
 export PATH=$PATH:/etc/storage/shadowsocks
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etc/storage/shadowsocks
