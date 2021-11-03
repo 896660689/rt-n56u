@@ -1961,8 +1961,8 @@ recv_and_process_peer_pkt(peer_t *p)
 			adjust_poll(MINPOLL);
 		} else {
 			VERB3 if (rc > 0)
-				bb_error_msg("want smaller poll interval: offset/jitter ratio > %u",
-					POLLADJ_GATE);
+				bb_error_msg("want smaller interval: offset/jitter = %u",
+					G.offset_to_jitter_ratio);
 			adjust_poll(-G.poll_exp * 2);
 		}
 	}
