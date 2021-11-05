@@ -1,0 +1,15 @@
+diff -Naur a/src/util.c b/src/util.c
+--- a/src/util.c	2021-11-05 12:29:13.592157331 +0800
++++ b/src/util.c	2021-11-05 12:28:30.010375000 +0800
+@@ -736,7 +736,11 @@
+ 		pthread_mutex_init(&(lock_cs[i]), NULL);
+ 	}
+ 
++#if OPENSSL_API_COMPAT < 0x10000000
+ 	CRYPTO_set_id_callback(_pthreads_thread_id);
++#else
++	CRYPTO_THREADID_set_callback(_pthreads_thread_id);
++#endif
+ 	CRYPTO_set_locking_callback(_pthreads_locking_callback);
+ }
+ 
