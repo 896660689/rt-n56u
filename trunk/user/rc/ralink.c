@@ -682,7 +682,6 @@ gen_ralink_config(int is_soc_ap, int is_aband, int disable_autoscan)
 	fprintf(fp, "CalCacheApply=%d\n", 0);
 	fprintf(fp, "LoadCodeMethod=%d\n", 0);
 	fprintf(fp, "VHT_Sec80_Channel=%d\n", 0);
-	fprintf(fp, "WNMEnable=%d\n", 0);
 	fprintf(fp, "SKUenable=%d\n", 0);
 	fprintf(fp, "PowerUpenable=%d\n", 0);
 	fprintf(fp, "VOW_Airtime_Fairness_En=%d\n", 0);
@@ -697,6 +696,7 @@ gen_ralink_config(int is_soc_ap, int is_aband, int disable_autoscan)
 	fprintf(fp, "ETxBfNoncompress=%d\n", 0);
 	fprintf(fp, "ETxBfIncapable=%d\n", 0);
 	fprintf(fp, "PcieAspm=%d\n", 0);
+	fprintf(fp, "TWTSupport=%d\n", 0);
 	fprintf(fp, "ThermalRecal=%d\n", 0);
 	fprintf(fp, "WCNTest=%d\n", 0);
 	fprintf(fp, "WHNAT=%d\n", 0);
@@ -704,7 +704,9 @@ gen_ralink_config(int is_soc_ap, int is_aband, int disable_autoscan)
 	fprintf(fp, "DfsDedicatedZeroWait=%d\n", 0);
 	fprintf(fp, "DfsZeroWaitDefault=%d\n", 0);
 	fprintf(fp, "KernelRps=%d\n", 0);
-	fprintf(fp, "RRMEnable=%d\n", 0);
+	fprintf(fp, "RRMEnable=1;1;1\n", 0);
+	fprintf(fp, "WNMEnable=1;1;1\n", 0);
+	fprintf(fp, "RoamingEnhance=1;1;1\n",0);
 	fprintf(fp, "MboSupport=%d\n", 0);
 
 #if defined (USE_MT7615_AP) || defined (USE_MT7915_AP)
@@ -713,29 +715,25 @@ gen_ralink_config(int is_soc_ap, int is_aband, int disable_autoscan)
 	fprintf(fp, "TxCmdMode=%d\n", 1);
 	fprintf(fp, "AMSDU_NUM=%d\n", 4);
 	fprintf(fp, "CP_SUPPORT=%d\n", 2);
+	//fprintf(fp, "UAPSDCapable=%d\n", 1);
 	fprintf(fp, "RED_Enable=%d\n", 1);
 #endif
 
 #if defined (USE_WID_2G) && (USE_WID_2G==7615 || USE_WID_2G==7915)
 	if (!is_aband) {
+		fprintf(fp, "PPEnable=%d\n", 0);
 		fprintf(fp, "G_BAND_256QAM=%d\n", nvram_wlan_get_int(0, "turbo_qam"));
 #if defined(BOARD_HAS_2G_11AX) && BOARD_HAS_2G_11AX
 		if (i_phy_mode == PHY_11AX_24G) {
-			/* 2.4g wifi6 mode */
-			fprintf(fp, "TWTSupport=%d\n", 0);
-			fprintf(fp, "PPEnable=%d\n", 0);
+			/* wifi6 mode */
 			fprintf(fp, "MuOfdmaDlEnable=%d\n", 1);
 			fprintf(fp, "MuOfdmaUlEnable=%d\n", 0);
 			fprintf(fp, "SREnable=%d\n", 1);
-			fprintf(fp, "SRMode=%d\n", 0);
 			fprintf(fp, "SRSDEnable=%d\n", 1);
 		} else {
-			fprintf(fp, "TWTSupport=%d\n", 0);
-			fprintf(fp, "PPEnable=%d\n", 0);
 			fprintf(fp, "MuOfdmaDlEnable=%d\n", 0);
 			fprintf(fp, "MuOfdmaUlEnable=%d\n", 0);
 			fprintf(fp, "SREnable=%d\n", 0);
-			fprintf(fp, "SRMode=%d\n", 0);
 			fprintf(fp, "SRSDEnable=%d\n", 0);
 		}
 #endif
@@ -744,7 +742,7 @@ gen_ralink_config(int is_soc_ap, int is_aband, int disable_autoscan)
 
 #if defined (USE_WID_5G) && (USE_WID_5G==7615 || USE_WID_5G==7915)
 	if (is_aband) {
-		/* 5g mumimo configs */
+		fprintf(fp, "PPEnable=%d\n", 1);
 		if (nvram_wlan_get_int(1, "mumimo")) {
 			fprintf(fp, "MUTxRxEnable=%d\n", 1);
 			fprintf(fp, "MuMimoDlEnable=%d\n", 1);
@@ -756,21 +754,15 @@ gen_ralink_config(int is_soc_ap, int is_aband, int disable_autoscan)
 		}
 #if defined(BOARD_HAS_5G_11AX) && BOARD_HAS_5G_11AX
 		if (i_phy_mode == PHY_11AX_5G) {
-			/* 5g wifi6 mode */
-			fprintf(fp, "TWTSupport=%d\n", 0);
-			fprintf(fp, "PPEnable=%d\n", 1);
+			/* wifi6 mode */
 			fprintf(fp, "MuOfdmaDlEnable=%d\n", 1);
 			fprintf(fp, "MuOfdmaUlEnable=%d\n", 0);
 			fprintf(fp, "SREnable=%d\n", 1);
-			fprintf(fp, "SRMode=%d\n", 0);
 			fprintf(fp, "SRSDEnable=%d\n", 1);
 		} else {
-			fprintf(fp, "TWTSupport=%d\n", 0);
-			fprintf(fp, "PPEnable=%d\n", 0);
 			fprintf(fp, "MuOfdmaDlEnable=%d\n", 0);
 			fprintf(fp, "MuOfdmaUlEnable=%d\n", 0);
 			fprintf(fp, "SREnable=%d\n", 0);
-			fprintf(fp, "SRMode=%d\n", 0);
 			fprintf(fp, "SRSDEnable=%d\n", 0);
 		}
 #endif
@@ -789,13 +781,13 @@ gen_ralink_config(int is_soc_ap, int is_aband, int disable_autoscan)
 
 	//AutoChannelSelect
 	if (is_aband) {
-#if defined(USE_WID_5G) && (USE_WID_5G==7915 || USE_WID_5G==7615)
+#if defined(USE_WID_5G) && (USE_WID_5G==7915)
 	i_val = (i_channel == 0) ? 3 : 0;
 #else
 	i_val = (i_channel == 0) ? 2 : 0;
 #endif
 	} else {
-#if defined(USE_WID_2G) && (USE_WID_2G==7915 || USE_WID_2G==7615)
+#if defined(USE_WID_2G) && (USE_WID_2G==7915)
 	i_val = (i_channel == 0) ? 3 : 0;
 #else
 	i_val = (i_channel == 0) ? 2 : 0;
@@ -923,7 +915,6 @@ gen_ralink_config(int is_soc_ap, int is_aband, int disable_autoscan)
 	if (i_val) i_val = 1;
 	if (!i_wmm) i_val = 0;
 	fprintf(fp, "APSDCapable=%d\n", i_val);
-	fprintf(fp, "UAPSDCapable=%d\n", i_val);
 
 	//DLSCapable (MBSSID used)
 	fprintf(fp, "DLSCapable=%d;%d\n", 0, 0);
