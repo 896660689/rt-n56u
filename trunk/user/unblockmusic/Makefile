@@ -1,15 +1,10 @@
-THISDIR := $(shell pwd)
+THISDIR = $(shell pwd)
 export GO111MODULE=on
 export GOPROXY=https://goproxy.cn
-UM_VERSION := 0.2.7
+UM_VERSION := 0.2.13
 UM_URL := https://github.com/cnsilvan/UnblockNeteaseMusic/archive/$(UM_VERSION).tar.gz
 
-all: unblockmusic_dl
-
-unblockmusic_dl:
-	( if [ -d unblockmusic ]; then \
-		tar zcf unblockmusic.tar.gz unblockmusic ; \
-	fi )
+all:download_um build_extract build
 
 build_extract:
 	mkdir -p $(THISDIR)/UnblockNeteaseMusicGo
