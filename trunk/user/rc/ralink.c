@@ -162,7 +162,7 @@ static const struct cc_t {
 inline int
 get_wired_mac_is_single(void)
 {
-#if defined (BOARD_N14U) || defined (BOARD_N11P) || defined (BOARD_MZ_R13) || defined (BOARD_MZ_R13P) || defined (BOARD_CR660x)
+#if defined (BOARD_N14U) || defined (BOARD_N11P) || defined (BOARD_MZ_R13) || defined (BOARD_MZ_R13P) || defined (BOARD_CR660x) || defined (BOARD_Q20)
 	return 1;
 #else
 	return 0;
@@ -703,7 +703,7 @@ gen_ralink_config(int is_soc_ap, int is_aband, int disable_autoscan)
 	fprintf(fp, "BandDisabled=%d\n", 0);
 	fprintf(fp, "DfsDedicatedZeroWait=%d\n", 0);
 	fprintf(fp, "DfsZeroWaitDefault=%d\n", 0);
-	fprintf(fp, "KernelRps=%d\n", 0);
+//	fprintf(fp, "KernelRps=%d\n", 0);
 	fprintf(fp, "RRMEnable=%d\n", 0);
 	fprintf(fp, "MboSupport=%d\n", 0);
 
@@ -1603,6 +1603,8 @@ gen_ralink_config(int is_soc_ap, int is_aband, int disable_autoscan)
 	fprintf(fp, "ApCliMuMimoUlEnable=%d\n", 0);
 	fprintf(fp, "ApCliMuOfdmaUlEnable=%d\n", 0);
 	fprintf(fp, "ApCliMuOfdmaDlEnable=%d\n", 0);
+
+	fprintf(fp, "ApCliWirelessMode=%d\n", i_phy_mode);
 
 	//RadioOn
 	fprintf(fp, "RadioOn=%d\n", 1);
