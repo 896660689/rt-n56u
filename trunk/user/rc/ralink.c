@@ -162,7 +162,7 @@ static const struct cc_t {
 inline int
 get_wired_mac_is_single(void)
 {
-#if defined (BOARD_N14U) || defined (BOARD_N11P) || defined (BOARD_MZ_R13) || defined (BOARD_MZ_R13P) || defined (BOARD_CR660x) || defined (BOARD_Q20)
+#if defined (BOARD_N14U) || defined (BOARD_N11P) || defined (BOARD_MZ_R13) || defined (BOARD_MZ_R13P) || defined (BOARD_CR660x)
 	return 1;
 #else
 	return 0;
@@ -702,6 +702,8 @@ gen_ralink_config(int is_soc_ap, int is_aband, int disable_autoscan)
 	fprintf(fp, "BandDisabled=%d\n", 0);
 	fprintf(fp, "DfsDedicatedZeroWait=%d\n", 0);
 	fprintf(fp, "DfsZeroWaitDefault=%d\n", 0);
+	fprintf(fp, "KernelRps=%d\n", 0);
+	fprintf(fp, "MboSupport=%d\n", 0);
 
 #if defined (USE_MT7615_AP) || defined (USE_MT7915_AP)
 	fprintf(fp, "VOW_RX_En=%d\n", 1);
@@ -750,6 +752,11 @@ gen_ralink_config(int is_soc_ap, int is_aband, int disable_autoscan)
 			fprintf(fp, "MuMimoDlEnable=%d\n", 0);
 			fprintf(fp, "MuMimoUlEnable=%d\n", 0);
 		}
+		/* 5g bandsteering configs */
+		if (nvram_wlan_get_int(1, "band_steering"))
+			fprintf(fp, "BandSteering=%d\n", 1);
+		else
+			fprintf(fp, "BandSteering=%d\n", 0);
 #if defined(BOARD_HAS_5G_11AX) && BOARD_HAS_5G_11AX
 		if (i_phy_mode == PHY_11AX_5G) {
 			/* 5g wifi6 mode */
@@ -1286,6 +1293,24 @@ gen_ralink_config(int is_soc_ap, int is_aband, int disable_autoscan)
 	i_val = nvram_wlan_get_int(is_aband, "HT_AMSDU");
 	fprintf(fp, "HT_AMSDU=%d;%d\n", i_val, i_val);
 
+	//802.11KVR
+	i_val = nvram_wlan_get_int(is_aband, "HT_80211KV");
+	fprintf(fp, "RRMEnable=%d;%d\n", i_val,i_val);
+	fprintf(fp, "WNMEnable=%d;%d\n", i_val,i_val);
+	i_val = nvram_wlan_get_int(is_aband, "HT_80211R");
+	#if defined (BOARD_MT7915_DBDC)
+	if (is_aband)
+	{fprintf(fp, "FtSupport=%d;%d\n",i_val);}
+	else
+	{fprintf(fp, "FtSupport=%d;%d\n",i_val);}
+	fprintf(fp, "FtOtd=0;0\n");
+	fprintf(fp, "FtRic=1;1\n");
+	#else 
+	fprintf(fp, "FtSupport=%d\n",i_val);
+	fprintf(fp, "FtOtd=0\n");
+	fprintf(fp, "FtRic=1\n");
+	#endif
+
 	//HT_BAWinSize
 	i_val = nvram_wlan_get_int(is_aband, "HT_BAWinSize");
 	if (i_val < 1 || i_val > 256) i_val = 256;
@@ -1599,8 +1624,6 @@ gen_ralink_config(int is_soc_ap, int is_aband, int disable_autoscan)
 	fprintf(fp, "ApCliMuMimoUlEnable=%d\n", 0);
 	fprintf(fp, "ApCliMuOfdmaUlEnable=%d\n", 0);
 	fprintf(fp, "ApCliMuOfdmaDlEnable=%d\n", 0);
-
-	fprintf(fp, "ApCliWirelessMode=%d\n", i_phy_mode);
 
 	//RadioOn
 	fprintf(fp, "RadioOn=%d\n", 1);
