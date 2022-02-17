@@ -3,7 +3,8 @@
 
 v2_home="/tmp/v2fly"
 v2_json="$v2_home/config.json"
-v2fly_url="https://cdn.jsdelivr.net/gh/896660689/OS/v2fly/v2ray"
+#v2fly_url="https://cdn.jsdelivr.net/gh/896660689/OS/v2fly/v2ray"
+v2fly_url="https://cdn.jsdelivr.net/gh/896660689/OS/v2fly/xray"
 ss_mode=$(nvram get ss_mode)
 STORAGE="/etc/storage"
 dir_chnroute_file="$STORAGE/chinadns/chnroute.txt"
