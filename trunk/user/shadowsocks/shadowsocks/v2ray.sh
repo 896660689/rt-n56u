@@ -1,10 +1,9 @@
 #!/bin/sh
-# Compile:by-lanse	2021-12-01
+# Compile:by-lanse	2022-02-18
 
 v2_home="/tmp/v2fly"
 v2_json="$v2_home/config.json"
-#v2fly_url="https://cdn.jsdelivr.net/gh/896660689/OS/v2fly/v2ray"
-v2fly_url="https://cdn.jsdelivr.net/gh/896660689/OS/xray/xray"
+v2fly_url="https://cdn.jsdelivr.net/gh/896660689/OS/v2fly/v2ray"
 ss_mode=$(nvram get ss_mode)
 STORAGE="/etc/storage"
 dir_chnroute_file="$STORAGE/chinadns/chnroute.txt"
@@ -22,7 +21,7 @@ func_download(){
         mkdir -p "$v2_home"
         #wget --no-check-certificate -c $v2fly_url -qO $v2_home/v2ray && \
         #curl -k -s -o $v2_home/v2ray --connect-timeout 10 --retry 3 $v2fly_url && \
-        ln -sf /usr/bin/xray $v2_home/v2ray/v2ray" && \
+        ln -sf /usr/bin/xray $v2_home/v2fly/v2ray && \
         chmod 777 "$v2_home/v2ray"
     fi
 }
@@ -245,4 +244,5 @@ v2_file)
     exit 1
     ;;
 esac
+
 
