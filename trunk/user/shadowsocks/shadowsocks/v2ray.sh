@@ -20,8 +20,10 @@ func_download(){
     if [ ! -f "$v2_home/v2ray" ]
     then
         mkdir -p "$v2_home"
-        wget --no-check-certificate -c $v2fly_url -qO $v2_home/v2ray && \
+        #wget --no-check-certificate -c $v2fly_url -qO $v2_home/v2ray && \
         #curl -k -s -o $v2_home/v2ray --connect-timeout 10 --retry 3 $v2fly_url && \
+        cp -f "/usr/bin/xray" "$v2_home" && \
+        mv xray v2ray && \
         chmod 777 "$v2_home/v2ray"
     fi
 }
