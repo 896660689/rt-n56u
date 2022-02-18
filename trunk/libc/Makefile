@@ -16,6 +16,7 @@ DESTDIR=$(ROOTDIR)/stage
 all:
 	if [ ! -f $(DESTDIR)/.installed_uclibc ] ; then \
 		mkdir -p $(DESTDIR) ; \
+		[ ! -d uClibc-ng-1.0.38 ] || tar xf uClibc-ng-1.0.38.tar.xz; \
 		touch $(DESTDIR)/.installed_uclibc ; \
 	fi
 
