@@ -1,4 +1,4 @@
-SRC_NAME = smartdns-Release33
+SRC_NAME = smartdns-Release35
 THISDIR = $(shell pwd)
 
 all: smartdns_dl extract_test config_test
