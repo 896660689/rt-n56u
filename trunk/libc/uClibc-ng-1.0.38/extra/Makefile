@@ -4,10 +4,10 @@
 #
 # Licensed under the LGPL v2.1, see the file COPYING.LIB in this tarball.
 #
+top_srcdir=../../
+top_builddir=$(if $(O),$(O),../../)/
 
-top_srcdir=../
-top_builddir=../
-include $(top_builddir)Rules.mak
 all: objs
+include $(top_srcdir)Rules.mak
 include Makefile.in
 include $(top_srcdir)Makerules
