@@ -1,4 +1,5 @@
 SRC_NAME=busybox-1.34.1
+THISDIR = $(shell pwd)
 
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
