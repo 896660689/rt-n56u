@@ -2,7 +2,7 @@ SRC_NAME=busybox-1.34.1
 
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
-		tar xjf $(SRC_NAME).tar.gz; \
+		tar -xzvf $(SRC_NAME).tar.gz; \
 	fi )
 
 all:
