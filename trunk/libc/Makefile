@@ -16,7 +16,7 @@ DESTDIR=$(ROOTDIR)/stage
 
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
-		tar xjf $(SRC_NAME).tar.bz2; \
+		tar xjf $(SRC_NAME).tar.gz; \
 	fi )
 
 all:
