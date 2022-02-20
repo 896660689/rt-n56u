@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2021-09-05
+# Compile:by-lanse	2022-02-20
 
 export PATH=$PATH:/etc/storage/shadowsocks
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etc/storage/shadowsocks
@@ -42,7 +42,7 @@ ss2_protocol=$(nvram get ss2_protocol)
 ss2_proto_param=$(nvram get ss2_proto_param)
 ss2_obfs=$(nvram get ss2_obfs)
 ss2_obfs_param=$(nvram get ss2_obfs_param)
-v2_address=$(cat /tmp/V2mi.txt | grep "add:" | awk -F '[:/]' '{print $2}')
+
 dns2_ip=$(nvram get ss-tunnel_remote | awk -F '[:/]' '{print $1}')
 dns2_port=$(nvram get ss-tunnel_remote | sed 's/:/#/g')
 
@@ -255,7 +255,7 @@ func_gfwlist_file(){
     then
         sh -c "$SSR_HOME/ss-gfwlist.sh -s $SS_SERVER_LINK -l $SS_LOCAL_PORT_LINK"
         wait
-        echo ""
+        echo "gfw"
         $ss_bin -c $ss_json -b 0.0.0.0 -l $SS_LOCAL_PORT_LINK >/dev/null 2>&1 &
         sleep 2 && logger -t "[ShadowsocksR]" "使用 [gfwlist] 代理模式开始运行..."
     fi
@@ -334,7 +334,10 @@ func_v2fly(){
 
 func_redsocks(){
     /bin/sh $SSR_HOME/redsocks.sh start 127.0.0.1 $SS_LOCAL_PORT_LINK
-    /bin/sh $SSR_HOME/redsocks.sh iptables $v2_address
+    if [ -f /tmp/V2mi.txt ] ; then 
+        v2_address=$(cat /tmp/V2mi.txt | grep "add:" | awk -F '[:/]' '{print $2}')
+        /bin/sh $SSR_HOME/redsocks.sh iptables $v2_address
+    fi
 }
 
 func_chinadns_ng(){
@@ -354,7 +357,7 @@ func_start(){
             func_chnroute_file &
         fi
         wait
-        echo ""
+        echo "mode"
         func_gfwlist_list && \
         func_port_agent_mode &
         if [ "$ss_mode" = "3" ]
@@ -363,7 +366,7 @@ func_start(){
             func_v2fly && \
             func_redsocks &
             wait
-            echo ""
+            echo "v2"
             func_chinadns_ng &
         else
             echo -e "\033[41;37m 部署 [ShadowsocksR] 文件,请稍后...\e[0m\n"
@@ -373,7 +376,7 @@ func_start(){
             func_start_ss_redir && \
             func_start_ss_rules &
             wait
-            echo ""
+            echo "run"
             loger $ss_bin "ShadowsocksR Start up" || { ss-rules -f && loger $ss_bin "ShadowsocksR Start fail!"; }
         fi
         func_cron && \
