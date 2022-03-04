@@ -116,15 +116,15 @@ func_start_ss_rules(){
 func_ss_Close(){
     loger $ss_bin "stop"; ss-rules -f &
     if [ -n "$(pidof ss-redir)" ] ; then
-        killall ss-redir >/dev/null 2>&1 &
-        sleep 2
+        killall ss-redir >/dev/null 2>&1
+        kill -9 "$(pidof ss-redir)" >/dev/null 2>&1
     fi
     kill -9 $(busybox ps -w | grep dns-forwarder | grep -v grep | awk '{print $1}') >/dev/null 2>&1
     kill -9 $(busybox ps -w | grep dnsproxy | grep -v grep | awk '{print $1}') >/dev/null 2>&1
     kill -9 $(busybox ps -w | grep dns2tcp | grep -v grep | awk '{print $1}') >/dev/null 2>&1
     if [ -n "$(pidof pdnsd)" ] ; then
-        killall pdnsd >/dev/null 2>&1 &
-        sleep 2
+        killall pdnsd >/dev/null 2>&1
+        kill -9 "$(pidof pdnsd)" >/dev/null 2>&1
     fi
     if grep -q "ssr-watchcat" "$TIME_SCRIPT"
     then
