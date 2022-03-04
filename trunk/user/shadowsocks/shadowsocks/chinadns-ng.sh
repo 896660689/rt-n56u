@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2020-05-08
+# Compile:by-lanse	2022-03-04
 
 modprobe xt_set
 modprobe ip_set_hash_ip
@@ -28,11 +28,6 @@ iptables-save -c | grep -v CNNG_ | iptables-restore -c && sleep 1
 for setname in $(ipset -n list | grep "gateway"); do
     ipset destroy "$setname" 2>/dev/null
 done
-}
-
-func_cdn_file(){
-    logger -t "[CHINADNS-NG]" "下载 [cdn] 域名文件..."
-    curl -k -s -o /tmp/cdn.txt --connect-timeout 10 --retry 3 https://gitee.com/bkye/rules/raw/master/cdn.txt
 }
 
 func_cnng_file(){
@@ -114,7 +109,6 @@ return 0
 func_start(){
     func_del_rule && \
     echo -e "\033[41;37m 部署 [CHINADNS-NG] 文件,请稍后...\e[0m\n"
-    #func_cdn_file &
     wait
     echo ""
     func_del_ipt && \
@@ -132,8 +126,6 @@ func_stop(){
     if [ $(nvram get ss_mode) = "3" ]
     then
         echo "V2RAY Not closed "
-    else
-        [ -f /tmp/cdn.txt ] && rm -rf /tmp/cdn.txt
     fi
 }
 
