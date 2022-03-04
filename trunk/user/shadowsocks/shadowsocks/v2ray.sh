@@ -177,8 +177,8 @@ EOF
 
 func_Del_rule(){
     if [ -n "$(pidof v2ray)" ] ; then
-        killall v2ray &
-        sleep 2
+        killall v2ray >/dev/null 2>&1
+        kill -9 "$(pidof v2ray)" >/dev/null 2>&1
     fi
 }
 
