@@ -27,7 +27,8 @@ ARG3=$3
 
 func_redsocks(){
 if [ "$ss_router_proxy" = "5" ] ; then
-    IPT2SOCKS_CMD="ipt2socks -s 127.0.0.1 -p $SOCKS5_PORT -b 0.0.0.0 -l 12345 -j `cat /proc/cpuinfo|grep processor|wc -l` -T -4 -R"
+    #IPT2SOCKS_CMD="ipt2socks -s 127.0.0.1 -p $SOCKS5_PORT -b 0.0.0.0 -l 12345 -j `cat /proc/cpuinfo|grep processor|wc -l` -T -4 -R"
+    IPT2SOCKS_CMD="ipt2socks -s 127.0.0.1 -p $SOCKS5_PORT -l 12345 -r -4 -R"
     $IPT2SOCKS_CMD >/dev/null 2>&1 &
 else
     ln -sf $BINARY_PATH $REDSOCKS_FILE
@@ -159,7 +160,8 @@ killall $BINARY_NAME &
 sleep 2
 fi
 if [ -n "$(pidof ipt2socks)" ] ; then
-killall ipt2socks &
+killall ipt2socks >/dev/null 2>&1
+kill -9 "$(pidof ipt2socks)" >/dev/null 2>&1
 fi
 func_clean
 [ -d "$TMP_HOME" ] && rm -rf "$TMP_HOME"

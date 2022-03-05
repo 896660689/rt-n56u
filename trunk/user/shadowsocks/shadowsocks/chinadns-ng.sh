@@ -14,8 +14,8 @@ ss_tunnel_local_port=$(nvram get ss-tunnel_local_port)
 
 func_del_rule(){
     if [ -n "$(pidof chinadns-ng)" ] ; then
-        killall chinadns-ng >/dev/null 2>&1 &
-        sleep 2
+        killall chinadns-ng >/dev/null 2>&1
+        kill -9 "$(pidof chinadns-ng)" >/dev/null 2>&1
     fi
     if grep -q "no-resolv" "$DNSMASQ_RURE"
     then
@@ -31,7 +31,8 @@ done
 }
 
 func_cnng_file(){
-    /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c 119.29.29.29#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
+    #/usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c 119.29.29.29#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
+    /usr/bin/chinadns-ng -c 119.29.29.29#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
     if grep -q "no-resolv" "$DNSMASQ_RURE"
     then
         sed -i '/no-resolv/d; /server=127.0.0.1/d' $DNSMASQ_RURE
