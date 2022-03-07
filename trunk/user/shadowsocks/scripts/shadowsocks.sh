@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2022-02-20
+# Compile:by-lanse	2022-03-08
 
 export PATH=$PATH:/etc/storage/shadowsocks
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etc/storage/shadowsocks
@@ -307,6 +307,7 @@ EOF
 dog_restart(){
     if [ -n "$(pidof ss-redir)" ] ; then
         killall ss-redir >/dev/null 2>&1
+        kill -9 "$(pidof ss-redir)" >/dev/null 2>&1
     fi
     sleep 2 && $ss_bin -c $ss_json -b 0.0.0.0 -l $SS_LOCAL_PORT_LINK >/dev/null 2>&1 &
 }
@@ -380,7 +381,6 @@ func_start(){
             loger $ss_bin "ShadowsocksR Start up" || { ss-rules -f && loger $ss_bin "ShadowsocksR Start fail!"; }
         fi
         func_cron && \
-        #[ -d /tmp/adbyby ] && sh /tmp/adbyby/ad_watchcat 2>&1 >/dev/null
         restart_firewall &
         logger -t "[ShadowsocksR]" "开始运行…"
     else
