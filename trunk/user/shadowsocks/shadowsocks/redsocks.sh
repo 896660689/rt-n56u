@@ -114,7 +114,6 @@ $ipt -A $CHAIN_NAME -d 240.0.0.0/4 -j RETURN
 $ipt -A $CHAIN_NAME -m set --match-set chnroute dst -j RETURN
 $ipt -A $CHAIN_NAME -p tcp -j REDIRECT --to-ports 12345
 $ipt -A PREROUTING -i br0 -p tcp -j $CHAIN_NAME
-#$ipt -A OUTPUT -j $CHAIN_NAME
 
 cat <<-CAT >>$FWI
 iptables-save -c | grep -v $CHAIN_NAME | iptables-restore -c
@@ -146,10 +145,8 @@ fi
 
 func_clean(){
 iptables-save -c | grep -v $CHAIN_NAME | iptables-restore -c && sleep 2
-#ipset -X $SET_NAME >/dev/null 2>&1 &
 for setname in $(ipset -n list | grep "chnroute"); do
 ipset flush chnroute 2>/dev/null &
-#ipset destroy "$setname" 2>/dev/null
 done
 [ -d "$SOCKS_LOG" ] && cat /dev/null > $SOCKS_LOG
 }
