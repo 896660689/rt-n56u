@@ -389,31 +389,12 @@ tabtitle[7] = new Array("", "<#menu5_10_1#>", "<#menu5_10_2#>", "<#menu5_10_3#>"
 tabtitle[8] = new Array("", "<#menu5_11#>", "<#menu5_12#>", "WAN", "", "", "", "", "", "", "");
 tabtitle[9] = new Array("", "<#menu5_7_2#>", "<#menu5_7_3#>", "<#menu5_7_5#>", "<#menu5_7_6#>", "<#menu5_7_8#>");
 tabtitle[10] = new Array("", "<#menu5_16#>");
-tabtitle[11] = new Array("", "<#menu5_13_2#>");
-tabtitle[12] = new Array("", "<#menu5_31_1#>");
-tabtitle[13] = new Array("", "<#menu5_24#>");
 
 if (found_app_shadowsocks()){
 	tabtitle[10] = new Array("", "<#menu5_16#>");
 }else{
 	if (found_SSR_URL_Analysis()){
 		tabtitle[10] = new Array("", "<#menu5_16_44#>");
-	}
-}
-
-if (found_app_adbyby()){
-	tabtitle[11] = new Array("", "<#menu5_13_2#>");
-}
-
-if (found_app_wyy()){
-	tabtitle[12] = new Array("", "<#menu5_31_1#>");
-}
-
-if (found_app_smartdns()){
-	tabtitle[13] = new Array("", "<#menu5_24#>");
-}else{
-	if (found_app_adguardhome()){
-		tabtitle[13] = new Array("", "<#menu5_25#>");
 	}
 }
 
@@ -430,9 +411,6 @@ tablink[7] = new Array("", "Advanced_Tweaks_Content.asp", "Advanced_Scripts_Cont
 tablink[8] = new Array("", "Main_WStatus2g_Content.asp", "Main_WStatus_Content.asp", "", "", "", "", "", "", "", "");
 tablink[9] = new Array("", "Main_LogStatus_Content.asp", "Main_DHCPStatus_Content.asp", "Main_IPTStatus_Content.asp", "Main_RouteStatus_Content.asp", "Main_CTStatus_Content.asp");
 tablink[10] = new Array("", "Shadowsocks.asp");
-tablink[11] = new Array("", "Advanced_adbyby.asp");
-tablink[12] = new Array("", "Advanced_wyy.asp");
-tablink[13] = new Array("", "Advanced_smartdns.asp");
 
 if (found_app_shadowsocks()){
 	shadowsocks_array = new Array("", "Shadowsocks.asp");
@@ -440,24 +418,6 @@ if (found_app_shadowsocks()){
 }else if (found_SSR_URL_Analysis()){
 	ssrurl_array = new Array("","SSR_URL_Analysis.asp");
 	tablink[10] = (ssrurl_array);
-}
-
-if (found_app_adbyby()){
-	adbyby_array = new Array("", "Advanced_adbyby.asp");
-	tablink[11] = (adbyby_array);
-}
-
-if (found_app_wyy()){
-	wyy_array = new Array("","Advanced_wyy.asp");
-	tablink[12] = (wyy_array);
-}
-
-if (found_app_smartdns()){
-	smartdns_array = new Array("","Advanced_smartdns.asp");
-	tablink[13] = (smartdns_array);
-}else if (found_app_adguardhome()){
-	adg_array = new Array("","Advanced_adguardhome.asp");
-	tablink[13] = (adg_array);
 }
 
 //Level 2 Menu
@@ -469,20 +429,6 @@ if (found_app_shadowsocks()){
 	menuL2_link.push(tablink[10][1]);
 } else if (found_SSR_URL_Analysis()){
 	menuL2_title.push("ssrurl_array[1]");
-} else menuL2_link.push("");
-
-if (found_app_adbyby()){
-	menuL2_link.push(tablink[11][1]);
-} else menuL2_link.push("");
-
-if (found_app_wyy()){
-	menuL2_link.push(tablink[12][1]);
-} else menuL2_link.push("");
-
-if (found_app_smartdns()){
-	menuL2_link.push(tablink[13][1]);
-} else if (found_app_adguardhome()){
-	menuL2_title.push("adg_array[1]");
 } else menuL2_link.push("");
 
 //Level 1 Menu in Gateway, Router mode
