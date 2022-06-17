@@ -229,6 +229,8 @@ endif
 ifeq ($(CONFIG_FIRMWARE_INCLUDE_FRPC)_$(CONFIG_FIRMWARE_INCLUDE_FRPS), n_n)
 	rm -f $(INSTALLDIR)/www/Advanced_frp.asp
 endif
-
+ifneq ($(CONFIG_FIRMWARE_INCLUDE_SMARTDNS),y)
+	rm -f $(INSTALLDIR)/www/Advanced_smartdns.asp
+endif
 clean:
 	@echo "Clean www romfs"

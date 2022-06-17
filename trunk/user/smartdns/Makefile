@@ -1,4 +1,4 @@
-SRC_NAME = smartdns-Release35
+SRC_NAME = smartdns-Release36.1
 THISDIR = $(shell pwd)
 
 all: extract_test config_test
@@ -7,7 +7,6 @@ all: extract_test config_test
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
 		tar zxf $(SRC_NAME).tar.gz ; \
-		patch -d $(SRC_NAME) -p1 < t.patch; \
 	fi )
 
 config_test:
