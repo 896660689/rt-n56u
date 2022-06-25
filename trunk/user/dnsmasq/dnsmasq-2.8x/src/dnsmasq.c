@@ -625,7 +625,14 @@ int main (int argc, char **argv)
   
       if (ent_pw && ent_pw->pw_uid != 0)
 	{     
-#if defined(HAVE_LINUX_NETWORK)	  
+#if defined(HAVE_LINUX_NETWORK)
+	  if (!hdr || !data)
+	    {
+	      /* Just failsafe for logic errors */
+	      send_event(err_pipe[1], EVENT_CAP_ERR, ENOMEM, NULL);
+	      _exit(0);
+	    }
+
 	  /* On linux, we keep CAP_NETADMIN (for ARP-injection) and
 	     CAP_NET_RAW (for icmp) if we're doing dhcp. If we have yet to bind 
 	     ports because of DAD, or we're doing it dynamically,

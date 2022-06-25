@@ -4351,7 +4351,7 @@ err:
 		struct name_list *nl;
 		if (!canon)
                   {
-		    struct name_list *tmp = new->names, *next;
+		    struct name_list *tmp, *next;
 		    for (tmp = new->names; tmp; tmp = next)
 		      {
 			next = tmp->next;
