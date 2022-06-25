@@ -1279,6 +1279,8 @@ size_t answer_request(struct dns_header *header, char *limit, size_t qlen,
   int nxdomain = 0, notimp = 0, auth = 1, trunc = 0, sec_data = 1;
   struct mx_srv_record *rec;
   size_t len;
+  // Make sure we do not underflow here too.
+  if (qlen > (limit - ((char *)header))) return 0;
 
   /* never answer queries with RD unset, to avoid cache snooping. */
   if (!(header->hb3 & HB3_RD) ||
