@@ -544,6 +544,17 @@ struct randfd_list {
   struct randfd_list *next;
 };
 
+/* contains domain specific set of servers.
+ * If domain is NULL, just normal servers. */
+struct server_domain {
+  char *domain;
+  struct server *last_server;
+  time_t forwardtime;
+  int forwardcount;
+  unsigned int flags; /* server.flags alternative */
+  struct server_domain *next;
+};
+
 struct server {
   union mysockaddr addr, source_addr;
   char interface[IF_NAMESIZE+1];
@@ -556,6 +567,7 @@ struct server {
 #ifdef HAVE_LOOP
   u32 uid;
 #endif
+  struct server_domain *serv_domain;
   struct server *next; 
 };
 
@@ -1024,6 +1036,7 @@ extern struct daemon {
   struct iname *if_names, *if_addrs, *if_except, *dhcp_except, *auth_peers, *tftp_interfaces;
   struct bogus_addr *bogus_addr, *ignore_addr;
   struct server *servers;
+  struct server_domain *server_domains;
   struct ipsets *ipsets;
   int log_fac; /* log facility */
   char *log_file; /* optional log file */
@@ -1093,9 +1106,6 @@ extern struct daemon {
   struct serverfd *sfds;
   struct irec *interfaces;
   struct listener *listeners;
-  struct server *last_server;
-  time_t forwardtime;
-  int forwardcount;
   struct server *srv_save; /* Used for resend on DoD */
   size_t packet_len;       /*      "        "        */
   int    fd_save;          /*      "        "        */
@@ -1358,6 +1368,8 @@ int loopback_exception(int fd, int family, union all_addr *addr, char *name);
 int label_exception(int index, int family, union all_addr *addr);
 int fix_fd(int fd);
 int tcp_interface(int fd, int af);
+struct server_domain *server_domain_find_domain(const char *domain);
+struct server_domain *server_domain_new(struct server *serv);
 int set_ipv6pktinfo(int fd);
 #ifdef HAVE_DHCP6
 void join_multicast(int dienow);

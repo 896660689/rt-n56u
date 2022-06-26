@@ -934,6 +934,7 @@ static struct server *add_rev4(struct in_addr addr, int msize)
   p += sprintf(p, "in-addr.arpa");
   
   serv->flags = SERV_HAS_DOMAIN;
+  server_domain_new(serv);
   serv->next = daemon->servers;
   daemon->servers = serv;
 
@@ -958,6 +959,7 @@ static struct server *add_rev6(struct in6_addr *addr, int msize)
   p += sprintf(p, "ip6.arpa");
   
   serv->flags = SERV_HAS_DOMAIN;
+  server_domain_new(serv);
   serv->next = daemon->servers;
   daemon->servers = serv;
   
@@ -2259,6 +2261,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 				  memset(serv, 0, sizeof(struct server));
 				  serv->domain = d;
 				  serv->flags = SERV_HAS_DOMAIN | SERV_NO_ADDR;
+				  server_domain_new(serv);
 				  serv->next = daemon->servers;
 				  daemon->servers = serv;
 				}
@@ -2302,6 +2305,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 				  memset(serv, 0, sizeof(struct server));
 				  serv->domain = d;
 				  serv->flags = SERV_HAS_DOMAIN | SERV_NO_ADDR;
+				  server_domain_new(serv);
 				  serv->next = daemon->servers;
 				  daemon->servers = serv;
 				}
@@ -2549,6 +2553,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 		newlist = serv;
 		serv->domain = domain;
 		serv->flags = domain ? SERV_HAS_DOMAIN : SERV_FOR_NODOTS;
+		server_domain_new(serv);
 		arg = end;
 		if (rebind)
 		  break;

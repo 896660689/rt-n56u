@@ -103,7 +103,8 @@ int send_from(int fd, int nowild, char *packet, size_t len,
 }
           
 static unsigned int search_servers(time_t now, union all_addr **addrpp, unsigned int qtype,
-				   char *qdomain, int *type, char **domain, int *norebind)
+				   char *qdomain, int *type, char **domain, int *norebind,
+				   struct server_domain **serv_domain)
 			      
 {
   /* If the query ends in the domain in one of our servers, set
@@ -116,6 +117,9 @@ static unsigned int search_servers(time_t now, union all_addr **addrpp, unsigned
   unsigned int flags = 0;
   static union all_addr zero;
   
+  if (serv_domain)
+    *serv_domain = NULL;
+
   for (serv = daemon->servers; serv; serv=serv->next)
     if (qtype == F_DNSSECOK && !(serv->flags & SERV_DO_DNSSEC))
       continue;
@@ -181,6 +185,8 @@ static unsigned int search_servers(time_t now, union all_addr **addrpp, unsigned
 		  {
 		    *type = serv->flags & (SERV_HAS_DOMAIN | SERV_USE_RESOLV | SERV_NO_REBIND | SERV_DO_DNSSEC);
 		    *domain = serv->domain;
+		    if (serv_domain)
+		      *serv_domain = serv->serv_domain;
 		    matchlen = domainlen;
 		    if (serv->flags & SERV_NO_ADDR)
 		      flags = F_NXDOMAIN;
@@ -237,6 +243,8 @@ static unsigned int search_servers(time_t now, union all_addr **addrpp, unsigned
       *type = 0; /* use normal servers for this domain */
       *domain = NULL;
     }
+  if (serv_domain && !*serv_domain)
+    *serv_domain = server_domain_find_domain(*domain);
   return  flags;
 }
 
@@ -251,6 +259,7 @@ static int forward_query(int udpfd, union mysockaddr *udpaddr,
   unsigned int flags = 0;
   unsigned int fwd_flags = 0;
   struct server *start = NULL;
+  struct server_domain *sd = NULL;
   void *hash = hash_questions(header, plen, daemon->namebuff);
 #ifdef HAVE_DNSSEC
   int do_dnssec = 0;
@@ -319,8 +328,10 @@ static int forward_query(int udpfd, union mysockaddr *udpaddr,
       forward->sentto->failed_queries++;
       if (!option_bool(OPT_ORDER))
 	{
+	  sd = forward->sentto->serv_domain;
 	  forward->forwardall = 1;
-	  daemon->last_server = NULL;
+	  if (sd)
+	    sd->last_server = NULL;
 	}
       type = forward->sentto->flags & SERV_TYPE;
 #ifdef HAVE_DNSSEC
@@ -368,7 +379,7 @@ static int forward_query(int udpfd, union mysockaddr *udpaddr,
 	}
 	
       if (gotname)
-	flags = search_servers(now, &addrp, gotname, daemon->namebuff, &type, &domain, &norebind);
+	flags = search_servers(now, &addrp, gotname, daemon->namebuff, &type, &domain, &norebind, &sd);
       
 #ifdef HAVE_DNSSEC
       do_dnssec = type & SERV_DO_DNSSEC;
@@ -410,18 +421,18 @@ static int forward_query(int udpfd, union mysockaddr *udpaddr,
 	     always try all the available servers,
 	     otherwise, use the one last known to work. */
 	  
-	  if (type == 0)
+	  if (sd)
 	    {
 	      if (option_bool(OPT_ORDER))
 		start = daemon->servers;
-	      else if (!(start = daemon->last_server) ||
-		       daemon->forwardcount++ > FORWARD_TEST ||
-		       difftime(now, daemon->forwardtime) > FORWARD_TIME)
+	      else if (!(start = sd->last_server) ||
+		       sd->forwardcount++ > FORWARD_TEST ||
+		       difftime(now, sd->forwardtime) > FORWARD_TIME)
 		{
 		  start = daemon->servers;
 		  forward->forwardall = 1;
-		  daemon->forwardcount = 0;
-		  daemon->forwardtime = now;
+		  sd->forwardcount = 0;
+		  sd->forwardtime = now;
 		}
 	    }
 	  else
@@ -783,6 +794,7 @@ void reply_query(int fd, time_t now)
   size_t nn;
   struct server *server;
   void *hash;
+  struct server_domain *sd;
 
   /* packet buffer overwritten */
   daemon->srv_save = NULL;
@@ -917,7 +929,8 @@ void reply_query(int fd, time_t now)
     }   
    
   server = forward->sentto;
-  if ((forward->sentto->flags & SERV_TYPE) == 0)
+  sd = server->serv_domain;
+  if (sd)
     {
       if (RCODE(header) == REFUSED)
 	server = NULL;
@@ -935,7 +948,7 @@ void reply_query(int fd, time_t now)
 	      }
 	} 
       if (!option_bool(OPT_ALL_SERVERS))
-	daemon->last_server = server;
+	sd->last_server = server;
     }
  
   /* We tried resending to this server with a smaller maximum size and got an answer.
@@ -1040,7 +1053,7 @@ void reply_query(int fd, time_t now)
 		      /* Find server to forward to. This will normally be the 
 			 same as for the original query, but may be another if
 			 servers for domains are involved. */		      
-		      if (search_servers(now, NULL, F_DNSSECOK, daemon->keyname, &type, &domain, NULL) == 0)
+		      if (search_servers(now, NULL, F_DNSSECOK, daemon->keyname, &type, &domain, NULL, &sd) == 0)
 			{
 			  struct server *start = server, *new_server = NULL;
 			  
@@ -1632,7 +1645,7 @@ static int tcp_key_recurse(time_t now, int status, struct dns_header *header, si
       /* Find server to forward to. This will normally be the 
 	 same as for the original query, but may be another if
 	 servers for domains are involved. */		      
-      if (search_servers(now, NULL, F_DNSSECOK, keyname, &type, &domain, NULL) != 0)
+      if (search_servers(now, NULL, F_DNSSECOK, keyname, &type, &domain, NULL, NULL) != 0)
 	{
 	  new_status = STAT_ABANDONED;
 	  break;
@@ -1909,11 +1922,12 @@ unsigned char *tcp_request(int confd, time_t now,
 	      int type = SERV_DO_DNSSEC;
 	      char *domain = NULL;
 	      unsigned char *oph = find_pseudoheader(header, size, NULL, NULL, NULL, NULL);
+	      struct server_domain *sd = NULL;
 
 	      size = add_edns0_config(header, size, ((unsigned char *) header) + 65536, &peer_addr, now, &check_subnet, &cacheable);
 
 	      if (gotname)
-		flags = search_servers(now, &addrp, gotname, daemon->namebuff, &type, &domain, &norebind);
+		flags = search_servers(now, &addrp, gotname, daemon->namebuff, &type, &domain, &norebind, &sd);
 
 #ifdef HAVE_DNSSEC
 	      if (option_bool(OPT_DNSSEC_VALID) && (type & SERV_DO_DNSSEC))
@@ -1934,10 +1948,10 @@ unsigned char *tcp_request(int confd, time_t now,
 
 	      type &= ~SERV_DO_DNSSEC;
 	      
-	      if (type != 0  || option_bool(OPT_ORDER) || !daemon->last_server)
+	      if (!sd  || option_bool(OPT_ORDER) || !sd->last_server)
 		last_server = daemon->servers;
 	      else
-		last_server = daemon->last_server;
+		last_server = sd->last_server;
 	      
 	      if (!flags && last_server)
 		{
@@ -2538,9 +2552,7 @@ void server_gone(struct server *server)
     if (daemon->randomsocks[i].refcount != 0 && daemon->randomsocks[i].serv == server)
       daemon->randomsocks[i].serv = NULL;
 
-  if (daemon->last_server == server)
-    daemon->last_server = NULL;
-
+  /* last_server cleared by server_domain_cleanup */
   if (daemon->srv_save == server)
     daemon->srv_save = NULL;
 }
