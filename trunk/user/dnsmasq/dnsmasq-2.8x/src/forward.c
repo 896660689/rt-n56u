@@ -1337,8 +1337,9 @@ void receive_query(struct listener *listen, time_t now)
 		 CMSG_SPACE(sizeof(struct sockaddr_dl))];
 #endif
   } control_u;
+  int family = listen->addr.sa.sa_family;
    /* Can always get recvd interface for IPv6 */
-  int check_dst = !option_bool(OPT_NOWILD) || listen->family == AF_INET6;
+  int check_dst = !option_bool(OPT_NOWILD) || family == AF_INET6;
 
   /* packet buffer overwritten */
   daemon->srv_save = NULL;
@@ -1350,7 +1351,7 @@ void receive_query(struct listener *listen, time_t now)
     {
       auth_dns = listen->iface->dns_auth;
      
-      if (listen->family == AF_INET)
+      if (family == AF_INET)
 	{
 	  dst_addr_4 = dst_addr.addr4 = listen->iface->addr.in.sin_addr;
 	  netmask = listen->iface->netmask;
@@ -1380,9 +1381,9 @@ void receive_query(struct listener *listen, time_t now)
      information disclosure. */
   memset(daemon->packet + n, 0, daemon->edns_pktsz - n);
   
-  source_addr.sa.sa_family = listen->family;
+  source_addr.sa.sa_family = family;
   
-  if (listen->family == AF_INET)
+  if (family == AF_INET)
     {
        /* Source-port == 0 is an error, we can't send back to that. 
 	  http://www.ietf.org/mail-archive/web/dnsop/current/msg11441.html */
@@ -1402,7 +1403,7 @@ void receive_query(struct listener *listen, time_t now)
     {
       struct addrlist *addr;
 
-      if (listen->family == AF_INET6) 
+      if (family == AF_INET6) 
 	{
 	  for (addr = daemon->interface_addrs; addr; addr = addr->next)
 	    if ((addr->flags & ADDRLIST_IPV6) &&
@@ -1440,7 +1441,7 @@ void receive_query(struct listener *listen, time_t now)
 	return;
 
 #if defined(HAVE_LINUX_NETWORK)
-      if (listen->family == AF_INET)
+      if (family == AF_INET)
 	for (cmptr = CMSG_FIRSTHDR(&msg); cmptr; cmptr = CMSG_NXTHDR(&msg, cmptr))
 	  if (cmptr->cmsg_level == IPPROTO_IP && cmptr->cmsg_type == IP_PKTINFO)
 	    {
@@ -1453,7 +1454,7 @@ void receive_query(struct listener *listen, time_t now)
 	      if_index = p.p->ipi_ifindex;
 	    }
 #elif defined(IP_RECVDSTADDR) && defined(IP_RECVIF)
-      if (listen->family == AF_INET)
+      if (family == AF_INET)
 	{
 	  for (cmptr = CMSG_FIRSTHDR(&msg); cmptr; cmptr = CMSG_NXTHDR(&msg, cmptr))
 	    {
@@ -1478,7 +1479,7 @@ void receive_query(struct listener *listen, time_t now)
 	}
 #endif
       
-      if (listen->family == AF_INET6)
+      if (family == AF_INET6)
 	{
 	  for (cmptr = CMSG_FIRSTHDR(&msg); cmptr; cmptr = CMSG_NXTHDR(&msg, cmptr))
 	    if (cmptr->cmsg_level == IPPROTO_IPV6 && cmptr->cmsg_type == daemon->v6pktinfo)
@@ -1499,16 +1500,16 @@ void receive_query(struct listener *listen, time_t now)
       if (!indextoname(listen->fd, if_index, ifr.ifr_name))
 	return;
       
-      if (!iface_check(listen->family, &dst_addr, ifr.ifr_name, &auth_dns))
+      if (!iface_check(family, &dst_addr, ifr.ifr_name, &auth_dns))
 	{
 	   if (!option_bool(OPT_CLEVERBIND))
 	     enumerate_interfaces(0); 
-	   if (!loopback_exception(listen->fd, listen->family, &dst_addr, ifr.ifr_name) &&
-	       !label_exception(if_index, listen->family, &dst_addr))
+	   if (!loopback_exception(listen->fd, family, &dst_addr, ifr.ifr_name) &&
+	       !label_exception(if_index, family, &dst_addr))
 	     return;
 	}
 
-      if (listen->family == AF_INET && option_bool(OPT_LOCALISE))
+      if (family == AF_INET && option_bool(OPT_LOCALISE))
 	{
 	  struct irec *iface;
 	  
@@ -1553,7 +1554,7 @@ void receive_query(struct listener *listen, time_t now)
 #endif
       char *types = querystr(auth_dns ? "auth" : "query", type);
       
-      if (listen->family == AF_INET) 
+      if (family == AF_INET) 
 	log_query(F_QUERY | F_IPV4 | F_FORWARD, daemon->namebuff, 
 		  (union all_addr *)&source_addr.in.sin_addr, types);
       else
