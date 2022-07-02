@@ -981,8 +981,7 @@ static char *set_prefix(char *arg)
    return arg;
 }
 
-static struct dhcp_netid *
-dhcp_netid_create(const char *net, struct dhcp_netid *next)
+static struct dhcp_netid *dhcp_netid_create(const char *net, struct dhcp_netid *next)
 {
   struct dhcp_netid *tt;
   tt = opt_malloc(sizeof (struct dhcp_netid));
@@ -1047,7 +1046,8 @@ static void dhcp_config_free(struct dhcp_config *config)
         }
 
       dhcp_netid_list_free(config->netid);
-
+      dhcp_netid_free(config->filter);
+      
       if (config->flags & CONFIG_CLID)
         free(config->clid);
 
@@ -3176,6 +3176,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	new->flags = (option == LOPT_BANK) ? CONFIG_BANK : 0;
 	new->hwaddr = NULL;
 	new->netid = NULL;
+	new->filter = NULL;
 	new->clid = NULL;
 	new->addr6 = NULL;
 
@@ -3224,11 +3225,8 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 		    newlist->list = dhcp_netid_create(arg+4, NULL);
 		  }
 		else if (strstr(arg, "tag:") == arg)
-		  {
+		  new->filter = dhcp_netid_create(arg+4, new->filter);
 
-		    dhcp_config_free(new);
-		    ret_err(_("cannot match tags in --dhcp-host"));
-		  }
 #ifdef HAVE_DHCP6
 		else if (arg[0] == '[' && arg[strlen(arg)-1] == ']')
 		  {
