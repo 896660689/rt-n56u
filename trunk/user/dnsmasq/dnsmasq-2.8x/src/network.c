@@ -1382,7 +1382,7 @@ void pre_allocate_sfds(void)
 	errno != 0 &&
 	option_bool(OPT_NOWILD))
       {
-	prettyprint_addr(&srv->source_addr, daemon->namebuff);
+	(void)prettyprint_addr(&srv->source_addr, daemon->namebuff);
 	if (srv->interface[0] != 0)
 	  {
 	    strcat(daemon->namebuff, " ");
