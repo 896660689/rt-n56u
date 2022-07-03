@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2022-03-08
+# Compile:by-lanse	2022-07-08
 
 export PATH=$PATH:/etc/storage/shadowsocks
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etc/storage/shadowsocks
@@ -397,7 +397,7 @@ func_stop(){
     func_ss_Close && \
     ipt_ss_del && \
     func_ss_down &
-    sleep 2 && restart_dhcpd&& \
+    sleep 2 && restart_dhcpd && \
     logger -t "[ShadowsocksR]" "已停止运行!"
 }
 
