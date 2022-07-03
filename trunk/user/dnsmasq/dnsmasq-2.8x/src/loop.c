@@ -22,7 +22,8 @@ static ssize_t loop_make_probe(u32 uid);
 void loop_send_probes()
 {
    struct server *serv;
-   
+   struct randfd_list *rfds = NULL;
+
    if (!option_bool(OPT_LOOP_DETECT))
      return;
 
@@ -34,22 +35,16 @@ void loop_send_probes()
        {
 	 ssize_t len = loop_make_probe(serv->uid);
 	 int fd;
-	 struct randfd *rfd = NULL;
-	 
-	 if (serv->sfd)
-	   fd = serv->sfd->fd;
-	 else 
-	   {
-	     if (!(rfd = allocate_rfd(serv->addr.sa.sa_family)))
-	       continue;
-	     fd = rfd->fd;
-	   }
+
+	 if ((fd = allocate_rfd(&rfds, serv)) == -1)
+	   continue;
 
 	 while (retry_send(sendto(fd, daemon->packet, len, 0, 
 				  &serv->addr.sa, sa_len(&serv->addr))));
-	 
-	 free_rfd(rfd);
+
        }
+
+   free_rfds(&rfds)
 }
   
 static ssize_t loop_make_probe(u32 uid)
