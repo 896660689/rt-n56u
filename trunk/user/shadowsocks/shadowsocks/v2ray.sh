@@ -95,8 +95,8 @@ v2_tmp_json(){
   "dns": {
     "servers": [
       "1.1.1.1",
+      "8.8.8.8",
       "208.67.220.220",
-      "8.8.4.4",
       "localhost"
     ]
   },
@@ -142,11 +142,16 @@ v2_tmp_json(){
             "users": [
               {
                 "id": "$v2_userid",
-                "alterId": $v2_alterId
+                "alterId": $v2_alterId,
+                "security": "auto"
               }
             ]
           }
         ]
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 8
       },
       "tag": "proxy",
       "streamSettings": {
@@ -163,10 +168,6 @@ v2_tmp_json(){
             "Host": "$v2_domain_name"
           }
         }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 8
       }
     }
   ]
