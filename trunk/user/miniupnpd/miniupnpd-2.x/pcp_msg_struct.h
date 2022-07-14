@@ -1,4 +1,4 @@
-/* $Id: pcp_msg_struct.h,v 1.6 2015/09/22 10:10:54 nanard Exp $ */
+/* $Id: pcp_msg_struct.h,v 1.3 2013/12/16 16:02:19 nanard Exp $ */
 /* MiniUPnP project
  * Website : http://miniupnp.free.fr/
  * Author : Peter Tatrai

@@ -1,7 +1,8 @@
-/* $Id: testupnpdescgen.c,v 1.33 2016/02/16 12:15:02 nanard Exp $ */
-/* MiniUPnP project
+/* $Id: testupnpdescgen.c,v 1.37 2020/11/04 21:02:29 nanard Exp $ */
+/* vim: tabstop=4 shiftwidth=4 noexpandtab
+ * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2016 Thomas Bernard
+ * (c) 2006-2021 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -15,6 +16,7 @@
 
 #include "macros.h"
 #include "config.h"
+#include "upnpglobalvars.h"
 #include "upnpdescgen.h"
 #include "upnpdescstrings.h"
 #include "getifaddr.h"
@@ -33,10 +35,13 @@ char manufacturer_url[] = ROOTDEV_MANUFACTURERURL;
 char model_name[] = ROOTDEV_MODELNAME;
 char model_description[] = ROOTDEV_MODELDESCRIPTION;
 char model_url[] = ROOTDEV_MODELURL;
-#endif
+#endif /* ENABLE_MANUFACTURER_INFO_CONFIGURATION */
+#ifdef RANDOMIZE_URLS
+char random_url[RANDOM_URL_MAX_LEN] = "RANDOM";
+#endif /* RANDOMIZE_URLS */
 unsigned int upnp_configid = 666;
 
-char * use_ext_ip_addr = NULL;
+const char * use_ext_ip_addr = NULL;
 const char * ext_if_name = "eth0";
 
 int runtime_flags = 0;
@@ -47,6 +52,12 @@ int getifaddr(const char * ifname, char * buf, int len, struct in_addr * addr, s
 	UNUSED(addr);
 	UNUSED(mask);
 	strncpy(buf, "1.2.3.4", len);
+	return 0;
+}
+
+int addr_is_reserved(struct in_addr * addr)
+{
+	UNUSED(addr);
 	return 0;
 }
 
@@ -131,13 +142,31 @@ void stupid_test(void)
 int
 main(int argc, char * * argv)
 {
+	int force_igd1 = 0;
 	char * rootDesc;
 	int rootDescLen;
 	char * s;
 	int l;
 	FILE * f;
-	UNUSED(argc);
-	UNUSED(argv);
+
+	for(l = 1; l < argc; l++) {
+		if(0 == strcmp(argv[l], "--help") || 0 == strcmp(argv[l], "-h")) {
+			printf("Usage:\t%s [options]\n", argv[0]);
+			printf("options:\n");
+#ifdef IGD_V2
+			printf("\t--forceigdv1    Force versions of devices to be 1\n");
+#else
+			printf("\tNone\n");
+#endif
+			return 0;
+#ifdef IGD_V2
+		} else if(0 == strcmp(argv[l], "--forceigdv1")) {
+			force_igd1 = 1;
+#endif
+		} else {
+			fprintf(stderr, "unknown option %s\n", argv[l]);
+		}
+	}
 
 	if(mkdir("testdescs", 0777) < 0) {
 		if(errno != EEXIST) {
@@ -145,7 +174,7 @@ main(int argc, char * * argv)
 		}
 	}
 	printf("Root Description :\n");
-	rootDesc = genRootDesc(&rootDescLen);
+	rootDesc = genRootDesc(&rootDescLen, force_igd1);
 	xml_pretty_print(rootDesc, rootDescLen, stdout);
 	f = fopen("testdescs/rootdesc.xml", "w");
 	if(f) {
@@ -155,7 +184,7 @@ main(int argc, char * * argv)
 	free(rootDesc);
 	printf("\n-------------\n");
 	printf("WANIPConnection Description :\n");
-	s = genWANIPCn(&l);
+	s = genWANIPCn(&l, force_igd1);
 	xml_pretty_print(s, l, stdout);
 	f = fopen("testdescs/wanipc_scpd.xml", "w");
 	if(f) {
@@ -165,7 +194,7 @@ main(int argc, char * * argv)
 	free(s);
 	printf("\n-------------\n");
 	printf("WANConfig Description :\n");
-	s = genWANCfg(&l);
+	s = genWANCfg(&l, force_igd1);
 	xml_pretty_print(s, l, stdout);
 	f = fopen("testdescs/wanconfig_scpd.xml", "w");
 	if(f) {
@@ -176,7 +205,7 @@ main(int argc, char * * argv)
 	printf("\n-------------\n");
 #ifdef ENABLE_L3F_SERVICE
 	printf("Layer3Forwarding service :\n");
-	s = genL3F(&l);
+	s = genL3F(&l, force_igd1);
 	xml_pretty_print(s, l, stdout);
 	f = fopen("testdescs/l3f_scpd.xml", "w");
 	if(f) {
@@ -188,7 +217,7 @@ main(int argc, char * * argv)
 #endif
 #ifdef ENABLE_6FC_SERVICE
 	printf("WANIPv6FirewallControl service :\n");
-	s = gen6FC(&l);
+	s = gen6FC(&l, force_igd1);
 	xml_pretty_print(s, l, stdout);
 	f = fopen("testdescs/wanipv6fc_scpd.xml", "w");
 	if(f) {
@@ -200,7 +229,7 @@ main(int argc, char * * argv)
 #endif
 #ifdef ENABLE_DP_SERVICE
 	printf("DeviceProtection service :\n");
-	s = genDP(&l);
+	s = genDP(&l, force_igd1);
 	xml_pretty_print(s, l, stdout);
 	f = fopen("testdescs/dp_scpd.xml", "w");
 	if(f) {

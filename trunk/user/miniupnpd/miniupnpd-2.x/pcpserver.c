@@ -1,6 +1,7 @@
-/* $Id: pcpserver.c,v 1.44 2016/01/19 10:03:29 nanard Exp $ */
-/* MiniUPnP project
- * Website : http://miniupnp.free.fr/
+/* $Id: pcpserver.c,v 1.51 2019/05/21 08:39:44 nanard Exp $ */
+/* vim: tabstop=4 shiftwidth=4 noexpandtab
+ * MiniUPnP project
+ * Website : http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * Author : Peter Tatrai
 
 Copyright (c) 2013 by Cisco Systems, Inc.
@@ -35,7 +36,7 @@ POSSIBILITY OF SUCH DAMAGE.
    - IPv6 is always firewalled (this may need some work, NAT6* do exist)
 
    - we make the judgement based on (in order, picking first one available):
-     - third party adress
+     - third party address
      - internal client address
 
    TODO : handle NAT46, NAT64, NPT66. In addition, beyond FW/NAT
@@ -101,8 +102,7 @@ struct pcp_server_info {
 };
 
 /* default server settings, highest version supported is the default */
-static struct pcp_server_info this_server_info = {2};
-
+static const struct pcp_server_info this_server_info = {2};
 
 /* structure holding information from PCP msg*/
 /* all variables are in host byte order except IP addresses */
@@ -591,6 +591,17 @@ static int CheckExternalAddress(pcp_info_t* pcp_msg_info)
 				pcp_msg_info->result_code = PCP_ERR_NETWORK_FAILURE;
 				return -1;
 			}
+#ifdef ENABLE_IPV6
+		} else if ((af == AF_INET6) && (ext_if_name6 != ext_if_name)) {
+			if(!ext_if_name6 || ext_if_name6[0]=='\0') {
+				pcp_msg_info->result_code = PCP_ERR_NETWORK_FAILURE;
+				return -1;
+			}
+			if(getifaddr_in6(ext_if_name6, af, &external_addr) < 0) {
+				pcp_msg_info->result_code = PCP_ERR_NETWORK_FAILURE;
+				return -1;
+			}
+#endif
 		} else {
 			if(!ext_if_name || ext_if_name[0]=='\0') {
 				pcp_msg_info->result_code = PCP_ERR_NETWORK_FAILURE;
@@ -685,8 +696,9 @@ static int CreatePCPPeer_NAT(pcp_info_t *pcp_msg_info)
 	uint16_t eport = pcp_msg_info->ext_port;  /* public port */
 
 	char peerip_s[INET6_ADDRSTRLEN], extip_s[INET6_ADDRSTRLEN];
-	time_t timestamp = time(NULL) + pcp_msg_info->lifetime;
+	time_t timestamp = upnp_time() + pcp_msg_info->lifetime;
 	int r;
+	const char * ext_if = ext_if_name;
 
 	FillSA((struct sockaddr*)&intip, pcp_msg_info->mapped_ip,
 	       pcp_msg_info->int_port);
@@ -719,9 +731,14 @@ static int CreatePCPPeer_NAT(pcp_info_t *pcp_msg_info)
 		eport = pcp_msg_info->int_port;
 	}
 
+#ifdef ENABLE_IPV6
+	if (ret_extip.ss_family == AF_INET6) {
+		ext_if = ext_if_name6;
+	}
+#endif
 #ifdef PCP_FLOWP
 	if (pcp_msg_info->flowp_present && pcp_msg_info->dscp_up) {
-		if (add_peer_dscp_rule2(ext_if_name, peerip_s,
+		if (add_peer_dscp_rule2(ext_if, peerip_s,
 					pcp_msg_info->peer_port, pcp_msg_info->dscp_up,
 					pcp_msg_info->mapped_str, pcp_msg_info->int_port,
 					proto, pcp_msg_info->desc, timestamp) < 0 ) {
@@ -736,7 +753,7 @@ static int CreatePCPPeer_NAT(pcp_info_t *pcp_msg_info)
 	}
 
 	if (pcp_msg_info->flowp_present && pcp_msg_info->dscp_down) {
-		if (add_peer_dscp_rule2(ext_if_name,  pcp_msg_info->mapped_str,
+		if (add_peer_dscp_rule2(ext_if,  pcp_msg_info->mapped_str,
 					pcp_msg_info->int_port, pcp_msg_info->dscp_down,
 					peerip_s, pcp_msg_info->peer_port, proto, pcp_msg_info->desc, timestamp)
 		    < 0 ) {
@@ -752,7 +769,7 @@ static int CreatePCPPeer_NAT(pcp_info_t *pcp_msg_info)
 	}
 #endif
 
-	r = add_peer_redirect_rule2(ext_if_name,
+	r = add_peer_redirect_rule2(ext_if,
 				    peerip_s,
 				    pcp_msg_info->peer_port,
 				    extip_s,
@@ -891,7 +908,7 @@ static int CreatePCPMap_NAT(pcp_info_t *pcp_msg_info)
 	char iaddr_old[INET6_ADDRSTRLEN];
 	uint16_t iport_old, eport_first = 0;
 	int any_eport_allowed = 0;
-	unsigned int timestamp = time(NULL) + pcp_msg_info->lifetime;
+	unsigned int timestamp = upnp_time() + pcp_msg_info->lifetime;
 
 	if (pcp_msg_info->ext_port == 0) {
 		pcp_msg_info->ext_port = pcp_msg_info->int_port;
@@ -1435,7 +1452,7 @@ static int processPCPRequest(void * req, int req_size, pcp_info_t *pcp_msg_info)
 }
 
 
-static void createPCPResponse(unsigned char *response, pcp_info_t *pcp_msg_info)
+static void createPCPResponse(unsigned char *response, const pcp_info_t *pcp_msg_info)
 {
 	response[2] = 0;	/* reserved */
 	memset(response + 12, 0, 12);	/* reserved */
@@ -1446,9 +1463,12 @@ static void createPCPResponse(unsigned char *response, pcp_info_t *pcp_msg_info)
 		response[0] = pcp_msg_info->version;
 	}
 
-	response[1] |= 0x80;	/* r_opcode */
+	response[1] = pcp_msg_info->opcode | 0x80;	/* r_opcode */
 	response[3] = pcp_msg_info->result_code;
-	WRITENU32(response + 8, time(NULL) - startup_time); /* epochtime */
+	if(epoch_origin == 0) {
+		epoch_origin = startup_time;
+	}
+	WRITENU32(response + 8, upnp_time() - epoch_origin); /* epochtime */
 	switch (pcp_msg_info->result_code) {
 	/*long lifetime errors*/
 	case PCP_ERR_UNSUPP_VERSION:
@@ -1560,7 +1580,7 @@ int ProcessIncomingPCPPacket(int s, unsigned char *buff, int len,
 	if (!GETFLAG(PCP_ALLOWTHIRDPARTYMASK)) {
 		lan_addr = get_lan_for_peer(senderaddr);
 		if(lan_addr == NULL) {
-			syslog(LOG_DEBUG, "PCP packet sender %s not from a LAN, ignoring",
+			syslog(LOG_WARNING, "PCP packet sender %s not from a LAN, ignoring",
 			       addr_str);
 			return 0;
 		}
@@ -1580,7 +1600,7 @@ int ProcessIncomingPCPPacket(int s, unsigned char *buff, int len,
 		                  sizeof(struct sockaddr_in6),
 		           receiveraddr);
 		if( len < 0 ) {
-			syslog(LOG_DEBUG, "sendto(pcpserver): %m");
+			syslog(LOG_ERR, "sendto(pcpserver): %m");
 		}
 	}
 
@@ -1633,4 +1653,71 @@ int OpenAndConfPCPv6Socket(void)
 	return s;
 }
 #endif /*ENABLE_IPV6*/
+
+#ifdef ENABLE_IPV6
+void PCPSendUnsolicitedAnnounce(int * sockets, int n_sockets, int socket6)
+#else /* IPv4 only */
+void PCPSendUnsolicitedAnnounce(int * sockets, int n_sockets)
+#endif
+{
+	int i;
+	unsigned char buff[PCP_MIN_LEN];
+	pcp_info_t info;
+	ssize_t len;
+	struct sockaddr_in addr;
+#ifdef ENABLE_IPV6
+	struct sockaddr_in6 addr6;
+#endif /* ENABLE_IPV6 */
+	/* this is an Unsolicited ANNOUNCE response */
+
+	info.version = this_server_info.server_version;
+	info.opcode = PCP_OPCODE_ANNOUNCE;
+	info.result_code = PCP_SUCCESS;
+	info.lifetime = 0;
+	createPCPResponse(buff, &info);
+	/* Multicast PCP restart announcements are sent to
+	 * 224.0.0.1:5350 and/or [ff02::1]:5350 */
+	memset(&addr, 0, sizeof(struct sockaddr_in));
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = inet_addr("224.0.0.1");
+	addr.sin_port = htons(5350);
+	for(i = 0; i < n_sockets; i++) {
+		if (sockets[i] < 0) {
+			continue;
+		}
+		len = sendto_or_schedule(sockets[i], buff, PCP_MIN_LEN, 0, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
+		if( len < 0 ) {
+			syslog(LOG_ERR, "PCPSendUnsolicitedAnnounce(sockets[%d]) sendto(): %m", i);
+		}
+	}
+#ifdef ENABLE_IPV6
+	if (socket6 >= 0) {
+		memset(&addr6, 0, sizeof(struct sockaddr_in6));
+		addr6.sin6_family = AF_INET6;
+		inet_pton(AF_INET6, "FF02::1", &(addr6.sin6_addr));
+		addr6.sin6_port = htons(5350);
+		len = sendto_or_schedule(socket6, buff, PCP_MIN_LEN, 0, (struct sockaddr *)&addr6, sizeof(struct sockaddr_in6));
+		if( len < 0 ) {
+			syslog(LOG_ERR, "PCPSendUnsolicitedAnnounce() IPv6 sendto(): %m");
+		}
+	}
+#endif /* ENABLE_IPV6 */
+}
+
+#ifdef ENABLE_IPV6
+void PCPPublicAddressChanged(int * sockets, int n_sockets, int socket6)
+#else /* IPv4 only */
+void PCPPublicAddressChanged(int * sockets, int n_sockets)
+#endif
+{
+	/* according to RFC 6887  8.5 :
+	 *   if the external IP address(es) of the NAT (controlled by
+	 *   the PCP server) changes, the Epoch time MUST be reset. */
+	epoch_origin = upnp_time();
+#ifdef ENABLE_IPV6
+	PCPSendUnsolicitedAnnounce(sockets, n_sockets, socket6);
+#else /* IPv4 Only */
+	PCPSendUnsolicitedAnnounce(sockets, n_sockets);
+#endif
+}
 #endif /*ENABLE_PCP*/

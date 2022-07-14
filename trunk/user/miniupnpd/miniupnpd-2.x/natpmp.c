@@ -1,6 +1,6 @@
-/* $Id: natpmp.c,v 1.53 2015/09/22 10:10:54 nanard Exp $ */
+/* $Id: natpmp.c,v 1.57 2019/09/24 11:48:01 nanard Exp $ */
 /* MiniUPnP project
- * (c) 2007-2015 Thomas Bernard
+ * (c) 2007-2019 Thomas Bernard
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
@@ -94,6 +94,7 @@ error:
 static void FillPublicAddressResponse(unsigned char * resp, in_addr_t senderaddr)
 {
 #ifndef MULTIPLE_EXTERNAL_IP
+	struct in_addr addr;
 	char tmp[16];
 	UNUSED(senderaddr);
 
@@ -103,10 +104,13 @@ static void FillPublicAddressResponse(unsigned char * resp, in_addr_t senderaddr
 		if(!ext_if_name || ext_if_name[0]=='\0') {
 			resp[3] = 3;	/* Network Failure (e.g. NAT box itself
 			                 * has not obtained a DHCP lease) */
-		} else if(getifaddr(ext_if_name, tmp, INET_ADDRSTRLEN, NULL, NULL) < 0) {
-			syslog(LOG_DEBUG, "Failed to get IP for interface %s", ext_if_name);
+		} else if(getifaddr(ext_if_name, tmp, INET_ADDRSTRLEN, &addr, NULL) < 0) {
+			syslog(LOG_ERR, "Failed to get IP for interface %s", ext_if_name);
 			resp[3] = 3;	/* Network Failure (e.g. NAT box itself
 			                 * has not obtained a DHCP lease) */
+		} else if (addr_is_reserved(&addr)) {
+			resp[3] = 3;	/* Network Failure, box has not obtained
+			                   public IP address */
 		} else {
 			inet_pton(AF_INET, tmp, resp+8); /* ok */
 		}
@@ -244,7 +248,10 @@ void ProcessIncomingNATPMPPacket(int s, unsigned char *msg_buff, int len,
 	/* setting response TIME STAMP :
 	 * time elapsed since its port mapping table was initialized on
 	 * startup or reset for any other reason */
-	WRITENU32(resp+4, time(NULL) - startup_time);
+	if(epoch_origin == 0) {
+		epoch_origin = startup_time;
+	}
+	WRITENU32(resp+4, upnp_time() - epoch_origin);
 	if(req[0] > 0) {
 		/* invalid version */
 		syslog(LOG_WARNING, "unsupported NAT-PMP version : %u",
@@ -306,7 +313,7 @@ void ProcessIncomingNATPMPPacket(int s, unsigned char *msg_buff, int len,
 						if((iport == 0) || ((iport == iport2) && (proto == proto2))) {
 							r = _upnp_delete_redir(eport2, proto2);
 							if(r < 0) {
-								syslog(LOG_DEBUG, "Failed to remove NAT-PMP mapping eport %hu, protocol %s",
+								syslog(LOG_ERR, "Failed to remove NAT-PMP mapping eport %hu, protocol %s",
 								       eport2, (proto2==IPPROTO_TCP)?"TCP":"UDP");
 								resp[3] = 2;	/* Not Authorized/Refused */
 								break;
@@ -379,20 +386,14 @@ void ProcessIncomingNATPMPPacket(int s, unsigned char *msg_buff, int len,
 						}
 					}
 					/* do the redirection */
-#if 0
-					timestamp = (unsigned)(time(NULL) - startup_time)
-					                      + lifetime;
-					snprintf(desc, sizeof(desc), "NAT-PMP %u", timestamp);
-#else
-					timestamp = time(NULL) + lifetime;
+					timestamp = upnp_time() + lifetime;
 					snprintf(desc, sizeof(desc), "NAT-PMP %hu %s",
 					         eport, (proto==IPPROTO_TCP)?"tcp":"udp");
-#endif
 					/* TODO : check return code */
 					if(upnp_redirect_internal(NULL, eport, senderaddrstr,
 					                          iport, proto, desc,
 					                          timestamp) < 0) {
-						syslog(LOG_DEBUG, "Failed to add NAT-PMP %hu %s->%s:%hu '%s'",
+						syslog(LOG_ERR, "Failed to add NAT-PMP %hu %s->%s:%hu '%s'",
 						       eport, (proto==IPPROTO_TCP)?"tcp":"udp", senderaddrstr, iport, desc);
 						resp[3] = 3;  /* Failure */
 					}
@@ -411,7 +412,7 @@ void ProcessIncomingNATPMPPacket(int s, unsigned char *msg_buff, int len,
 	n = sendto_or_schedule(s, resp, resplen, 0,
 	           (struct sockaddr *)senderaddr, sizeof(*senderaddr));
 	if(n<0) {
-		syslog(LOG_DEBUG, "sendto(natpmp): %m");
+		syslog(LOG_ERR, "sendto(natpmp): %m");
 	} else if(n<resplen) {
 		syslog(LOG_ERR, "sendto(natpmp): sent only %d bytes out of %d",
 		       n, resplen);
@@ -433,7 +434,10 @@ void SendNATPMPPublicAddressChangeNotification(int * sockets, int n_sockets)
 	/* seconds since "start of epoch" :
 	 * time elapsed since the port mapping table was initialized on
 	 * startup or reset for any other reason */
-	WRITENU32(notif+4, time(NULL) - startup_time);
+	if(epoch_origin == 0) {
+		epoch_origin = startup_time;
+	}
+	WRITENU32(notif+4, upnp_time() - epoch_origin);
 #ifndef MULTIPLE_EXTERNAL_IP
 	FillPublicAddressResponse(notif, 0);
 	if(notif[3])
@@ -466,8 +470,8 @@ void SendNATPMPPublicAddressChangeNotification(int * sockets, int n_sockets)
 		           (struct sockaddr *)&sockname, sizeof(struct sockaddr_in));
 		if(n < 0)
 		{
-			syslog(LOG_ERR, "%s: sendto(s_udp=%d): %m",
-			       "SendNATPMPPublicAddressChangeNotification", sockets[j]);
+			syslog(LOG_ERR, "%s: sendto(s_udp=%d, port=%d): %m",
+			       "SendNATPMPPublicAddressChangeNotification", sockets[j], NATPMP_PORT);
 			return;
 		}
 		/* Port to use in 2008 version of the NAT-PMP specification */
@@ -476,8 +480,8 @@ void SendNATPMPPublicAddressChangeNotification(int * sockets, int n_sockets)
 		           (struct sockaddr *)&sockname, sizeof(struct sockaddr_in));
 		if(n < 0)
 		{
-			syslog(LOG_ERR, "%s: sendto(s_udp=%d): %m",
-			       "SendNATPMPPublicAddressChangeNotification", sockets[j]);
+			syslog(LOG_ERR, "%s: sendto(s_udp=%d, port=%d): %m",
+			       "SendNATPMPPublicAddressChangeNotification", sockets[j], NATPMP_NOTIF_PORT);
 			return;
 		}
 	}

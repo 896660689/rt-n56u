@@ -1,7 +1,8 @@
-/* $Id: upnpglobalvars.c,v 1.40 2016/02/09 09:37:44 nanard Exp $ */
-/* MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2016 Thomas Bernard
+/* $Id: upnpglobalvars.c,v 1.47 2021/05/21 22:03:38 nanard Exp $ */
+/* vim: tabstop=4 shiftwidth=4 noexpandtab
+ * MiniUPnP project
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
+ * (c) 2006-2021 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -15,20 +16,41 @@
 /* network interface for internet */
 const char * ext_if_name = 0;
 
+#ifdef ENABLE_IPV6
+/* network interface for internet - IPv6 */
+const char * ext_if_name6 = 0;
+#endif
+
+/* stun host/port configuration */
+const char * ext_stun_host = 0;
+uint16_t ext_stun_port = 0;
+
 /* file to store leases */
 #ifdef ENABLE_LEASEFILE
 const char* lease_file = 0;
+#ifdef ENABLE_UPNPPINHOLE
+const char* lease_file6 = 0;
+#endif
 #endif
 
 /* forced ip address to use for this interface
  * when NULL, getifaddr() is used */
 const char * use_ext_ip_addr = 0;
 
+/* disallow all port forwarding requests when
+ * we are behind restrictive nat */
+int disable_port_forwarding = 0;
+
 unsigned long downstream_bitrate = 0;
 unsigned long upstream_bitrate = 0;
 
 /* startup time */
 time_t startup_time = 0;
+
+#if defined(ENABLE_NATPMP) || defined(ENABLE_PCP)
+/* origin for "epoch time" sent into NATPMP and PCP responses */
+time_t epoch_origin = 0;
+#endif /*  defined(ENABLE_NATPMP) || defined(ENABLE_PCP) */
 
 #ifdef ENABLE_PCP
 /* for PCP */
@@ -90,29 +112,6 @@ const char * queue = 0;
 const char * tag = 0;
 #endif
 
-#ifdef USE_NETFILTER
-/* chain names to use in the nat and filter tables. */
-
-/* iptables -t nat -N MINIUPNPD
- * iptables -t nat -A PREROUTING -i <ext_if_name> -j MINIUPNPD */
-const char * miniupnpd_nat_chain = "upnp";
-
-/* iptables -t nat -N MINIUPNPD-POSTROUTING
- * iptables -t nat -A POSTROUTING -o <ext_if_name> -j MINIUPNPD-POSTROUTING */
-const char * miniupnpd_nat_postrouting_chain = "upnp-post";
-
-/* iptables -t filter -N MINIUPNPD
- * iptables -t filter -A FORWARD -i <ext_if_name> ! -o <ext_if_name> -j MINIUPNPD */
-const char * miniupnpd_forward_chain = "upnp";
-
-#ifdef ENABLE_UPNPPINHOLE
-/* ip6tables -t filter -N MINIUPNPD
- * ip6tables -t filter -A FORWARD -i <ext_if_name> ! -o <ext_if_name> -j MINIUPNPD */
-const char * miniupnpd_v6_filter_chain = "upnp";
-#endif /* ENABLE_UPNPPINHOLE */
-
-#endif /* USE_NETFILTER */
-
 #ifdef ENABLE_NFQUEUE
 int nfqueue = -1;
 int n_nfqix = 0;
@@ -158,3 +157,10 @@ unsigned int upnp_bootid = 1;      /* BOOTID.UPNP.ORG */
  * SCPD = Service Control Protocol Description */
 unsigned int upnp_configid = 1337; /* CONFIGID.UPNP.ORG */
 
+#ifdef RANDOMIZE_URLS
+char random_url[RANDOM_URL_MAX_LEN] = "random";
+#endif /* RANDOMIZE_URLS */
+
+#ifdef DYNAMIC_OS_VERSION
+char * os_version = NULL;
+#endif /* DYNAMIC_OS_VERSION */

@@ -1,7 +1,8 @@
-/* $Id: upnpglobalvars.h,v 1.42 2016/02/09 09:37:44 nanard Exp $ */
-/* MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2016 Thomas Bernard
+/* $Id: upnpglobalvars.h,v 1.51 2021/05/21 22:03:38 nanard Exp $ */
+/* vim: tabstop=4 shiftwidth=4 noexpandtab
+ * MiniUPnP project
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
+ * (c) 2006-2021 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -13,17 +14,33 @@
 #include "miniupnpdtypes.h"
 #include "config.h"
 
-/* name of the network interface used to acces internet */
+/* name of the network interface used to access internet */
 extern const char * ext_if_name;
+
+#ifdef ENABLE_IPV6
+/* name of the network interface used to access internet - for IPv6*/
+extern const char * ext_if_name6;
+#endif
+
+/* stun host/port configuration */
+extern const char * ext_stun_host;
+extern uint16_t ext_stun_port;
 
 /* file to store all leases */
 #ifdef ENABLE_LEASEFILE
 extern const char * lease_file;
+#ifdef ENABLE_UPNPPINHOLE
+extern const char * lease_file6;
+#endif
 #endif
 
 /* forced ip address to use for this interface
  * when NULL, getifaddr() is used */
 extern const char * use_ext_ip_addr;
+
+/* disallow all port forwarding requests when
+ * we are behind restrictive nat */
+extern int disable_port_forwarding;
 
 /* parameters to return to upnp client when asked */
 extern unsigned long downstream_bitrate;
@@ -31,6 +48,10 @@ extern unsigned long upstream_bitrate;
 
 /* statup time */
 extern time_t startup_time;
+#if defined(ENABLE_NATPMP) || defined(ENABLE_PCP)
+/* origin for "epoch time" sent into NATPMP and PCP responses */
+extern time_t epoch_origin;
+#endif /*  defined(ENABLE_NATPMP) || defined(ENABLE_PCP) */
 
 extern unsigned long int min_lifetime;
 extern unsigned long int max_lifetime;
@@ -60,6 +81,11 @@ extern int runtime_flags;
 #ifdef ENABLE_PCP
 #define PCP_ALLOWTHIRDPARTYMASK	0x0400
 #endif
+#ifdef IGD_V2
+#define FORCEIGDDESCV1MASK 0x0800
+#endif
+
+#define PERFORMSTUNMASK    0x1000
 
 #define SETFLAG(mask)	runtime_flags |= mask
 #define GETFLAG(mask)	(runtime_flags & mask)
@@ -119,15 +145,6 @@ extern const char * queue;
 extern const char * tag;
 #endif
 
-#ifdef USE_NETFILTER
-extern const char * miniupnpd_nat_chain;
-extern const char * miniupnpd_nat_postrouting_chain;
-extern const char * miniupnpd_forward_chain;
-#ifdef ENABLE_UPNPPINHOLE
-extern const char * miniupnpd_v6_filter_chain;
-#endif
-#endif
-
 #ifdef ENABLE_NFQUEUE
 extern int nfqueue;
 extern int n_nfqix;
@@ -144,7 +161,7 @@ extern char ipv6_addr_for_http_with_brackets[64];
 /* address used to bind local services */
 extern struct in6_addr ipv6_bind_addr;
 
-#endif
+#endif /* ENABLE_IPV6 */
 
 extern const char * minissdpdsocketpath;
 
@@ -152,5 +169,13 @@ extern const char * minissdpdsocketpath;
 extern unsigned int upnp_bootid;
 extern unsigned int upnp_configid;
 
+#ifdef RANDOMIZE_URLS
+#define RANDOM_URL_MAX_LEN (16)
+extern char random_url[];
+#endif /* RANDOMIZE_URLS */
+
+#ifdef DYNAMIC_OS_VERSION
+extern char * os_version;
 #endif
 
+#endif /* UPNPGLOBALVARS_H_INCLUDED */

@@ -1,14 +1,15 @@
-/* $Id: upnpdescgen.c,v 1.82 2016/02/16 12:15:02 nanard Exp $ */
-/* vim: tabstop=4 shiftwidth=4 noexpandtab */
-/* MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2016 Thomas Bernard
+/* $Id: upnpdescgen.c,v 1.87 2020/05/30 09:05:46 nanard Exp $ */
+/* vim: tabstop=4 shiftwidth=4 noexpandtab
+ * MiniUPnP project
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
+ * (c) 2006-2021 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <syslog.h>
 
 #include "config.h"
 #ifdef ENABLE_EVENTS
@@ -535,16 +536,6 @@ static const struct stateVar WANIPCnVars[] =
 	{"PortMappingEnabled", 1, 0}, /* Required */
 /* 10 */
 	{"PortMappingLeaseDuration", 3, 2, 1}, /* required */
-	/* TODO : for IGD v2 :
-	 * <stateVariable sendEvents="no">
-	 *   <name>PortMappingLeaseDuration</name>
-	 *   <dataType>ui4</dataType>
-	 *   <defaultValue>Vendor-defined</defaultValue>
-	 *   <allowedValueRange>
-	 *      <minimum>0</minimum>
-	 *      <maximum>604800</maximum>
-	 *   </allowedValueRange>
-	 * </stateVariable> */
 	{"RemoteHost", 0, 0},   /* required. Default : empty string */
 	{"ExternalPort", 2, 0}, /* required */
 	{"InternalPort", 2, 0, 3}, /* required */
@@ -826,7 +817,10 @@ strcat_str(char * str, int * len, int * tmplen, const char * s2)
 			newlen = *tmplen + s2len + 1;
 		p = (char *)realloc(str, newlen);
 		if(p == NULL) /* handle a failure of realloc() */
+		{
+			syslog(LOG_ERR, "strcat_str: Failed to realloc %d bytes", newlen);
 			return str;
+		}
 		str = p;
 		*tmplen = newlen;
 	}
@@ -850,6 +844,7 @@ strcat_char(char * str, int * len, int * tmplen, char c)
 		p = (char *)realloc(str, *tmplen);
 		if(p == NULL) /* handle a failure of realloc() */
 		{
+			syslog(LOG_ERR, "strcat_char: Failed to realloc %d bytes", *tmplen);
 			*tmplen -= 256;
 			return str;
 		}
@@ -892,10 +887,11 @@ strcat_int(char * str, int * len, int * tmplen, int i)
  * This way, the progam stack usage is kept low */
 static char *
 genXML(char * str, int * len, int * tmplen,
-                   const struct XMLElt * p)
+                   const struct XMLElt * p,
+       int force_igd1)
 {
+#define GENXML_STACK_SIZE 16
 	unsigned short i, j;
-	unsigned long k;
 	int top;
 	const char * eltname, *s;
 	char c;
@@ -903,7 +899,7 @@ genXML(char * str, int * len, int * tmplen,
 		unsigned short i;
 		unsigned short j;
 		const char * eltname;
-	} pile[16]; /* stack */
+	} pile[GENXML_STACK_SIZE]; /* stack */
 	top = -1;
 	i = 0;	/* current node */
 	j = 1;	/* i + number of nodes*/
@@ -914,17 +910,40 @@ genXML(char * str, int * len, int * tmplen,
 			return str;
 		if(eltname[0] == '/')
 		{
+			/* leaf node */
 			if(p[i].data && p[i].data[0])
 			{
 				/*printf("<%s>%s<%s>\n", eltname+1, p[i].data, eltname); */
 				str = strcat_char(str, len, tmplen, '<');
 				str = strcat_str(str, len, tmplen, eltname+1);
 				str = strcat_char(str, len, tmplen, '>');
+#ifdef RANDOMIZE_URLS
+				if(p[i].data[0] == '/')
+				{
+					/* prepend all URL paths with a "random" value */
+					str = strcat_char(str, len, tmplen, '/');
+					str = strcat_str(str, len, tmplen, random_url);
+				}
+#endif /* RANDOMIZE_URLS */
 				str = strcat_str(str, len, tmplen, p[i].data);
+#ifdef IGD_V2
+				/* checking a single 'u' saves us 4 strcmp() calls most of the time */
+				if (force_igd1 && (p[i].data[0] == 'u'))
+				{
+					if ((strcmp(p[i].data, DEVICE_TYPE_IGD) == 0) ||
+						(strcmp(p[i].data, DEVICE_TYPE_WAN) == 0)  ||
+						(strcmp(p[i].data, DEVICE_TYPE_WANC) == 0) ||
+						(strcmp(p[i].data, SERVICE_TYPE_WANIPC) == 0) )
+					{
+						str[*len - 1] = '1';	/* Change the version number to 1 */
+					}
+				}
+#endif
 				str = strcat_char(str, len, tmplen, '<');
 				str = strcat_str(str, len, tmplen, eltname);
 				str = strcat_char(str, len, tmplen, '>');
 			}
+unstack:
 			for(;;)
 			{
 				if(top < 0)
@@ -949,6 +968,16 @@ genXML(char * str, int * len, int * tmplen,
 		}
 		else
 		{
+			unsigned long k = (unsigned long)p[i].data;
+#ifdef IGD_V2
+			if((force_igd1 && (p[k & 0xffff].eltname[0] == '/')) &&
+			   (strcmp(p[k & 0xffff].data, "urn:schemas-upnp-org:service:DeviceProtection:1") == 0 ||
+			    strcmp(p[k & 0xffff].data, "urn:schemas-upnp-org:service:WANIPv6FirewallControl:1") == 0)) {
+				/* Skip the child element */
+				goto unstack;
+			}
+#endif
+			/* node with child(ren) */
 			/*printf("<%s>\n", eltname); */
 			str = strcat_char(str, len, tmplen, '<');
 			str = strcat_str(str, len, tmplen, eltname);
@@ -960,14 +989,19 @@ genXML(char * str, int * len, int * tmplen,
 				str = strcat_str(str, len, tmplen, configid_str);
 			}
 			str = strcat_char(str, len, tmplen, '>');
-			k = (unsigned long)p[i].data;
 			i = k & 0xffff;
 			j = i + (k >> 16);
-			top++;
-			/*printf(" +pile[%d]\t%d %d\n", top, i, j); */
-			pile[top].i = i;
-			pile[top].j = j;
-			pile[top].eltname = eltname;
+			if(top < (GENXML_STACK_SIZE - 1)) {
+				top++;
+				/*printf(" +pile[%d]\t%d %d\n", top, i, j); */
+				pile[top].i = i;
+				pile[top].j = j;
+				pile[top].eltname = eltname;
+#ifdef DEBUG
+			} else {
+				fprintf(stderr, "*** GenXML(): stack OVERFLOW ***\n");
+#endif /* DEBUG */
+			}
 		}
 	}
 }
@@ -978,7 +1012,7 @@ genXML(char * str, int * len, int * tmplen,
  *   the returned string.
  * - tmp_uuid argument is used to build the uuid string */
 char *
-genRootDesc(int * len)
+genRootDesc(int * len, int force_igd1)
 {
 	char * str;
 	int tmplen;
@@ -989,7 +1023,7 @@ genRootDesc(int * len)
 	* len = strlen(xmlver);
 	/*strcpy(str, xmlver); */
 	memcpy(str, xmlver, *len + 1);
-	str = genXML(str, len, &tmplen, rootDesc);
+	str = genXML(str, len, &tmplen, rootDesc, force_igd1);
 	str[*len] = '\0';
 	return str;
 }
@@ -998,13 +1032,12 @@ genRootDesc(int * len)
  * Generate service description with allowed methods and
  * related variables. */
 static char *
-genServiceDesc(int * len, const struct serviceDesc * s)
+genServiceDesc(int * len, const struct serviceDesc * s, int force_igd1)
 {
 	int i, j;
 	const struct action * acts;
 	const struct stateVar * vars;
 	const struct argument * args;
-	const char * p;
 	char * str;
 	int tmplen;
 	tmplen = 2048;
@@ -1030,6 +1063,12 @@ genServiceDesc(int * len, const struct serviceDesc * s)
 	str = strcat_str(str, len, &tmplen, "<actionList>");
 	while(acts[i].name)
 	{
+#if defined(IGD_V2)
+		/* fake a IGD v1 for Microsoft clients :
+		 * no DeletePortMappingRange, GetListOfPortMappings, AddAnyPortMapping */
+		if (force_igd1 && strcmp(acts[i].name, "DeletePortMappingRange") == 0)
+			break;
+#endif
 		str = strcat_str(str, len, &tmplen, "<action><name>");
 		str = strcat_str(str, len, &tmplen, acts[i].name);
 		str = strcat_str(str, len, &tmplen, "</name>");
@@ -1041,17 +1080,20 @@ genServiceDesc(int * len, const struct serviceDesc * s)
 			j = 0;
 			while(args[j].dir)
 			{
+				const char * p;
+				size_t plen;
 				str = strcat_str(str, len, &tmplen, "<argument><name>");
 				if((args[j].dir & 0x80) == 0) {
 					str = strcat_str(str, len, &tmplen, "New");
 				}
 				p = vars[args[j].relatedVar].name;
+				plen = strlen(p);
 				if(args[j].dir & 0x7c) {
 					/* use magic values ... */
 					str = strcat_str(str, len, &tmplen, magicargname[(args[j].dir & 0x7c) >> 2]);
-				} else if(0 == memcmp(p, "PortMapping", 11)
-				   && 0 != memcmp(p + 11, "Description", 11)) {
-					if(0 == memcmp(p + 11, "NumberOfEntries", 15)) {
+				} else if(plen >= 11 && 0 == memcmp(p, "PortMapping", 11)
+				   && (plen < 22 || 0 != memcmp(p + 11, "Description", 11))) {
+					if(plen >= (11+15) && 0 == memcmp(p + 11, "NumberOfEntries", 15)) {
 						/* PortMappingNumberOfEntries */
 #ifdef IGD_V2
 						if(0 == memcmp(acts[i].name, "GetListOfPortMappings", 22)) {
@@ -1069,9 +1111,9 @@ genServiceDesc(int * len, const struct serviceDesc * s)
 						str = strcat_str(str, len, &tmplen, p + 11);
 					}
 #ifdef IGD_V2
-				} else if(0 == memcmp(p, "A_ARG_TYPE_", 11)) {
+				} else if(plen >= 11 && 0 == memcmp(p, "A_ARG_TYPE_", 11)) {
 					str = strcat_str(str, len, &tmplen, p + 11);
-				} else if(0 == memcmp(p, "ExternalPort", 13)
+				} else if(plen >= 13 && 0 == memcmp(p, "ExternalPort", 13)
 				          && args[j].dir == 2
 				          && 0 == memcmp(acts[i].name, "AddAnyPortMapping", 18)) {
 					str = strcat_str(str, len, &tmplen, "ReservedPort");
@@ -1154,40 +1196,40 @@ genServiceDesc(int * len, const struct serviceDesc * s)
 /* genWANIPCn() :
  * Generate the WANIPConnection xml description */
 char *
-genWANIPCn(int * len)
+genWANIPCn(int * len, int force_igd1)
 {
-	return genServiceDesc(len, &scpdWANIPCn);
+	return genServiceDesc(len, &scpdWANIPCn, force_igd1);
 }
 
 /* genWANCfg() :
  * Generate the WANInterfaceConfig xml description. */
 char *
-genWANCfg(int * len)
+genWANCfg(int * len, int force_igd1)
 {
-	return genServiceDesc(len, &scpdWANCfg);
+	return genServiceDesc(len, &scpdWANCfg, force_igd1);
 }
 
 #ifdef ENABLE_L3F_SERVICE
 char *
-genL3F(int * len)
+genL3F(int * len, int force_igd1)
 {
-	return genServiceDesc(len, &scpdL3F);
+	return genServiceDesc(len, &scpdL3F, force_igd1);
 }
 #endif
 
 #ifdef ENABLE_6FC_SERVICE
 char *
-gen6FC(int * len)
+gen6FC(int * len, int force_igd1)
 {
-	return genServiceDesc(len, &scpd6FC);
+	return genServiceDesc(len, &scpd6FC, force_igd1);
 }
 #endif
 
 #ifdef ENABLE_DP_SERVICE
 char *
-genDP(int * len)
+genDP(int * len, int force_igd1)
 {
-	return genServiceDesc(len, &scpdDP);
+	return genServiceDesc(len, &scpdDP, force_igd1);
 }
 #endif
 
@@ -1261,8 +1303,9 @@ genEventVars(int * len, const struct serviceDesc * s)
 				if(use_ext_ip_addr)
 					str = strcat_str(str, len, &tmplen, use_ext_ip_addr);
 				else {
+					struct in_addr addr;
 					char ext_ip_addr[INET_ADDRSTRLEN];
-					if(getifaddr(ext_if_name, ext_ip_addr, INET_ADDRSTRLEN, NULL, NULL) < 0) {
+					if(getifaddr(ext_if_name, ext_ip_addr, INET_ADDRSTRLEN, &addr, NULL) < 0 || addr_is_reserved(&addr)) {
 						str = strcat_str(str, len, &tmplen, "0.0.0.0");
 					} else {
 						str = strcat_str(str, len, &tmplen, ext_ip_addr);

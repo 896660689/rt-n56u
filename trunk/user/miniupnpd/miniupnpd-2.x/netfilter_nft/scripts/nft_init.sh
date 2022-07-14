@@ -1,47 +1,75 @@
-#! /bin/sh
+#!/bin/sh
+#
+# establish the chains that miniupnpd will update dynamically
+#
+# 'add' doesn't raise an error if the object already exists. 'create' does.
+#
 
-nft list table nat > /dev/null
-nft_nat_exists=$?
-nft list table filter > /dev/null
-nft_filter_exists=$?
-nft list table mangle > /dev/null
-nft_mangle_exists=$?
+. $(dirname "$0")/miniupnpd_functions.sh
 
-if [ $nft_nat_exists -eq "1" ]; then
-	echo "create nat"
-	nft "add table nat"
-fi
-if [ $nft_filter_exists -eq "1" ]; then
-	echo "create filter"
-	nft "add table filter"
-fi
-if [ $nft_mangle_exists -eq "1" ]; then
-	echo "create mangle"
-	nft "add table mangle"
+$NFT --check list table inet $TABLE > /dev/null 2>&1
+if [ $? -eq "0" ]
+then
+echo "Table $TABLE already exists"
+exit 0
 fi
 
-nft list chain nat miniupnpd > /dev/null
-nft_nat_miniupnpd_exists=$?
-nft list chain nat miniupnpd-pcp-peer > /dev/null
-nft_nat_miniupnpd_pcp_peer_exists=$?
-nft list chain filter miniupnpd > /dev/null
-nft_filter_miniupnpd_exists=$?
-nft list chain mangle miniupnpd > /dev/null
-nft_mangle_miniupnpd_exists=$?
+echo "Creating nftables structure"
 
-if [ $nft_nat_miniupnpd_exists -eq "1" ]; then
-	echo "create chain in nat"
-	nft "add chain nat miniupnpd"
+cat > /tmp/miniupnpd.nft <<EOF
+table inet $TABLE {
+    chain forward {
+        type filter hook forward priority 0;
+        policy drop;
+
+        # miniupnpd
+        jump $CHAIN
+
+        # Add other rules here
+    }
+
+    # miniupnpd
+    chain $CHAIN {
+    }
+
+EOF
+
+if [ "$TABLE" != "$NAT_TABLE" ]
+then
+cat >> /tmp/miniupnpd.nft <<EOF
+}
+
+table inet $NAT_TABLE {
+EOF
 fi
-if [ $nft_nat_miniupnpd_pcp_peer_exists -eq "1" ]; then
-	echo "create pcp peer chain in nat"
-	nft "add chain nat miniupnpd-pcp-peer"
-fi
-if [ $nft_filter_miniupnpd_exists -eq "1" ]; then
-	echo "create chain in filter "
-	nft "add chain filter miniupnpd"
-fi
-if [ $nft_mangle_miniupnpd_exists -eq "1" ]; then
-	echo "create chain in mangle"
-	nft "add chain mangle miniupnpd"
-fi
+
+cat >> /tmp/miniupnpd.nft <<EOF
+    chain prerouting {
+        type nat hook prerouting priority -100;
+        policy accept;
+
+        # miniupnpd
+        jump $PREROUTING_CHAIN
+
+        # Add other rules here
+    }
+
+    chain postrouting {
+        type nat hook postrouting priority 100;
+        policy accept;
+
+        # miniupnpd
+        jump $POSTROUTING_CHAIN
+
+        # Add other rules here
+    }
+
+    chain $PREROUTING_CHAIN {
+    }
+
+    chain $POSTROUTING_CHAIN {
+    }
+}
+EOF
+
+$NFT -f /tmp/miniupnpd.nft
