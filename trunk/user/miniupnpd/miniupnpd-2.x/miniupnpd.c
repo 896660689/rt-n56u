@@ -2226,7 +2226,7 @@ main(int argc, char * * argv)
 		return 0;
 	}
 
-	syslog(LOG_INFO, "version " MINIUPNPD_VERSION " starting%s%sext if %s BOOTID=%u",
+	syslog(LOG_NOTICE, "version " MINIUPNPD_VERSION " starting%s%sext if %s BOOTID=%u",
 #ifdef ENABLE_NATPMP
 #ifdef ENABLE_PCP
 	       GETFLAG(ENABLENATPMPMASK) ? " NAT-PMP/PCP " : " ",
@@ -2583,6 +2583,9 @@ main(int argc, char * * argv)
 			}
 #endif
 			should_send_public_address_change_notif = 0;
+#ifdef ENABLE_LEASEFILE
+			reload_from_lease_file();
+#endif
 		}
 		/* Check if we need to send SSDP NOTIFY messages and do it if
 		 * needed */

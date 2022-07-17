@@ -725,7 +725,7 @@ remove_unused_rules(struct rule_state * list)
 				       "%" PRIu64 "packets %" PRIu64 "bytes",
 				       list->eport, proto_itoa(list->proto),
 				       packets, bytes);
-				_upnp_delete_redir(list->eport, list->proto);
+				if(_upnp_delete_redir(list->eport, list->proto) >= 0)
 				n++;
 			}
 		}

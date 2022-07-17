@@ -14,7 +14,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <dlfcn.h>
+#ifdef IPTABLES_143
 #include <xtables.h>
+#endif
 #include <linux/netfilter/xt_DSCP.h>
 #include <libiptc/libiptc.h>
 
@@ -44,7 +46,7 @@
 #else
 /* IPTABLES API version < 1.4.3 */
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,22)
-#include <linux/netfilter_ipv4/ip_nat.h>
+#include <linux/netfilter/nf_nat.h>
 #else
 #if 0
 #include <linux/netfilter/nf_nat.h>
@@ -68,15 +70,15 @@
 
 /* iptables -t nat -N MINIUPNPD
  * iptables -t nat -A PREROUTING -i <ext_if_name> -j MINIUPNPD */
-static const char * miniupnpd_nat_chain = "MINIUPNPD";
+static const char * miniupnpd_nat_chain = "upnp";
 
 /* iptables -t nat -N MINIUPNPD-POSTROUTING
  * iptables -t nat -A POSTROUTING -o <ext_if_name> -j MINIUPNPD-POSTROUTING */
-static const char * miniupnpd_nat_postrouting_chain = "MINIUPNPD-POSTROUTING";
+static const char * miniupnpd_nat_postrouting_chain = "upnp-post";
 
 /* iptables -t filter -N MINIUPNPD
  * iptables -t filter -A FORWARD -i <ext_if_name> ! -o <ext_if_name> -j MINIUPNPD */
-static const char * miniupnpd_forward_chain = "MINIUPNPD";
+static const char * miniupnpd_forward_chain = "upnp";
 
 /**
  * used by the core to override default chain names if specified in config file
