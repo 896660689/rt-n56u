@@ -1409,9 +1409,34 @@ void mark_servers(int flag)
     }
 }
 
+static void server_domains_cleanup(void)
+{
+  struct server_domain *sd, *tmp, **up;
+
+  /* unlink and free anything still marked. */
+  for (up = &daemon->server_domains, sd=*up; sd; sd = tmp)
+    {
+      tmp = sd->next;
+      if (sd->flags & SERV_MARK)
+       {
+         *up = sd->next;
+         if (sd->domain)
+	   free(sd->domain);
+	 free(sd);
+       }
+      else {
+        up = &sd->next;
+        if (sd->last_server && (sd->last_server->flags & SERV_MARK))
+	  sd->last_server = NULL;
+      }
+    }
+}
+
 void cleanup_servers(void)
 {
   struct server *serv, *tmp, **up;
+
+  server_domains_cleanup();
 
   /* unlink and free anything still marked. */
   for (serv = daemon->servers, up = &daemon->servers; serv; serv = tmp) 
@@ -1433,29 +1458,6 @@ void cleanup_servers(void)
   /* Now we have a new set of servers, test for loops. */
   loop_send_probes();
 #endif
-}
-
-void server_domains_cleanup(void)
-{
-  struct server_domain *sd, *tmp, **up;
-
-  /* unlink and free anything still marked. */
-  for (up = &daemon->server_domains, sd=*up; sd; sd = tmp)
-    {
-      tmp = sd->next;
-      if (sd->flags & SERV_MARK)
-       {
-         *up = sd->next;
-         if (sd->domain)
-	   free(sd->domain);
-	 free(sd);
-       }
-      else {
-        up = &sd->next;
-        if (sd->last_server && (sd->last_server->flags & SERV_MARK))
-	  sd->last_server = NULL;
-      }
-    }
 }
 
 void add_update_server(int flags,
@@ -1748,7 +1750,6 @@ void check_servers(void)
 	up = &sfd->next;
     }
   
-  server_domains_cleanup();
   cleanup_servers();
 }
 
