@@ -116,7 +116,6 @@ static int dhcp6_maybe_relay(struct state *state, void *inbuff, size_t sz,
   void *end = inbuff + sz;
   void *opts = inbuff + 34;
   int msg_type = *((unsigned char *)inbuff);
-  unsigned char *outmsgtypep;
   void *opt;
   struct dhcp_vendor *vendor;
 
@@ -178,9 +177,9 @@ static int dhcp6_maybe_relay(struct state *state, void *inbuff, size_t sz,
     return 0;
   
   /* copy header stuff into reply message and set type to reply */
-  if (!(outmsgtypep = put_opt6(inbuff, 34)))
+  if (!put_opt6(inbuff, 34))
     return 0;
-  *outmsgtypep = DHCP6RELAYREPL;
+  put_msgtype6(DHCP6RELAYREPL);
 
   /* look for relay options and set tags if found. */
   for (vendor = daemon->dhcp_vendors; vendor; vendor = vendor->next)
@@ -253,7 +252,7 @@ static int dhcp6_no_relay(struct state *state, int msg_type, void *inbuff, size_
   struct dhcp_netid *tagif;
   struct dhcp_config *config = NULL;
   struct dhcp_netid known_id, iface_id, v6_id;
-  unsigned char *outmsgtypep;
+  unsigned char *xid;
   struct dhcp_vendor *vendor;
   struct dhcp_context *context_tmp;
   struct dhcp_mac *mac_opt;
@@ -290,10 +289,10 @@ static int dhcp6_no_relay(struct state *state, int msg_type, void *inbuff, size_
   state->tags = &v6_id;
 
   /* copy over transaction-id, and save pointer to message type */
-  if (!(outmsgtypep = put_opt6(inbuff, 4)))
+  if (!(xid = put_opt6(inbuff, 4)))
     return 0;
   start_opts = save_counter(-1);
-  state->xid = outmsgtypep[3] | outmsgtypep[2] << 8 | outmsgtypep[1] << 16;
+  state->xid = xid[3] | xid[2] << 8 | xid[1] << 16;
    
   /* We're going to be linking tags from all context we use. 
      mark them as unused so we don't link one twice and break the list */
@@ -340,7 +339,7 @@ static int dhcp6_no_relay(struct state *state, int msg_type, void *inbuff, size_
       (msg_type == DHCP6REQUEST || msg_type == DHCP6RENEW || msg_type == DHCP6RELEASE || msg_type == DHCP6DECLINE))
     
     {  
-      *outmsgtypep = DHCP6REPLY;
+      put_msgtype6(DHCP6REPLY);
       o1 = new_opt6(OPTION6_STATUS_CODE);
       put_opt6_short(DHCP6USEMULTI);
       put_opt6_string("Use multicast");
@@ -640,11 +639,11 @@ static int dhcp6_no_relay(struct state *state, int msg_type, void *inbuff, size_
 	struct dhcp_netid *solicit_tags;
 	struct dhcp_context *c;
 	
-	*outmsgtypep = DHCP6ADVERTISE;
+	put_msgtype6(DHCP6ADVERTISE);
 	
 	if (opt6_find(state->packet_options, state->end, OPTION6_RAPID_COMMIT, 0))
 	  {
-	    *outmsgtypep = DHCP6REPLY;
+	    put_msgtype6(DHCP6REPLY);
 	    state->lease_allocate = 1;
 	    o = new_opt6(OPTION6_RAPID_COMMIT);
 	    end_opt6(o);
@@ -916,7 +915,7 @@ static int dhcp6_no_relay(struct state *state, int msg_type, void *inbuff, size_
 	int start = save_counter(-1);
 
 	/* set reply message type */
-	*outmsgtypep = DHCP6REPLY;
+	put_msgtype6(DHCP6REPLY);
 	state->lease_allocate = 1;
 
 	log6_quiet(state, "DHCPREQUEST", NULL, ignore ? _("ignored") : NULL);
@@ -1032,7 +1031,7 @@ static int dhcp6_no_relay(struct state *state, int msg_type, void *inbuff, size_
     case DHCP6RENEW:
       {
 	/* set reply message type */
-	*outmsgtypep = DHCP6REPLY;
+	put_msgtype6(DHCP6REPLY);
 	
 	log6_quiet(state, "DHCPRENEW", NULL, NULL);
 
@@ -1144,7 +1143,7 @@ static int dhcp6_no_relay(struct state *state, int msg_type, void *inbuff, size_
 	int good_addr = 0;
 
 	/* set reply message type */
-	*outmsgtypep = DHCP6REPLY;
+	put_msgtype6(DHCP6REPLY);
 	
 	log6_quiet(state, "DHCPCONFIRM", NULL, NULL);
 	
@@ -1208,7 +1207,7 @@ static int dhcp6_no_relay(struct state *state, int msg_type, void *inbuff, size_
 	log6_quiet(state, "DHCPINFORMATION-REQUEST", NULL, ignore ? _("ignored") : state->hostname);
 	if (ignore)
 	  return 0;
-	*outmsgtypep = DHCP6REPLY;
+	put_msgtype6(DHCP6REPLY);
 	tagif = add_options(state, 1);
 	break;
       }
@@ -1217,7 +1216,7 @@ static int dhcp6_no_relay(struct state *state, int msg_type, void *inbuff, size_
     case DHCP6RELEASE:
       {
 	/* set reply message type */
-	*outmsgtypep = DHCP6REPLY;
+	put_msgtype6(DHCP6REPLY);
 
 	log6_quiet(state, "DHCPRELEASE", NULL, NULL);
 
@@ -1282,7 +1281,7 @@ static int dhcp6_no_relay(struct state *state, int msg_type, void *inbuff, size_
     case DHCP6DECLINE:
       {
 	/* set reply message type */
-	*outmsgtypep = DHCP6REPLY;
+	put_msgtype6(DHCP6REPLY);
 	
 	log6_quiet(state, "DHCPDECLINE", NULL, NULL);
 

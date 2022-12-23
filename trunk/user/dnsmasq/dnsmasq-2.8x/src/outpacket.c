@@ -115,4 +115,15 @@ void put_opt6_string(char *s)
   put_opt6(s, strlen(s));
 }
 
+void put_msgtype6(unsigned int val)
+{
+  if (outpacket_counter == 0)
+    put_opt6_char(val);
+  else
+    {
+      unsigned char *p = daemon->outpacket.iov_base;
+      *p = val;
+    }
+}
+
 #endif

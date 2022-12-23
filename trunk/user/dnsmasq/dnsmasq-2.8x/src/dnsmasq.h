@@ -1607,6 +1607,7 @@ void put_opt6_long(unsigned int val);
 void put_opt6_short(unsigned int val);
 void put_opt6_char(unsigned int val);
 void put_opt6_string(char *s);
+void put_msgtype6(unsigned int val);
 #endif
 
 /* radv.c */
