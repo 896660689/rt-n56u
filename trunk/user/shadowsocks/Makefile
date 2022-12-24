@@ -13,7 +13,7 @@ ifeq ($(CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS),y)
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_SSR_NAME)
 endif
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_SS_NAME)
-ifeq ($(CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS),y)
+ifneq ($(filter y,$(CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS) $(CONFIG_FIRMWARE_INCLUDE_WING)),)
 extract_test: extract_ssr_test extract_ss_test
 else
 extract_test: extract_ss_test
@@ -33,7 +33,7 @@ extract_ss_test:
 		tar xf $(SRC_SS_NAME).tar.gz ; \
 	fi )
 
-ifeq ($(CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS),y)
+ifneq ($(filter y,$(CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS) $(CONFIG_FIRMWARE_INCLUDE_WING)),)
 config_test: config_ssr config_ss
 else
 config_test: config_ss
@@ -94,6 +94,14 @@ clean_ss:
 	fi )
 	
 romfs:
+ifneq ($(filter y,$(CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS) $(CONFIG_FIRMWARE_INCLUDE_WING)),)
+	$(ROMFSINST) -p +x $(THISDIR)/$(SRC_SSR_NAME)/src/ss-redir /usr/bin/ssr-redir
+	$(ROMFSINST) -p +x $(THISDIR)/$(SRC_SSR_NAME)/src/ss-local /usr/bin/ssr-local
+	$(ROMFSINST) -p +x $(THISDIR)/$(SRC_SSR_NAME)/server/ss-check /usr/bin/ssr-check
+	$(ROMFSINST) -p +x $(THISDIR)/$(SRC_SSR_NAME)/server/ss-server /usr/bin/ssr-server
+	$(ROMFSINST) -p +x $(THISDIR)/$(SRC_SS_NAME)/src/ss-redir /usr/bin/ss-redir
+	$(ROMFSINST) -p +x $(THISDIR)/$(SRC_SS_NAME)/src/ss-local /usr/bin/ss-local
+endif
 ifeq ($(CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS),y)
 	chmod -R +x scripts/
 	$(ROMFSINST) $(THISDIR)/scripts/ /usr/bin/
@@ -109,13 +117,7 @@ ifeq ($(CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS),y)
 	$(ROMFSINST) /etc_ro/ss_dlink.sh
 	#$(ROMFSINST) /etc_ro/dlink.js
 	$(ROMFSINST) $(THISDIR)/ss/ /etc_ro/ss/
-	$(ROMFSINST) -p +x $(THISDIR)/$(SRC_SSR_NAME)/src/ss-redir /usr/bin/ssr-redir
-	$(ROMFSINST) -p +x $(THISDIR)/$(SRC_SSR_NAME)/src/ss-local /usr/bin/ssr-local
-	$(ROMFSINST) -p +x $(THISDIR)/$(SRC_SSR_NAME)/server/ss-check /usr/bin/ssr-check
-	$(ROMFSINST) -p +x $(THISDIR)/$(SRC_SSR_NAME)/server/ss-server /usr/bin/ssr-server
-	$(ROMFSINST) -p +x $(THISDIR)/$(SRC_SS_NAME)/src/ss-redir /usr/bin/ss-redir
 	#$(ROMFSINST) -p +x $(THISDIR)/$(SRC_SS_NAME)/src/ss-tunnel /usr/bin/ss-tunne
-	$(ROMFSINST) -p +x $(THISDIR)/$(SRC_SS_NAME)/src/ss-local /usr/bin/ss-local
 	#ln -sf /var/ss-redir $(ROMFSDIR)/usr/bin/ss-redir
 	#ln -sf /var/ss-tunnel $(ROMFSDIR)/usr/bin/ss-local
 endif
