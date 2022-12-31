@@ -469,4 +469,10 @@ testing 'awk printf %% prints one %' \
 	"%\n" \
 	'' ''
 
+testing 'awk assign while test' \
+	"awk '\$1==\$1=\"foo\" {print \$1}'" \
+	"foo\n" \
+	"" \
+	"foo"
+
 exit $FAILCOUNT
