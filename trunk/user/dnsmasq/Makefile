@@ -11,6 +11,10 @@ endif
 ifneq ($(CONFIG_FIRMWARE_INCLUDE_IPSET),y)
 COPTS += -DNO_IPSET
 endif
+ifeq ($(CONFIG_FIRMWARE_INCLUDE_WING),y)
+patch -d $(SRC_NAME) -p1 -i ../patchs/101-support-tcp-dns.patch; \
+patch -d $(SRC_NAME) -p1 -i ../patchs/102-support-load-gfwlist;
+endif
 
 all:
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME) COPTS="$(COPTS)"

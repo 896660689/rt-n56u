@@ -534,9 +534,7 @@ static int forward_query(int udpfd, union mysockaddr *udpaddr,
 		}
 #endif
 
-	      ssize_t tcpdns_sendto(int, const void *, size_t, int, const struct sockaddr *, socklen_t);
-		  ssize_t (*sendto_ptr)(int, const void *, size_t, int, const struct sockaddr *, socklen_t) = (start->flags & SERV_IS_TCP) ? tcpdns_sendto : sendto;
-	      if (retry_send(sendto_ptr(fd, (char *)header, plen, 0,
+               if (retry_send(sendto(fd, (char *)header, plen, 0,
 				    &start->addr.sa,
 				    sa_len(&start->addr))))
 		continue;
@@ -815,13 +813,10 @@ void reply_query(int fd, time_t now)
       break;
   
   if (!server)
-  {
-    if (serveraddr.sa.sa_family == AF_INET ? (serveraddr.in.sin_addr.s_addr != INADDR_ANY && htonl(serveraddr.in.sin_addr.s_addr) != INADDR_LOOPBACK) : (memcmp(&serveraddr.in6.sin6_addr, &in6addr_any, sizeof(in6addr_any)) && memcmp(&serveraddr.in6.sin6_addr, &in6addr_loopback, sizeof(in6addr_loopback))))
-      return;
-  }
+    return;
 
   /* If sufficient time has elapsed, try and expand UDP buffer size again. */
-  else if (difftime(now, server->pktsz_reduced) > UDP_TEST_TIME)
+  if (difftime(now, server->pktsz_reduced) > UDP_TEST_TIME)
     server->edns_pktsz = daemon->edns_pktsz;
 
   hash = hash_questions(header, n, daemon->namebuff);
