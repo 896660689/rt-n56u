@@ -1,4 +1,4 @@
-SRC_NAME=mtd-utils-2.0.2
+SRC_NAME=mtd-utils-2.1.5
 
 THISDIR = $(shell pwd)
 

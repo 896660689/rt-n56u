@@ -1,5 +1,5 @@
-SRC_NAME=e2fsprogs-1.45.3
-SRC_URL=https://mirrors.edge.kernel.org/pub/linux/kernel/people/tytso/e2fsprogs/v1.45.3/e2fsprogs-1.45.3.tar.xz
+SRC_NAME=e2fsprogs-1.46.5
+SRC_URL=https://mirrors.edge.kernel.org/pub/linux/kernel/people/tytso/e2fsprogs/v1.46.5/e2fsprogs-1.46.5.tar.xz
 
 THISDIR = $(shell pwd)
 
