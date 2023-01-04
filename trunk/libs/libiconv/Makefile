@@ -12,7 +12,7 @@ download_test:
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
 		tar -xf $(SRC_NAME).tar.gz; \
-		patch -d $(SRC_NAME) -p1 -i ../100-strip-charsets; \
+		patch -d $(SRC_NAME) -p1 -i ../100-strip-charsets.patch; \
 	fi )
 
 config_test:
