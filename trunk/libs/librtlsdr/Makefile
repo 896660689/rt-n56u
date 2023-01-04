@@ -23,7 +23,7 @@ config_test:
 
 configure:
 	( mkdir -p $(SRC_NAME)/build && cd $(SRC_NAME)/build ; \
-	cmake \
+	cmake -DCMAKE_BUILD_TYPE=Release \
 	-DCMAKE_INSTALL_PREFIX=$(STAGEDIR) \
 	-DCMAKE_TOOLCHAIN_FILE=../../cross-mipsel-linux.cmake \
 	.. \

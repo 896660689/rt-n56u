@@ -1,5 +1,5 @@
-SRC_NAME=libwebsockets-4.1.4
-SRC_URL=https://github.com/warmcat/libwebsockets/archive/v4.1.4.tar.gz
+SRC_NAME=libwebsockets-4.3.2
+SRC_URL=https://github.com/warmcat/libwebsockets/archive/v4.3.2.tar.gz
 
 all: download_test extract_test config_test
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)/build
@@ -12,7 +12,7 @@ download_test:
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
 		tar -xf $(SRC_NAME).tar.gz; \
-		patch -p1 -d $(SRC_NAME) < $(SRC_NAME).patch ; \
+		patch -p1 -d $(SRC_NAME) < 100-correct-lws-install-dir.patch ; \
 	fi )
 
 config_test:
@@ -24,7 +24,7 @@ config_test:
 
 configure:
 	( mkdir -p $(SRC_NAME)/build && cd $(SRC_NAME)/build ; \
-	cmake \
+	cmake -DCMAKE_BUILD_TYPE=Release \
 	-DCMAKE_INSTALL_PREFIX=$(STAGEDIR) \
 	-DCMAKE_TOOLCHAIN_FILE=../../cross-mipsel-linux.cmake \
 	-DBUILD_TESTING=OFF \
