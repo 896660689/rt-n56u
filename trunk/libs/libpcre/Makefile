@@ -1,17 +1,17 @@
-SRC_NAME=pcre-8.43
-SRC_URL=https://ftp.pcre.org/pub/pcre/pcre-8.43.zip
+SRC_NAME=pcre-8.45
+SRC_URL=https://downloads.sourceforge.net/project/pcre/pcre/8.45/pcre-8.45.tar.bz2
 
 all: download_test extract_test config_test
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
 
 download_test:
 	( if [ ! -f $(SRC_NAME).zip ]; then \
-		wget -t5 --timeout=20 --no-check-certificate -O $(SRC_NAME).zip $(SRC_URL); \
+		wget -t5 --timeout=20 --no-check-certificate -O $(SRC_NAME).tar.bz2 $(SRC_URL); \
 	fi )
 
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
-		unzip -qq $(SRC_NAME).zip ; \
+		tar xjf $(SRC_NAME).tar.bz2 ; \
 	fi )
 
 config_test:
