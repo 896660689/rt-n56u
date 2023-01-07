@@ -1,5 +1,9 @@
 SRC_NAME=libsodium-1.0.18
-SRC_URL=https://download.libsodium.org/libsodium/releases/libsodium-1.0.18.tar.gz
+SRC_URL=https://download.libsodium.org/libsodium/releases/$(SRC_NAME).tar.gz
+
+CFLAGS   += -Os -Wall -ffunction-sections -fdata-sections
+CPPFLAGS += -Os -Wall -ffunction-sections -fdata-sections
+LDFLAGS  += -Wl,--gc-sections -fPIC
 
 all: download_test extract_test config_test
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
@@ -24,8 +28,13 @@ config_test:
 configure:
 	( cd $(SRC_NAME) ; \
 	./configure \
-		--disable-ssp \
 		--prefix=$(STAGEDIR) \
+		--disable-shared \
+		--enable-static \
+		--disable-ssp \
+		--enable-minimal \
+		--without-pthreads \
+		--disable-dependency-tracking \
 		--host=$(HOST_TARGET) \
 		--build=$(HOST_BUILD) ; \
 	)
