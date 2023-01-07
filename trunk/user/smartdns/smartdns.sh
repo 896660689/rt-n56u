@@ -166,7 +166,7 @@ Get_sdns_conf () {
     else
         echo "serve-expired no" >> "$smartdns_tmp_Conf"
     fi
-    echo "log-level warn" >> "$smartdns_tmp_Conf"
+#    echo "log-level warn" >> "$smartdns_tmp_Conf"
     listnum=$(nvram get sdnss_staticnum_x)
     for i in $(seq 1 "$listnum")
     do
