@@ -1,17 +1,17 @@
 #!/bin/sh
 #nvram set ntp_ready=0
-smartdns_conf="/etc/storage/smartdns_custom.conf"
-dnsmasq_Conf="/etc/storage/dnsmasq/dnsmasq.conf"
-smartdns_Ini="/etc/storage/smartdns_conf.ini"
-sdns_port=$(nvram get sdns_port)
+SMARTDNS_CONF="/etc/storage/smartdns_custom.conf"
+DNSMASQ_CONF="/etc/storage/dnsmasq/dnsmasq.conf"
+SMARTDNS_INI="/etc/storage/smartdns_conf.ini"
+SDNS_PORT=$(nvram get sdns_port)
 if [ $(nvram get sdns_enable) = 1 ] ; then
-   if [ -f "$smartdns_conf" ] ; then
-       sed -i '/去广告/d' $smartdns_conf
-       sed -i '/adbyby/d' $smartdns_conf
-       sed -i '/no-resolv/d' "$dnsmasq_Conf"
-       sed -i '/server=127.0.0.1#'"$sdns_portd"'/d' "$dnsmasq_Conf"
-       sed -i '/port=0/d' "$dnsmasq_Conf"
-       rm  -f "$smartdns_Ini"
+   if [ -f "$SMARTDNS_CONF" ] ; then
+       sed -i '/去广告/d' "$SMARTDNS_CONF"
+       sed -i '/adbyby/d' "$SMARTDNS_CONF"
+       sed -i '/no-resolv/d' "$DNSMASQ_CONF"
+       sed -i '/server=127.0.0.1#'"$SDNS_PORT"'/d' "$DNSMASQ_CONF"
+       sed -i '/port=0/d' "$DNSMASQ_CONF"
+       rm  -f "$SMARTDNS_INI"
    fi
 logger -t "自动启动" "正在启动SmartDNS"
 /usr/bin/smartdns.sh start
