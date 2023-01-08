@@ -23,9 +23,9 @@ download_test:
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
 		tar xf $(SRC_NAME).tar.xz; \
-		patch -d $(SRC_NAME) -p1 -i ../patchs/001-adjust-variables.patch; \
-		patch -d $(SRC_NAME) -p1 -i ../patchs/100-remove-old-runtime-kernel-support.patch; \
-		patch -d $(SRC_NAME) -p1 -i ../patchs/112-add-back-ability-to-compile-without-IPv6-support.patch; \
+		patch -d $(SRC_NAME) -p1 -i ../patches/001-adjust-variables.patch; \
+		patch -d $(SRC_NAME) -p1 -i ../patches/100-remove-old-runtime-kernel-support.patch; \
+		patch -d $(SRC_NAME) -p1 -i ../patches/112-add-back-ability-to-compile-without-IPv6-support.patch; \
 	fi )
 
 clean:
