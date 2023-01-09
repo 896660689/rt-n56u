@@ -12,7 +12,7 @@ OBJCOPY   = objcopy
 RANLIB    = ranlib
 STRIP     = strip
 STRIPTOOL = $(STRIP)
-SSTRIP_NAME = ELFkickers-3.1
+SSTRIP_NAME = ELFkickers-3.2
 
 CFLAGS    = -Wall -O2
 LDFLAGS   =
