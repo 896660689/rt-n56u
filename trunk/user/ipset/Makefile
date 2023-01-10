@@ -15,7 +15,9 @@ download_test:
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
 		tar xf $(SRC_NAME).tar.bz2; \
-		patch -d $(SRC_NAME) -p1 -i ../patches/001-fix-build.patch; \
+		find $(THISDIR)/patches -type f -name '*.patch' -print0 \
+		  | sort -z \
+		  | xargs -t -0 -n 1 patch -d $(SRC_NAME)  -p1 -i; \
 	fi )
 
 config_test:
