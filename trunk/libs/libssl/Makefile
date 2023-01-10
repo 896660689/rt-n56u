@@ -1,6 +1,8 @@
 SRC_NAME=openssl-1.1.1s
 SRC_URL=https://www.openssl.org/source/$(SRC_NAME).tar.gz
 
+THISDIR = $(shell pwd)
+
 # openssl use CROSS_COMPILE prefix
 CC = gcc
 AR = ar
@@ -18,9 +20,15 @@ OPENSSL_CIPHERS = no-capieng no-cms no-rfc3779 no-seed \
   no-ec2m no-err no-threads no-idea no-rc5 no-rmd160 \
   no-static-engine no-md2 no-sse2 no-dso no-ts no-mdc2 \
   no-cast no-whirlpool no-sctp no-srp no-ssl2 no-ssl3 \
-  no-async no-blake2 no-hw-padlock no-aria no-hw \
-  no-devcryptoeng no-ssl3-method no-tests no-sm2 \
-  no-sm3 no-sm4 no-afalgeng no-comp
+  no-blake2 no-aria no-hw no-ssl3-method no-tests \
+  no-sm2 no-sm3 no-sm4 \
+
+ifdef CONFIG_CRYPTO_DEV_LINUX
+COPTS+= disable-dynamic-engine
+COPTS+= enable-devcryptoeng
+else
+OPENSSL_CIPHERS += no-engine
+endif
 
 ifneq ($(CONFIG_FIRMWARE_INCLUDE_SSWAN),y)
 OPENSSL_OPTIONS += no-rc2
@@ -41,7 +49,9 @@ download_test:
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
 		tar -xf $(SRC_NAME).tar.gz; \
-		patch -d $(SRC_NAME) -p1 < $(SRC_NAME).patch; \
+		find $(THISDIR)/patches -type f -name '*.patch' -print0 \
+		  | sort -z \
+		  | xargs -t -0 -n 1 patch -d $(SRC_NAME)  -p1 -i; \
 	fi )
 
 config_test:
