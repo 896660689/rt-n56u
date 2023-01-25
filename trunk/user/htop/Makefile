@@ -1,19 +1,18 @@
-SRC_NAME = htop
-SRC_VERSION = 3.1.1
-BIN_SOURCE = $(SRC_NAME)-$(SRC_VERSION)
-SRC_URL = https://github.com/htop-dev/htop/archive/refs/tags/$(SRC_VERSION).tar.gz
+SRC_NAME = htop-3.2.1
+SRC_URL = http://sources.buildroot.net/htop/htop-3.2.1.tar.xz
+THISDIR = $(shell pwd)
 
 all: download_test extract_test config_test
-	$(MAKE) -j$(HOST_NCPU) -C $(BIN_SOURCE)
+	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
 
 download_test:
-	( if [ ! -f $(BIN_SOURCE).tar.gz ]; then \
-		wget -t5 --timeout=20 --no-check-certificate -O $(BIN_SOURCE).tar.gz $(SRC_URL); \
+	( if [ ! -f $(SRC_NAME).tar.xz ]; then \
+		wget -t5 --timeout=20 --no-check-certificate -O $(SRC_NAME).tar.xz $(SRC_URL); \
 	fi )
 
 extract_test:
-	( if [ ! -d $(BIN_SOURCE) ]; then \
-		tar -xzf $(BIN_SOURCE).tar.gz; \
+	( if [ ! -d $(SRC_NAME) ]; then \
+		tar -xf $(SRC_NAME).tar.xz; \
 	fi )
 
 config_test:
@@ -24,7 +23,7 @@ config_test:
 	fi )
 
 configure:
-	( cd $(BIN_SOURCE) ; \
+	( cd $(SRC_NAME) ; \
 	./autogen.sh ; \
 	./configure \
 		--prefix=/usr \
@@ -35,10 +34,10 @@ configure:
 	)
 
 clean:
-	if [ -f $(BIN_SOURCE)/Makefile ] ; then \
-		$(MAKE) -C $(BIN_SOURCE) distclean ; \
+	if [ -f $(SRC_NAME)/Makefile ] ; then \
+		$(MAKE) -C $(SRC_NAME) distclean ; \
 	fi ; \
 	rm -f config_done
 
 romfs:
-	$(ROMFSINST) -p +x $(THISDIR)/$(BIN_SOURCE)/htop /usr/bin/htop
+	$(ROMFSINST) -p +x $(THISDIR)/$(SRC_NAME)/htop /usr/bin/htop
