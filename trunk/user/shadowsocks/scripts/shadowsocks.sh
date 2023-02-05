@@ -381,6 +381,7 @@ func_start(){
         fi
         func_cron && \
         restart_firewall &
+        wait
         logger -t "[ShadowsocksR]" "开始运行…"
     else
         exit 0
@@ -397,7 +398,9 @@ func_stop(){
     func_ss_Close && \
     ipt_ss_del && \
     func_ss_down &
-    sleep 3 && logger -t "[ShadowsocksR]" "已停止运行!"
+    killall -HUP dnsmasq && restart_dhcpd &
+    wait
+    logger -t "[ShadowsocksR]" "已停止运行!"
 }
 
 case "$1" in
