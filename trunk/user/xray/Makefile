@@ -10,4 +10,4 @@ configure:
 clean:
 	
 romfs:
-	$(ROMFSINST) -p +x $(THISDIR)/bin/xray /usr/bin/xray
+	$(ROMFSINST) -p +x $(THISDIR)/xray /usr/bin/xray
