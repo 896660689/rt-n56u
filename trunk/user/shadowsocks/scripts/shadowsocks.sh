@@ -397,8 +397,7 @@ func_stop(){
     func_ss_Close && \
     ipt_ss_del && \
     func_ss_down &
-    sleep 2 && restart_dhcpd && \
-    logger -t "[ShadowsocksR]" "已停止运行!"
+    sleep 3 && logger -t "[ShadowsocksR]" "已停止运行!"
 }
 
 case "$1" in
