@@ -16,31 +16,27 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build:
-    name: build
+    name: ${{ inputs.target }}
     runs-on: ubuntu-latest
-    if: ${{ !(github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) }}
-    env:
-      build_variant: ${{ matrix.build_variant }}
-      targets: ${{ matrix.targets }}
-      images_dir: /opt/images
-    strategy:
-      matrix:
-        include:
-          - build_variant: "mt7620"
-            targets: "K2"
-          - build_variant: "mt7628"
-            targets: "HC5761A"
-          - build_variant: "mt7621"
-            targets: "K2P"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: hendrikmuhs/ccache-action@v1.2.3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '^1.19.2'
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-v1
+          restore-keys: |
+            ${{ runner.os }}-go-
       - name: Prepare environment
         run: |
           sudo apt update
-          sudo apt install libtool-bin gperf python3-docutils autopoint gettext help2man
-      - name: Run shellcheck
-        run: sh ./trunk/tools/shellcheck.sh
-      - name: Prepare toolchain
+          sudo apt install libtool-bin gperf python3-docutils autopoint gettext ccache
+      - name: Start Build
         run: |
           cd toolchain-mipsel
           sh dl_toolchain.sh
