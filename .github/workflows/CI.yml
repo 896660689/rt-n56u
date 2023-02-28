@@ -6,12 +6,16 @@ on:
   pull_request:
   workflow_dispatch:
     inputs:
-      debug_enabled:
-        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'     
-        required: false
-        default: 'no'
-  release:
-    types: [published]
+      target:
+        type: choice
+        description: 'Please select the model to compile'
+        options:
+        - 'K2P'
+        default: 'K2P'
+      release:
+        type: boolean
+        description: 'upload to release'
+        default: 'true'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
