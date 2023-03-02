@@ -337,6 +337,7 @@ func_redsocks(){
     if [ -f /tmp/V2mi.txt ] ; then
         v2_address=$(cat /tmp/V2mi.txt | grep "add:" | awk -F '[:/]' '{print $2}')
         /bin/sh $SSR_HOME/redsocks.sh iptables $v2_address
+        /sbin/restart_dhcpd
     fi
 }
 
@@ -398,7 +399,7 @@ func_stop(){
     func_ss_Close && \
     ipt_ss_del && \
     func_ss_down &
-    killall -HUP dnsmasq && restart_dhcpd &
+    /sbin/restart_dhcpd
     wait
     logger -t "[ShadowsocksR]" "已停止运行!"
 }
