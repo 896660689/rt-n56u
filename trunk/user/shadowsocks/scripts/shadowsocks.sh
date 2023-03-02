@@ -337,7 +337,6 @@ func_redsocks(){
     if [ -f /tmp/V2mi.txt ] ; then
         v2_address=$(cat /tmp/V2mi.txt | grep "add:" | awk -F '[:/]' '{print $2}')
         /bin/sh $SSR_HOME/redsocks.sh iptables $v2_address
-        /sbin/restart_dhcpd
     fi
 }
 
@@ -369,6 +368,7 @@ func_start(){
             wait
             echo "v2"
             func_chinadns_ng &
+            restart_firewall &
         else
             echo -e "\033[41;37m 部署 [ShadowsocksR] 文件,请稍后...\e[0m\n"
             func_gen_ss_json && \
@@ -381,7 +381,7 @@ func_start(){
             loger $ss_bin "ShadowsocksR Start up" || { ss-rules -f && loger $ss_bin "ShadowsocksR Start fail!"; }
         fi
         func_cron && \
-        restart_firewall &
+        /sbin/restart_dhcpd
         wait
         logger -t "[ShadowsocksR]" "开始运行…"
     else
