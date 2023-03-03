@@ -628,6 +628,8 @@ WLANConfig11n_txbf=启用波束成形
 WLANConfig11n_nmode_limition_hint=[n Only]模式下，原WEP或TKIP加密设定将自动调整为 AES 加密，以取得正确的联机。
 WLANConfig11n_automode_limition_hint=自动模式下使用 WEP 或 TKIP 加密时，无线网络最多支持 54 Mbps 的传输速率。
 WLANConfig11n_amsdu=启用AMSDU
+WLANConfig11n_80211kv=启用80211KV
+WLANConfig11n_80211r=启用80211R
 BM_desc_upload=EZQoS 会自动检测您的上行速度，以帮助您调整网络带宽。如果您能通过另一种方式确切上行速度，如在线速度测试中，我们建议您进入<a href='Advanced_QOSUserSpec_Content.asp'>高级设置页面</a>的速度值
 WhiteList=白名单
 BlackList=黑名单
