@@ -134,6 +134,7 @@ func_ss_Close(){
     if grep -q "v2ray-watchdog" "$TIME_SCRIPT"
     then
         sed -i '/v2ray-watchdog/d' "$TIME_SCRIPT" >/dev/null 2>&1
+        sed -i '/V2RAY-网络正常/d' "$TIME_SCRIPT" >/dev/null 2>&1
         sleep 2
     fi
     if grep -q "gfwlist" "$DNSMASQ_RURE"
@@ -295,6 +296,7 @@ func_cron(){
             cat >> "$TIME_SCRIPT" << EOF
 */3 * * * * sh $SSR_HOME/v2ray-watchdog 2>&1 >/dev/null &
 EOF
+            sed -i '/V2RAY-网络正常/d' "$TIME_SCRIPT"
             cat >> "$TIME_SCRIPT" << EOF
 0 */6 * * * sed -i '/V2RAY-网络正常/d' "/tmp/ss-watchcat.log" &
 EOF
