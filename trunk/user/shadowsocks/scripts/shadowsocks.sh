@@ -295,6 +295,9 @@ func_cron(){
             cat >> "$TIME_SCRIPT" << EOF
 */3 * * * * sh $SSR_HOME/v2ray-watchdog 2>&1 >/dev/null &
 EOF
+            cat >> "$TIME_SCRIPT" << EOF
+0 */6 * * * sed -i '/V2RAY-网络正常/d' "/tmp/ss-watchcat.log" &
+EOF
         else
             sed -i '/ssr-watchcat/d' "$TIME_SCRIPT"
             cat >> "$TIME_SCRIPT" << EOF
