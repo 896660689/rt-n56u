@@ -401,6 +401,7 @@ func_stop(){
     func_ss_down &
     /sbin/restart_dhcpd
     wait
+    echo 1 > /proc/sys/vm/drop_caches && \
     logger -t "[ShadowsocksR]" "已停止运行!"
 }
 
