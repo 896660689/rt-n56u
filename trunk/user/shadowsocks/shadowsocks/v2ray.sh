@@ -182,29 +182,6 @@ func_Del_rule(){
     fi
 }
 
-flush_r() {
-    flush_iptables() {
-        ipt="iptables -t $1"
-        DAT=$(iptables-save -t $1)
-        eval $(echo "$DAT" | grep "$TAG" | sed -e 's/^-A/$ipt -D/' -e 's/$/;/')
-        for chain in $(echo "$DAT" | awk '/^:SS_SPEC/{print $1}'); do
-            $ipt -F ${chain:1} 2>/dev/null && $ipt -X ${chain:1}
-        done
-    }
-    flush_iptables nat
-    flush_iptables mangle
-    $ipt_m -D PREROUTING -p udp -j SS_SPEC_TPROXY
-    $ipt_n -D PREROUTING -j CNNG_OUT
-    $ipt_n -X CNNG_OUT
-    $ipt_n -D PREROUTING -j CNNG_PRE
-    $ipt_n -X CNNG_PRE
-    ipset -X gateway 2>/dev/null
-    ipset -X china 2>/dev/null
-    ipset -X blacklist 2>/dev/null
-    ipset -X whitelist 2>/dev/null
-    return 0
-}
-
 func_china_file(){
     if [ -f "$dir_chnroute_file" ] || [ -s "$dir_chnroute_file" ]
     then
@@ -240,7 +217,6 @@ func_start(){
 
 func_stop(){
     func_Del_rule && \
-    flush_r
     for setname in $(ipset -n list | grep "chnroute"); do
         ipset destroy chnroute 2>/dev/null &
     done
