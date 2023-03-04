@@ -216,7 +216,10 @@ func_start(){
 }
 
 func_stop(){
-    func_Del_rule && \
+    func_Del_rule &
+    for setname in $(ipset -n list | grep "gateway"); do
+        ipset destroy gateway &
+    done
     for setname in $(ipset -n list | grep "chnroute"); do
         ipset destroy chnroute 2>/dev/null &
     done
