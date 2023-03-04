@@ -133,8 +133,7 @@ func_ss_Close(){
     fi
     if grep -q "v2ray-watchdog" "$TIME_SCRIPT"
     then
-        sed -i '/v2ray-watchdog/d' "$TIME_SCRIPT" >/dev/null 2>&1
-        sed -i '/V2RAY-网络正常/d' "$TIME_SCRIPT" >/dev/null 2>&1
+        sed -i '/v2ray-watchdog/d; /V2RAY-网络正常/d' $TIME_SCRIPT &
         sleep 2
     fi
     if grep -q "gfwlist" "$DNSMASQ_RURE"
