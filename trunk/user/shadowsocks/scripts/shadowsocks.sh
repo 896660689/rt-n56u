@@ -398,14 +398,12 @@ func_stop(){
     /usr/bin/ss-tunnel.sh stop &
     /bin/sh $SSR_HOME/chinadns-ng.sh stop &
     /bin/sh $SSR_HOME/redsocks.sh stop &
-    /bin/sh $SSR_HOME/v2ray.sh stop &
-    sleep 2
+    /bin/sh $SSR_HOME/v2ray.sh stop && sleep 5
     func_ss_Close && \
     ipt_ss_del && \
     func_ss_down &
     /sbin/restart_dhcpd
     wait
-    [ $(nvram get ss_enable) = "0" ] && echo 1 > /proc/sys/vm/drop_caches
     logger -t "[ShadowsocksR]" "已停止运行!"
 }
 
