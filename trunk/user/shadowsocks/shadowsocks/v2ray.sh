@@ -221,7 +221,8 @@ func_stop(){
         ipset destroy gateway &
     done
     for setname in $(ipset -n list | grep "chnroute"); do
-        ipset destroy chnroute 2>/dev/null &
+        ipset flush chnroute 2>/dev/null &
+        sleep 3 && ipset destroy chnroute
     done
     if [ $(nvram get ss_enable) = "0" ]
     then
