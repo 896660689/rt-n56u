@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2022-03-04
+# Compile:by-lanse	2023-03-06
 
 modprobe xt_set
 modprobe ip_set_hash_ip
@@ -24,7 +24,7 @@ func_del_rule(){
 }
 
 func_del_ipt(){
-iptables-save -c | grep -v CNNG_ | iptables-restore -c && sleep 1
+iptables-save -c | grep -v gateway | iptables-restore -c
 for setname in $(ipset -n list | grep "gateway"); do
     ipset destroy "$setname" 2>/dev/null
 done
