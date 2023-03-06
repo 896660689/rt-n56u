@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2022-02-18
+# Compile:by-lanse	2023-03-06
 
 v2_home="/tmp/v2fly"
 v2_json="$v2_home/config.json"
@@ -217,12 +217,8 @@ func_start(){
 
 func_stop(){
     func_Del_rule &
-    for setname in $(ipset -n list | grep "gateway"); do
-        ipset destroy gateway &
-    done
     for setname in $(ipset -n list | grep "chnroute"); do
-        ipset flush chnroute 2>/dev/null &
-        sleep 3 && ipset destroy chnroute
+        ipset destroy "$setname" 2>/dev/null
     done
     if [ $(nvram get ss_enable) = "0" ]
     then
