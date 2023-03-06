@@ -24,20 +24,29 @@ func_del_rule(){
 }
 
 func_del_ipt(){
-ipt="iptables -t nat"
-$ipt -D PREROUTING -j CNNG_OUT
-$ipt -D OUTPUT -j CNNG_PRE
-$ipt -D CNNG_PRE -d $v2_address -j RETURN
-$ipt -D CNNG_PRE -m set --match-set gateway dst -j RETURN
-$ipt -D CNNG_PRE -m set --match-set chnroute dst -j RETURN
-$ipt -D CNNG_OUT -m set --match-set chnroute dst -j RETURN
-$ipt -D CNNG_OUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-ports 65353
-$ipt -D CNNG_OUT -p tcp -j CNNG_PRE
-$ipt -D CNNG_PRE -p tcp -j REDIRECT --to-ports 12345
-iptables-save -c | grep -v gateway | iptables-restore -c
-for setname in $(ipset -n list | grep "gateway"); do
-    ipset destroy "$setname" 2>/dev/null
-done
+    flush_iptables() {
+        ipt="iptables -t $1"
+        DAT=$(iptables-save -t $1)
+        eval $(echo "$DAT" | grep "CNNG" | sed -e 's/^-A/$ipt -D/' -e 's/$/;/')
+        for chain in $(echo "$DAT" | awk '/^:CNNG/{print $1}'); do
+            $ipt -F ${chain:1} 2>/dev/null && $ipt -X ${chain:1}
+        done
+    }
+    sleep 3 && flush_iptables nat
+    ipt="iptables -t nat"
+    $ipt -D CNNG_PRE -d $v2_address -j RETURN
+    $ipt -D CNNG_PRE -m set --match-set gateway dst -j RETURN
+    $ipt -D CNNG_PRE -m set --match-set chnroute dst -j RETURN
+    $ipt -D CNNG_OUT -m set --match-set chnroute dst -j RETURN
+    $ipt -D CNNG_OUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-ports 65353
+    $ipt -D CNNG_OUT -p tcp -j CNNG_PRE
+    $ipt -D CNNG_PRE -p tcp -j REDIRECT --to-ports 12345
+    iptables-save -c | grep -v gateway | iptables-restore -c
+    for setname in $(ipset -n list | grep "gateway"); do
+        ipset destroy "$setname" 2>/dev/null
+    done
+    $ipt -D PREROUTING -j CNNG_OUT
+    $ipt -D OUTPUT -j CNNG_PRE
 }
 
 func_cnng_file(){
