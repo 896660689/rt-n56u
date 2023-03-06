@@ -217,6 +217,7 @@ func_start(){
 
 func_stop(){
     func_Del_rule &
+	iptables-save -c | grep -v "chnroute" | iptables-restore -c
     for setname in $(ipset -n list | grep "chnroute"); do
         ipset destroy "$setname" 2>/dev/null
     done
