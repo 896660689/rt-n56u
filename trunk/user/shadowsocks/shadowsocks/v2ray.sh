@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2023-03-06
+# Compile:by-lanse	2022-02-18
 
 v2_home="/tmp/v2fly"
 v2_json="$v2_home/config.json"
@@ -182,6 +182,19 @@ func_Del_rule(){
     fi
 }
 
+func_Del_iptables(){
+    resume_iptables() {
+        ipt="iptables -t $1"
+        DAT=$(iptables-save -t $1)
+        eval $(echo "$DAT" | grep "$TAG" | sed -e 's/^-A/$ipt -D/' -e 's/$/;/')
+        for chain in $(echo "$DAT" | awk '/^:CNNG/{print $1}'); do
+            $ipt -F ${chain:1} 2>/dev/null && $ipt -X ${chain:1}
+        done
+    }
+    resume_iptables nat
+    resume_iptables mangle
+}
+
 func_china_file(){
     if [ -f "$dir_chnroute_file" ] || [ -s "$dir_chnroute_file" ]
     then
@@ -217,10 +230,11 @@ func_start(){
 
 func_stop(){
     func_Del_rule &
-	iptables-save -c | grep -v "chnroute" | iptables-restore -c
+    iptables-save -c | grep -v chnroute | iptables-restore -c
     for setname in $(ipset -n list | grep "chnroute"); do
         ipset destroy "$setname" 2>/dev/null
     done
+    #func_Del_iptables &
     if [ $(nvram get ss_enable) = "0" ]
     then
         [ -d "$v2_home" ] && rm -rf $v2_home
