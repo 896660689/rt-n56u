@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2022-07-08
+# Compile:by-lanse	2023-03-06
 
 export PATH=$PATH:/etc/storage/shadowsocks
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etc/storage/shadowsocks
@@ -318,7 +318,7 @@ dog_restart(){
 
 ipt_ss_del()
 {
-    iptables-save -c | grep -v "gfwlist" | iptables-restore -c && sleep 2
+    iptables-save -c | grep -v "gfwlist" | iptables-restore -c
     for setname in $(ipset -n list | grep "gfwlist"); do
         ipset destroy "$setname" 2>/dev/null
     done
