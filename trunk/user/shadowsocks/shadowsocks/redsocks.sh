@@ -158,7 +158,6 @@ $ipt -D $CHAIN_NAME -m set --match-set chnroute dst -j RETURN
 $ipt -D $CHAIN_NAME -p tcp -j REDIRECT --to-ports 12345
 $ipt -D PREROUTING -i br0 -p tcp -j $CHAIN_NAME
 $ipt -X $CHAIN_NAME
-ipset -X chnroute 2>/dev/null
 [ -d "$SOCKS_LOG" ] && cat /dev/null > $SOCKS_LOG
 }
 
