@@ -144,6 +144,15 @@ fi
 }
 
 func_clean(){
+flush_iptables() {
+ipt="iptables -t $1"
+DAT=$(iptables-save -t $1)
+eval $(echo "$DAT" | grep "REDSOCKS" | sed -e 's/^-A/$ipt -D/' -e 's/$/;/')
+for chain in $(echo "$DAT" | awk '/^:REDSOCKS/{print $1}'); do
+$ipt -F ${chain:1} 2>/dev/null && $ipt -X ${chain:1}
+done
+}
+sleep 3 && flush_iptables nat &
 ipt="iptables -t nat"
 $ipt -D $CHAIN_NAME -d $REMOTE_IP -j RETURN
 $ipt -D $CHAIN_NAME -d 0.0.0.0/8 -j RETURN
@@ -157,7 +166,6 @@ $ipt -D $CHAIN_NAME -d 240.0.0.0/4 -j RETURN
 $ipt -D $CHAIN_NAME -m set --match-set chnroute dst -j RETURN
 $ipt -D $CHAIN_NAME -p tcp -j REDIRECT --to-ports 12345
 $ipt -D PREROUTING -i br0 -p tcp -j $CHAIN_NAME
-$ipt -X $CHAIN_NAME
 [ -d "$SOCKS_LOG" ] && cat /dev/null > $SOCKS_LOG
 }
 
