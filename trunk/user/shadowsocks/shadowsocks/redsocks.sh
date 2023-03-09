@@ -144,6 +144,7 @@ fi
 }
 
 func_clean(){
+if [ $(nvram get ss_enable) = "0" ]; then
 flush_iptables() {
 ipt="iptables -t $1"
 DAT=$(iptables-save -t $1)
@@ -153,6 +154,7 @@ $ipt -F ${chain:1} 2>/dev/null && $ipt -X ${chain:1}
 done
 }
 sleep 3 && flush_iptables nat &
+fi
 ipt="iptables -t nat"
 $ipt -D $CHAIN_NAME -d $REMOTE_IP -j RETURN
 $ipt -D $CHAIN_NAME -d 0.0.0.0/8 -j RETURN
