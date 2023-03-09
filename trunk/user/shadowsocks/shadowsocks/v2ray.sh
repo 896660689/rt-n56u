@@ -217,12 +217,12 @@ func_start(){
 
 func_stop(){
     func_Del_rule &
+    iptables-save -c | grep -v "chnroute" | iptables-restore -c
+    for setname in $(ipset -n list | grep "chnroute"); do
+        sleep 3 && ipset destroy "$setname" 2>/dev/null
+    done
     if [ $(nvram get ss_enable) = "0" ]
     then
-        iptables-save -c | grep -v chnroute | iptables-restore -c
-        for setname in $(ipset -n list | grep "chnroute"); do
-            ipset destroy "$setname" 2>/dev/null
-        done
         [ -d "$v2_home" ] && rm -rf $v2_home
     fi
     [ -f "$V2RUL" ] && rm -rf $V2RUL
