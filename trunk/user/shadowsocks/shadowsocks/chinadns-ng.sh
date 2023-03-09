@@ -24,15 +24,18 @@ func_del_rule(){
 }
 
 func_del_ipt(){
-    flush_iptables() {
-        ipt="iptables -t $1"
-        DAT=$(iptables-save -t $1)
-        eval $(echo "$DAT" | grep "CNNG" | sed -e 's/^-A/$ipt -D/' -e 's/$/;/')
-        for chain in $(echo "$DAT" | awk '/^:CNNG/{print $1}'); do
-            $ipt -F ${chain:1} 2>/dev/null && $ipt -X ${chain:1}
-        done
-    }
-    sleep 3 && flush_iptables nat
+    if [ $(nvram get ss_enable) = "0" ]
+    then
+        flush_iptables() {
+            ipt="iptables -t $1"
+            DAT=$(iptables-save -t $1)
+            eval $(echo "$DAT" | grep "CNNG" | sed -e 's/^-A/$ipt -D/' -e 's/$/;/')
+            for chain in $(echo "$DAT" | awk '/^:CNNG/{print $1}'); do
+                $ipt -F ${chain:1} 2>/dev/null && $ipt -X ${chain:1}
+            done
+        }
+        sleep 3 && flush_iptables nat
+    fi
     ipt="iptables -t nat"
     $ipt -D CNNG_PRE -d $v2_address -j RETURN
     $ipt -D CNNG_PRE -m set --match-set gateway dst -j RETURN
