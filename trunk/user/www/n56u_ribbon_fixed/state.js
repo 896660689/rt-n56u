@@ -207,7 +207,7 @@ function showSystemInfo(cpu_now,force){
 		$j('#button_script2').addClass('btn-info');
 	else
 		$j('#button_script2').removeClass('btn-info');
-	
+
 	if(parseInt(sysinfo.wifi2.guest) > 0)
 		$j('#wifi2_b_g').addClass('btn-info');
 	else
