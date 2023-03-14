@@ -185,9 +185,9 @@ func_Del_rule(){
 func_china_file(){
     if [ -f "$dir_chnroute_file" ] || [ -s "$dir_chnroute_file" ]
     then
-        ipset -N chnroute hash:net
+        ipset -N chain hash:net
         sleep 3 && \
-        awk '!/^$/&&!/^#/{printf("add chnroute %s'" "'\n",$0)}' $dir_chnroute_file | ipset restore &
+        awk '!/^$/&&!/^#/{printf("add chain %s'" "'\n",$0)}' $dir_chnroute_file | ipset restore &
     fi
 }
 
