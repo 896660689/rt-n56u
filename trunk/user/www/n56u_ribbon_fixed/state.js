@@ -389,6 +389,7 @@ tabtitle[7] = new Array("", "<#menu5_10_1#>", "<#menu5_10_2#>", "<#menu5_10_3#>"
 tabtitle[8] = new Array("", "<#menu5_11#>", "<#menu5_12#>", "WAN", "", "", "", "", "", "", "");
 tabtitle[9] = new Array("", "<#menu5_7_2#>", "<#menu5_7_3#>", "<#menu5_7_5#>", "<#menu5_7_6#>", "<#menu5_7_8#>");
 tabtitle[10] = new Array("", "<#menu5_16#>");
+tabtitle[11] = new Array("", "<#menu5_24#>");
 
 if (found_app_shadowsocks()){
 	tabtitle[10] = new Array("", "<#menu5_16#>");
@@ -396,6 +397,9 @@ if (found_app_shadowsocks()){
 	if (found_SSR_URL_Analysis()){
 		tabtitle[10] = new Array("", "<#menu5_16_44#>");
 	}
+}
+if (found_app_smartdns()){
+	tabtitle[11] = new Array("", "<#menu5_24#>");
 }
 
 //Level 3 Tab title
@@ -411,6 +415,7 @@ tablink[7] = new Array("", "Advanced_Tweaks_Content.asp", "Advanced_Scripts_Cont
 tablink[8] = new Array("", "Main_WStatus2g_Content.asp", "Main_WStatus_Content.asp", "", "", "", "", "", "", "", "");
 tablink[9] = new Array("", "Main_LogStatus_Content.asp", "Main_DHCPStatus_Content.asp", "Main_IPTStatus_Content.asp", "Main_RouteStatus_Content.asp", "Main_CTStatus_Content.asp");
 tablink[10] = new Array("", "Shadowsocks.asp");
+tablink[11] = new Array("", "Advanced_smartdns.asp");
 
 if (found_app_shadowsocks()){
 	shadowsocks_array = new Array("", "Shadowsocks.asp");
@@ -420,15 +425,22 @@ if (found_app_shadowsocks()){
 	tablink[10] = (ssrurl_array);
 }
 
+if (found_app_smartdns()){
+	smartdns_array = new Array("","Advanced_smartdns.asp");
+	tablink[11] = (smartdns_array);
+}
 //Level 2 Menu
-menuL2_title = new Array("", "<#menu5_11#>", "<#menu5_12#>", "<#menu5_2#>", "<#menu5_3#>", "<#menu5_5#>", "<#menu5_4#>", "<#menu5_6#>", "<#menu5_10#>", "<#menu5_9#>", "<#menu5_7#>", "<#menu5_16#>");
+menuL2_title = new Array("", "<#menu5_11#>", "<#menu5_12#>", "<#menu5_2#>", "<#menu5_3#>", "<#menu5_5#>", "<#menu5_4#>", "<#menu5_6#>", "<#menu5_10#>", "<#menu5_9#>", "<#menu5_7#>", "<#menu5_16#>", "<#menu5_24#>");
 
-menuL2_link  = new Array("", tablink[0][1], tablink[1][1], tablink[2][1], tablink[3][1], tablink[4][1], tablink[5][1], tablink[6][1], tablink[7][1], support_2g_radio() ? tablink[8][1] : "Main_EStatus_Content.asp", tablink[9][1], tablink[10][1]);
+menuL2_link  = new Array("", tablink[0][1], tablink[1][1], tablink[2][1], tablink[3][1], tablink[4][1], tablink[5][1], tablink[6][1], tablink[7][1], support_2g_radio() ? tablink[8][1] : "Main_EStatus_Content.asp", tablink[9][1], tablink[10][1], tablink[11][1]);
 
 if (found_app_shadowsocks()){
 	menuL2_link.push(tablink[10][1]);
 } else if (found_SSR_URL_Analysis()){
 	menuL2_title.push("ssrurl_array[1]");
+} else menuL2_link.push("");
+if (found_app_smartdns()){
+	menuL2_link.push(tablink[11][1]);
 } else menuL2_link.push("");
 
 //Level 1 Menu in Gateway, Router mode
