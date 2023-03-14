@@ -707,6 +707,15 @@ function reboot(){
 	});
 }
 
+function freememory(){
+	var $j = jQuery.noConflict();
+	$j.post('/apply.cgi',
+	{
+		'action_mode': ' FreeMemory ',
+		'current_page': 'Main_LogStatus_Content.asp'
+	});
+}
+
 function click_info_cpu(){
 	location.href="/Advanced_System_Info.asp#CPU";
 }
@@ -1452,3 +1461,4 @@ function removeFromLocalStorage(name){
 	};
 
 })(jQuery);
+
