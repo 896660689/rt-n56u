@@ -34,18 +34,17 @@ func_del_ipt(){
                 $ipt -F ${chain:1} 2>/dev/null && $ipt -X ${chain:1}
             done
         }
-        sleep 3 && flush_iptables nat
     fi
     ipt="iptables -t nat"
     $ipt -D CNNG_PRE -d $v2_address -j RETURN
-    $ipt -D CNNG_PRE -m set --match-set gateway dst -j RETURN
-    $ipt -D CNNG_PRE -m set --match-set chnroute dst -j RETURN
-    $ipt -D CNNG_OUT -m set --match-set chnroute dst -j RETURN
+    $ipt -D CNNG_PRE -m set --match-set gmlan dst -j RETURN
+    $ipt -D CNNG_PRE -m set --match-set china dst -j RETURN
+    $ipt -D CNNG_OUT -m set --match-set china dst -j RETURN
     $ipt -D CNNG_OUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-ports 65353
     $ipt -D CNNG_OUT -p tcp -j CNNG_PRE
     $ipt -D CNNG_PRE -p tcp -j REDIRECT --to-ports 12345
-    iptables-save -c | grep -v gateway | iptables-restore -c
-    for setname in $(ipset -n list | grep "gateway"); do
+    iptables-save -c | grep -v gmlan | iptables-restore -c
+    for setname in $(ipset -n list | grep "gmlan"); do
         ipset destroy "$setname" 2>/dev/null
     done
     $ipt -D PREROUTING -j CNNG_OUT
@@ -53,7 +52,7 @@ func_del_ipt(){
 }
 
 func_cnng_file(){
-    /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c 119.29.29.29#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
+    /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c 119.29.29.29#53 -t 127.0.0.1#$ss_tunnel_local_port -4 china >/dev/null 2>&1 &
     #/usr/bin/chinadns-ng -c 119.29.29.29#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
     if grep -q "no-resolv" "$DNSMASQ_RURE"
     then
@@ -68,8 +67,8 @@ sleep 2
 
 func_lan_ip(){
 ipset -! restore <<-EOF
-create gateway hash:net hashsize 64
-$(gen_lan_ip | sed -e "s/^/add gateway /")
+create gmlan hash:net hashsize 64
+$(gen_lan_ip | sed -e "s/^/add gmlan /")
 EOF
 }
 
@@ -111,9 +110,9 @@ $ipt -N CNNG_PRE
 $ipt -A PREROUTING -j CNNG_OUT
 $ipt -A OUTPUT -j CNNG_PRE
 $ipt -A CNNG_PRE -d $v2_address -j RETURN
-$ipt -A CNNG_PRE -m set --match-set gateway dst -j RETURN
-$ipt -A CNNG_PRE -m set --match-set chnroute dst -j RETURN
-$ipt -A CNNG_OUT -m set --match-set chnroute dst -j RETURN
+$ipt -A CNNG_PRE -m set --match-set gmlan dst -j RETURN
+$ipt -A CNNG_PRE -m set --match-set china dst -j RETURN
+$ipt -A CNNG_OUT -m set --match-set china dst -j RETURN
 $ipt -A CNNG_OUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-ports 65353
 
 $ipt -A CNNG_OUT -p tcp -j CNNG_PRE
