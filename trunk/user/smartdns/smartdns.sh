@@ -41,7 +41,7 @@ export PATH=$PATH:/etc/storage/smartdns
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etc/storage/smartdns
 
 check_ss(){
-if [ $(nvram get ss_enable) = "1" ] && [ $(nvram get ss_mode) = "2" ] && [ $(nvram get ss_router_proxy) = "4" ]; then
+if [ $(nvram get ss_enable) = "1" ] && [ $(nvram get ss_mode) = "1" ] && [ $(nvram get ss_router_proxy) = "4" ]; then
     logger -t "SmartDNS" "系统检测到SS模式为绕过大陆模式，并且启用了pdnsd,请先调整SS解析使用SmartDNS+手动配置模式！程序将退出。"
     nvram set sdns_enable=0
     exit 0
@@ -216,25 +216,38 @@ fi
 }
 
 change_dns(){
-    sed -i '/no-resolv/d' /etc/storage/dnsmasq/dnsmasq.conf
-    sed -i '/server=127.0.0.1/d' /etc/storage/dnsmasq/dnsmasq.conf
-    cat >> /etc/storage/dnsmasq/dnsmasq.conf << EOF
+    if [ $(nvram get ss_mode) = "2" ] && [ $(nvram get ss_router_proxy) = "5" ]
+    then
+        echo ''
+    else
+        if grep -q "no-resolv" "/etc/storage/dnsmasq/dnsmasq.conf"
+        then
+            sed -i '/no-resolv/d; /server=127.0.0.1/d' /etc/storage/dnsmasq/dnsmasq.conf
+        fi
+        cat >> /etc/storage/dnsmasq/dnsmasq.conf << EOF
 no-resolv
 server=127.0.0.1#$sdns_port
 EOF
     /sbin/restart_dhcpd
     logger -t "SmartDNS" "添加DNS转发到$sdns_port端口"
+    if
 }
 
 del_dns(){
-    if grep -q "server=127.0.0.1" "$TIME_SCRIPT"
+    if grep -q "v2ray-watchdog" "$TIME_SCRIPT"
     then
         sed -i '/v2ray-watchdog/d' "$TIME_SCRIPT" >/dev/null 2>&1
-        sleep 2
     fi
-    sed -i '/no-resolv/d' /etc/storage/dnsmasq/dnsmasq.conf
-    sed -i '/server=127.0.0.1/d' /etc/storage/dnsmasq/dnsmasq.conf
-    restart_dhcpd &
+    if [ $(nvram get ss_mode) = "2" ] && [ $(nvram get ss_router_proxy) = "5" ]
+    then
+        echo ''
+    else
+        if grep -q "no-resolv" "/etc/storage/dnsmasq/dnsmasq.conf"
+        then
+            sed -i '/no-resolv/d; /server=127.0.0.1/d' /etc/storage/dnsmasq/dnsmasq.conf
+        fi
+        restart_dhcpd &
+    fi
 }
 
 set_iptable()
