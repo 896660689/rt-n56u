@@ -9,7 +9,6 @@ STORAGE="/etc/storage"
 SSR_HOME="$STORAGE/shadowsocks"
 DNSMASQ_RURE="$STORAGE/dnsmasq/dnsmasq.conf"
 STORAGE_V2SH="$STORAGE/storage_v2ray.sh"
-
 ss_tunnel_local_port=$(nvram get ss-tunnel_local_port)
 
 func_del_rule(){
@@ -26,16 +25,16 @@ func_del_rule(){
 func_del_ipt(){
     if [ $(nvram get ss_enable) = "0" ]
     then
-        flush_iptables() {
+        flush_iptables(){
             ipt="iptables -t $1"
             DAT=$(iptables-save -t $1)
             eval $(echo "$DAT" | grep "SS_SPEC_" | sed -e 's/^-A/$ipt -D/' -e 's/$/;/')
-            for chain in $(echo "$DAT" | awk '/^:SS_SPEC/{print $1}'); do
+            for chain in $(echo "$DAT" | awk '/^:chain/{print $1}'); do
                 $ipt -F ${chain:1} 2>/dev/null && $ipt -X ${chain:1}
             done
         }
+        sleep 2 && flush_iptables
     fi
-    flush_iptables
     ipt="iptables -t nat"
     $ipt -D SS_SPEC_WAN_AC -d $v2_address -j RETURN
     $ipt -D SS_SPEC_WAN_AC -m set --match-set gmlan dst -j RETURN
@@ -52,9 +51,10 @@ func_del_ipt(){
     $ipt -D OUTPUT -j SS_SPEC_WAN_AC
 }
 
-func_cnng_file(){
+func_conf(){
     /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c 119.29.29.29#53 -t 127.0.0.1#$ss_tunnel_local_port -4 china >/dev/null 2>&1 &
     #/usr/bin/chinadns-ng -c 119.29.29.29#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
+    sleep 2
     if grep -q "no-resolv" "$DNSMASQ_RURE"
     then
         sed -i '/no-resolv/d; /server=127.0.0.1/d' $DNSMASQ_RURE
@@ -63,10 +63,10 @@ func_cnng_file(){
 no-resolv
 server=127.0.0.1#65353
 EOF
-sleep 2
+    sleep 2
 }
 
-func_lan_ip(){
+func_gmlan(){
 ipset -! restore <<-EOF
 create gmlan hash:net hashsize 64
 $(gen_lan_ip | sed -e "s/^/add gmlan /")
@@ -94,7 +94,7 @@ chmod +x $FWI
 return 0
 }
 
-func_cnng_ipt(){
+func_ipt_n(){
 if grep -q "vmess" "$STORAGE_V2SH"
 then
     V2RUL=/tmp/V2mi.txt
@@ -120,9 +120,9 @@ $ipt -A SS_SPEC_WAN_FW -p tcp -j SS_SPEC_WAN_AC
 $ipt -A SS_SPEC_WAN_AC -p tcp -j REDIRECT --to-ports 12345
 
 cat <<-CAT >>$FWI
-iptables-save -c | grep -v CNNG_ | iptables-restore -c
+iptables-save -c | grep -v SS_SPEC_ | iptables-restore -c
 iptables-restore -n <<-EOF
-$(iptables-save | grep -E "CNNG_|^\*|^COMMIT" |\
+$(iptables-save | grep -E "SS_SPEC|^\*|^COMMIT" |\
 sed -e "s/^-A \(OUTPUT\|PREROUTING\)/-I \1 1/")
 EOF
 CAT
@@ -132,13 +132,11 @@ return 0
 func_start(){
     func_del_rule && \
     echo -e "\033[41;37m 部署 [CHINADNS-NG] 文件,请稍后...\e[0m\n"
+    func_del_ipt
+    func_gmlan && flush_ipt_file && func_ipt_n
     wait
-    echo ""
-    func_del_ipt && \
-    func_cnng_file
-    func_lan_ip && \
-    flush_ipt_file && \
-    func_cnng_ipt &
+    echo "dns"
+    func_conf
     logger -t "[CHINADNS-NG]" "开始运行…"
 }
 
