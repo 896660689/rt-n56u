@@ -16,7 +16,7 @@ func_del_rule(){
         killall chinadns-ng >/dev/null 2>&1
         kill -9 "$(pidof chinadns-ng)" >/dev/null 2>&1
     fi
-    if grep -q "no-resolv" "$DNSMASQ_RURE"
+    if grep -q "65353" "$DNSMASQ_RURE"
     then
         sed -i '/no-resolv/d; /server=127.0.0.1/d' $DNSMASQ_RURE
     fi
@@ -55,15 +55,15 @@ func_conf(){
     /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c 119.29.29.29#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
     #/usr/bin/chinadns-ng -c 119.29.29.29#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
     sleep 2
-    if grep -q "no-resolv" "$DNSMASQ_RURE"
+    if grep -q "65353" "$DNSMASQ_RURE"
     then
         sed -i '/no-resolv/d; /server=127.0.0.1/d' $DNSMASQ_RURE
-    fi
-    cat >> $DNSMASQ_RURE << EOF
+        sleep 2
+        cat >> $DNSMASQ_RURE << EOF
 no-resolv
 server=127.0.0.1#65353
 EOF
-    sleep 2
+    fi
 }
 
 func_gmlan(){
