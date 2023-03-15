@@ -217,8 +217,8 @@ func_start(){
 
 func_stop(){
     func_Del_rule &
-    iptables-save -c | grep -v "chnroute" | iptables-restore -c
-    for setname in $(ipset -n list | grep "chnroute"); do
+    iptables-save -c | grep -v "chain" | iptables-restore -c
+    for setname in $(ipset -n list | grep "chain"); do
         sleep 3 && ipset destroy "$setname" 2>/dev/null
     done
     if [ $(nvram get ss_enable) = "0" ]
