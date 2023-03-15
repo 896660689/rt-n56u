@@ -28,27 +28,27 @@ func_del_ipt(){
         flush_iptables(){
             ipt="iptables -t $1"
             DAT=$(iptables-save -t $1)
-            eval $(echo "$DAT" | grep "SS_SPEC_" | sed -e 's/^-A/$ipt -D/' -e 's/$/;/')
-            for chain in $(echo "$DAT" | awk '/^:chain/{print $1}'); do
+            eval $(echo "$DAT" | grep "CNNG" | sed -e 's/^-A/$ipt -D/' -e 's/$/;/')
+            for chain in $(echo "$DAT" | awk '/^:CNNG/{print $1}'); do
                 $ipt -F ${chain:1} 2>/dev/null && $ipt -X ${chain:1}
             done
         }
         sleep 2 && flush_iptables
     fi
     ipt="iptables -t nat"
-    $ipt -D SS_SPEC_WAN_AC -d $v2_address -j RETURN
-    $ipt -D SS_SPEC_WAN_AC -m set --match-set gmlan dst -j RETURN
-    $ipt -D SS_SPEC_WAN_AC -m set --match-set china dst -j RETURN
-    $ipt -D SS_SPEC_WAN_FW -m set --match-set china dst -j RETURN
-    $ipt -D SS_SPEC_WAN_FW -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-ports 65353
-    $ipt -D SS_SPEC_WAN_FW -p tcp -j SS_SPEC_WAN_AC
-    $ipt -D SS_SPEC_WAN_AC -p tcp -j REDIRECT --to-ports 12345
-    iptables-save -c | grep -v gmlan | iptables-restore -c
-    for setname in $(ipset -n list | grep "gmlan"); do
+    $ipt -D CNNG_PRE -d $v2_address -j RETURN
+    $ipt -D CNNG_PRE -m set --match-set gateway dst -j RETURN
+    $ipt -D CNNG_PRE -m set --match-set chnroute dst -j RETURN
+    $ipt -D CNNG_OUT -m set --match-set chnroute dst -j RETURN
+    $ipt -D CNNG_OUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-ports 65353
+    $ipt -D CNNG_OUT -p tcp -j CNNG_PRE
+    $ipt -D CNNG_PRE -p tcp -j REDIRECT --to-ports 12345
+    iptables-save -c | grep -v gateway | iptables-restore -c
+    for setname in $(ipset -n list | grep "gateway"); do
         ipset destroy "$setname" 2>/dev/null
     done
-    $ipt -D PREROUTING -j SS_SPEC_WAN_FW
-    $ipt -D OUTPUT -j SS_SPEC_WAN_AC
+    $ipt -D PREROUTING -j CNNG_OUT
+    $ipt -D OUTPUT -j CNNG_PRE
 }
 
 func_conf(){
@@ -68,8 +68,8 @@ EOF
 
 func_gmlan(){
 ipset -! restore <<-EOF
-create gmlan hash:net hashsize 64
-$(gen_lan_ip | sed -e "s/^/add gmlan /")
+create gateway hash:net hashsize 64
+$(gen_lan_ip | sed -e "s/^/add gateway /")
 EOF
 }
 
@@ -105,24 +105,24 @@ fi
 sleep 2
 ipt="iptables -t nat"
 
-$ipt -N SS_SPEC_WAN_FW
-$ipt -N SS_SPEC_WAN_AC
+$ipt -N CNNG_OUT
+$ipt -N CNNG_PRE
 
-$ipt -A PREROUTING -j SS_SPEC_WAN_FW
-$ipt -A OUTPUT -j SS_SPEC_WAN_AC
-$ipt -A SS_SPEC_WAN_AC -d $v2_address -j RETURN
-$ipt -A SS_SPEC_WAN_AC -m set --match-set gmlan dst -j RETURN
-$ipt -A SS_SPEC_WAN_AC -m set --match-set china dst -j RETURN
-$ipt -A SS_SPEC_WAN_FW -m set --match-set china dst -j RETURN
-$ipt -A SS_SPEC_WAN_FW -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-ports 65353
+$ipt -A PREROUTING -j CNNG_OUT
+$ipt -A OUTPUT -j CNNG_PRE
+$ipt -A CNNG_PRE -d $v2_address -j RETURN
+$ipt -A CNNG_PRE -m set --match-set gateway dst -j RETURN
+$ipt -A CNNG_PRE -m set --match-set chnroute dst -j RETURN
+$ipt -A CNNG_OUT -m set --match-set chnroute dst -j RETURN
+$ipt -A CNNG_OUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-ports 65353
 
-$ipt -A SS_SPEC_WAN_FW -p tcp -j SS_SPEC_WAN_AC
-$ipt -A SS_SPEC_WAN_AC -p tcp -j REDIRECT --to-ports 12345
+$ipt -A CNNG_OUT -p tcp -j CNNG_PRE
+$ipt -A CNNG_PRE -p tcp -j REDIRECT --to-ports 12345
 
 cat <<-CAT >>$FWI
-iptables-save -c | grep -v SS_SPEC_ | iptables-restore -c
+iptables-save -c | grep -v CNNG_ | iptables-restore -c
 iptables-restore -n <<-EOF
-$(iptables-save | grep -E "SS_SPEC|^\*|^COMMIT" |\
+$(iptables-save | grep -E "CNNG_|^\*|^COMMIT" |\
 sed -e "s/^-A \(OUTPUT\|PREROUTING\)/-I \1 1/")
 EOF
 CAT
