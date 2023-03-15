@@ -33,7 +33,7 @@ func_del_ipt(){
                 $ipt -F ${chain:1} 2>/dev/null && $ipt -X ${chain:1}
             done
         }
-        sleep 2 && flush_iptables
+        sleep 2 && flush_iptables net
     fi
     ipt="iptables -t nat"
     $ipt -D CNNG_PRE -d $v2_address -j RETURN
@@ -52,7 +52,7 @@ func_del_ipt(){
 }
 
 func_conf(){
-    /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c 119.29.29.29#53 -t 127.0.0.1#$ss_tunnel_local_port -4 china >/dev/null 2>&1 &
+    /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c 119.29.29.29#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
     #/usr/bin/chinadns-ng -c 119.29.29.29#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
     sleep 2
     if grep -q "no-resolv" "$DNSMASQ_RURE"
