@@ -11,13 +11,15 @@ all: extract_test extract_src
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
 		tar zxf ZeroTierOne-1.10.2-01.tar.gz ; \
-		patch -d $(SRC_NAME) -p1 -i ../0002-remove-pie.patch; \
-		patch -d $(SRC_NAME) -p1 -i ../0007-add-cerrno-header-for-str-errno.patch ; \
-		patch -d $(SRC_NAME) -p1 -i ../0009-fix-set-mac-and-change-confpath.patch ; \
+		sleep 20 ; \
 	fi )
 extract_src:
 	( if [ -d $(SRC_DIR) ]; then \
 		tar zxf ZeroTierOne-1.10.2-02.tar.gz ; \
+		sleep 35 ; \
+		patch -d $(SRC_NAME) -p1 -i ../0002-remove-pie.patch; \
+		patch -d $(SRC_NAME) -p1 -i ../0007-add-cerrno-header-for-str-errno.patch ; \
+		patch -d $(SRC_NAME) -p1 -i ../0009-fix-set-mac-and-change-confpath.patch ; \
 	fi )
 
 config_test:
