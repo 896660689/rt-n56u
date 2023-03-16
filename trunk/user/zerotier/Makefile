@@ -4,17 +4,20 @@ FLAGS := DEFS=""
 CFLAGS := -Os -ffunction-sections -fdata-sections
 LDFLAGS := -Wl,--gc-sections,--as-needed
 
-all: extract_test
-	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
-
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
-		tar -xzf ZeroTierOne-1.10.2-01.tar.gz ; \
-		tar -xzf ZeroTierOne-1.10.2-02.tar.gz ; \
+		tar xf ZeroTierOne-1.10.2-01.tar.gz ; \
 		patch -d $(SRC_NAME) -p1 -i ../0002-remove-pie.patch; \
 		patch -d $(SRC_NAME) -p1 -i ../0007-add-cerrno-header-for-str-errno.patch ; \
 		patch -d $(SRC_NAME) -p1 -i ../0009-fix-set-mac-and-change-confpath.patch ; \
 	fi )
+extract_test2:
+	( if [ ! -d $(SRC_NAME) ]; then \
+		tar xf ZeroTierOne-1.10.2-02.tar.gz ; \
+	fi )
+
+all: extract_test2 extract_test
+	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
 
 config_test:
 clean:
