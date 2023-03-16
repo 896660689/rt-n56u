@@ -2486,9 +2486,7 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		"function support_2g_stream_tx() { return %d;}\n"
 		"function support_2g_stream_rx() { return %d;}\n"
 		"function support_2g_turbo_qam() { return %d;}\n"
-		"function support_2g_airtimefairness() { return %d;}\n"
 		"function support_5g_txbf() { return %d;}\n"
-		"function support_5g_band_steering() { return %d;}\n"
 		"function support_5g_mumimo() { return %d;}\n"
 		"function support_sfe() { return %d;}\n"
 		"function support_lan_ap_isolate() { return %d;}\n"
@@ -2526,9 +2524,7 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		BOARD_NUM_ANT_2G_TX,
 		BOARD_NUM_ANT_2G_RX,
 		has_2g_turbo_qam,
-		has_2g_airtimefairness,
 		has_5g_txbf,
-		has_5g_band_steering,
 		has_5g_mumimo,
 		has_sfe,
 		has_lan_ap_isolate,
