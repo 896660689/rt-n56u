@@ -905,7 +905,6 @@
 	};
 #endif
 
-
 #if defined(APP_ZEROTIER)
 	struct variable variables_ZeroConf[] = {
 			{"zerotier_enable", "", NULL, EVM_RESTART_ZEROTIER},
