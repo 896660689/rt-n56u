@@ -34,6 +34,68 @@ var cookie = {
 	}
 };
 
+function HashMap() {
+	var length = 0;
+	var obj = new Object();
+	this.isEmpty = function () {
+		return length == 0;
+	};
+
+	this.containsKey = function (key) {
+		return (key in obj);
+	};
+
+	this.containsValue = function (value) {
+		for (var key in obj) {
+			if (obj[key] == value) {
+				return true;
+			}
+		}
+		return false;
+	};
+
+	this.put = function (key, value) {
+		if (!this.containsKey(key)) {
+			length++;
+		}
+		obj[key] = value;
+	};
+
+	this.get = function (key) {
+		return this.containsKey(key) ? obj[key] : null;
+	};
+
+	this.remove = function (key) {
+		if (this.containsKey(key) && (delete obj[key])) {
+			length--;
+		}
+	};
+
+	this.values = function () {
+		var _values = new Array();
+		for (var key in obj) {
+			_values.push(obj[key]);
+		}
+		return _values;
+	};
+
+	this.keySet = function () {
+		var _keys = new Array();
+		for (var key in obj) {
+			_keys.push(key);
+		}
+		return _keys;
+	};
+
+	this.size = function () {
+		return length;
+	};
+
+	this.clear = function () {
+		length = 0;
+		obj = new Object();
+	};
+}
 <% firmware_caps_hook(); %>
 
 function get_ap_mode(){
@@ -119,12 +181,12 @@ function get_system_info(){
 	});
 }
 
-function bytesToSize(bytes, precision){
-	var absval = Math.abs(bytes);
-	var kilobyte = 1024;
-	var megabyte = kilobyte * 1024;
-	var gigabyte = megabyte * 1024;
-	var terabyte = gigabyte * 1024;
+function bytesToSize(bytes, precision) {
+	var absval = Math.abs(bytes),
+		kilobyte = 1024,
+		megabyte = kilobyte * 1024,
+		gigabyte = megabyte * 1024,
+		terabyte = gigabyte * 1024;
 
 	if (absval < kilobyte)
 		return bytes + ' B';
@@ -147,8 +209,8 @@ function setSystemInfo(response){
 	if(typeof(si_new) !== 'object')
 		return;
 
-	var cpu_now = {};
-	var cpu_total = (si_new.cpu.total - sysinfo.cpu.total);
+	var cpu_now = {},
+		cpu_total = (si_new.cpu.total - sysinfo.cpu.total);
 	if (!cpu_total)
 		cpu_total = 1;
 
@@ -166,11 +228,11 @@ function setSystemInfo(response){
 	showSystemInfo(cpu_now,1);
 }
 
-function showSystemInfo(cpu_now,force){
-	var $j = jQuery.noConflict();
-	var arrLA = sysinfo.lavg.split(' ');
-	var h = sysinfo.uptime.hours < 10 ? ('0'+sysinfo.uptime.hours) : sysinfo.uptime.hours;
-	var m = sysinfo.uptime.minutes < 10 ? ('0'+sysinfo.uptime.minutes) : sysinfo.uptime.minutes;
+function showSystemInfo(cpu_now, force) {
+	var $j = jQuery.noConflict(),
+		arrLA = sysinfo.lavg.split(' '),
+		h = sysinfo.uptime.hours < 10 ? ('0' + sysinfo.uptime.hours) : sysinfo.uptime.hours,
+		m = sysinfo.uptime.minutes < 10 ? ('0'+sysinfo.uptime.minutes) : sysinfo.uptime.minutes;
 
 	$j("#la_info").html('<span class="label label-'+getLALabelStatus(arrLA[0])+'">'+arrLA[0]+'</span>&nbsp;<span class="label label-'+getLALabelStatus(arrLA[1])+'">'+arrLA[1]+'</span>&nbsp;<span class="label label-'+getLALabelStatus(arrLA[2])+'">'+arrLA[2]+'</span>');
 	$j("#cpu_info").html(cpu_now.busy + '%');
@@ -233,9 +295,10 @@ var enabledBtnCommit = '<% nvram_match_x("","nvram_manual", "0", "display:none;"
 
 // L3 = The third Level of Menu
 function show_banner(L3){
-	var bc = '';
-	var style_2g = 'width:55px;';
-	var style_5g = 'width:55px;';
+	var $j = jQuery.noConflict();
+	var bc = '',
+		style_2g = 'width:55px;',
+		style_5g = 'width:55px;';
 	if (!support_5g_radio()) {
 		style_2g = 'width:114px;';
 		style_5g = 'width:21px;display:none;';
@@ -246,7 +309,7 @@ function show_banner(L3){
 	}
 
 	// log panel
-	if (!is_mobile && log_float != '0'){
+	if (!is_mobile && log_float != '0') {
 		bc += '<div class="syslog_panel">\n';
 		bc += '<button id="syslog_panel_button" class="handle" href="/"><span class="log_text">Log</span></button>\n';
 		bc += '<table class="" style="margin-top: 0px; margin-bottom: 5px" width="100%" border="0">\n';
@@ -376,7 +439,7 @@ function show_banner(L3){
 
 	bc +='</td></tr></table>\n';
 
-	$("TopBanner").innerHTML = bc;
+	$j("#TopBanner").html(bc);
 
 	show_loading_obj();
 	show_top_status();
@@ -395,6 +458,7 @@ tabtitle[8] = new Array("", "<#menu5_11#>", "<#menu5_12#>", "WAN", "", "", "", "
 tabtitle[9] = new Array("", "<#menu5_7_2#>", "<#menu5_7_3#>", "<#menu5_7_5#>", "<#menu5_7_6#>", "<#menu5_7_8#>");
 tabtitle[10] = new Array("", "<#menu5_16#>");
 tabtitle[11] = new Array("", "<#menu5_24#>");
+tabtitle[12] = new Array("", "<#menu5_32#>");
 
 if (found_app_shadowsocks()){
 	tabtitle[10] = new Array("", "<#menu5_16#>");
@@ -405,6 +469,9 @@ if (found_app_shadowsocks()){
 }
 if (found_app_smartdns()){
 	tabtitle[11] = new Array("", "<#menu5_24#>");
+}
+if (found_app_zerotier()){
+	tabtitle[11] = new Array("", "<#menu5_32#>");
 }
 
 //Level 3 Tab title
@@ -421,6 +488,7 @@ tablink[8] = new Array("", "Main_WStatus2g_Content.asp", "Main_WStatus_Content.a
 tablink[9] = new Array("", "Main_LogStatus_Content.asp", "Main_DHCPStatus_Content.asp", "Main_IPTStatus_Content.asp", "Main_RouteStatus_Content.asp", "Main_CTStatus_Content.asp");
 tablink[10] = new Array("", "Shadowsocks.asp");
 tablink[11] = new Array("", "Advanced_smartdns.asp");
+tablink[12] = new Array("", "Advanced_zerotier.asp");
 
 if (found_app_shadowsocks()){
 	shadowsocks_array = new Array("", "Shadowsocks.asp");
@@ -434,10 +502,15 @@ if (found_app_smartdns()){
 	smartdns_array = new Array("","Advanced_smartdns.asp");
 	tablink[11] = (smartdns_array);
 }
-//Level 2 Menu
-menuL2_title = new Array("", "<#menu5_11#>", "<#menu5_12#>", "<#menu5_2#>", "<#menu5_3#>", "<#menu5_5#>", "<#menu5_4#>", "<#menu5_6#>", "<#menu5_10#>", "<#menu5_9#>", "<#menu5_7#>", "<#menu5_16#>", "<#menu5_24#>");
 
-menuL2_link  = new Array("", tablink[0][1], tablink[1][1], tablink[2][1], tablink[3][1], tablink[4][1], tablink[5][1], tablink[6][1], tablink[7][1], support_2g_radio() ? tablink[8][1] : "Main_EStatus_Content.asp", tablink[9][1], tablink[10][1], tablink[11][1]);
+if (found_app_zerotier()){
+	zerotier_array = new Array("","Advanced_zerotier.asp");
+	tablink[12] = (zerotier_array);
+}
+//Level 2 Menu
+menuL2_title = new Array("", "<#menu5_11#>", "<#menu5_12#>", "<#menu5_2#>", "<#menu5_3#>", "<#menu5_5#>", "<#menu5_4#>", "<#menu5_6#>", "<#menu5_10#>", "<#menu5_9#>", "<#menu5_7#>", "<#menu5_16#>", "<#menu5_24#>", "<#menu5_32#>");
+
+menuL2_link  = new Array("", tablink[0][1], tablink[1][1], tablink[2][1], tablink[3][1], tablink[4][1], tablink[5][1], tablink[6][1], tablink[7][1], support_2g_radio() ? tablink[8][1] : "Main_EStatus_Content.asp", tablink[9][1], tablink[10][1], tablink[11][1], tablink[12][1]);
 
 if (found_app_shadowsocks()){
 	menuL2_link.push(tablink[10][1]);
@@ -447,7 +520,9 @@ if (found_app_shadowsocks()){
 if (found_app_smartdns()){
 	menuL2_link.push(tablink[11][1]);
 } else menuL2_link.push("");
-
+if (found_app_zerotier()){
+	menuL2_link.push(tablink[12][1]);
+} else menuL2_link.push("");
 //Level 1 Menu in Gateway, Router mode
 menuL1_title = new Array("", "<#menu1#>", "", "<#menu2#>", "<#menu6#>", "<#menu4#>", "<#menu5_8#>", "<#menu5#>");
 menuL1_link = new Array("", "index.asp", "", "vpnsrv.asp", "vpncli.asp", "Main_TrafficMonitor_realtime.asp", "Advanced_System_Info.asp", "as.asp");

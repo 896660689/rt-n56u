@@ -2049,6 +2049,14 @@ static int smartdns_status_hook(int eid, webs_t wp, int argc, char **argv)
 	return 0;
 }
 #endif
+#if defined (APP_ZEROTIER)
+static int zerotier_status_hook(int eid, webs_t wp, int argc, char **argv)
+{
+	int zerotier_status_code = pids("zerotier-one");
+	websWrite(wp, "function zerotier_status() { return %d;}\n", zerotier_status_code);
+	return 0;
+}
+#endif
 
 static int
 ej_detect_internet_hook(int eid, webs_t wp, int argc, char **argv)
@@ -2228,6 +2236,11 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 	int found_app_wyy = 1;
 #else
 	int found_app_wyy = 0;
+#endif
+#if defined(APP_ZEROTIER)
+	int found_app_zerotier = 1;
+#else
+	int found_app_zerotier = 0;
 #endif
 #if defined(APP_SMARTDNS)
 	int found_app_smartdns = 1;
@@ -2413,6 +2426,7 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		"function found_app_shadowsocks() { return %d;}\n"
 		"function found_app_adbyby() { return %d;}\n"
 		"function found_app_wyy() { return %d;}\n"
+		"function found_app_zerotier() { return %d;}\n"
 		"function found_app_smartdns() { return %d;}\n"
 		"function found_app_adguardhome() { return %d;}\n"
 		"function found_app_xupnpd() { return %d;}\n",
@@ -2435,6 +2449,7 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		found_app_shadowsocks,
 		found_app_adbyby,
 		found_app_wyy,
+		found_app_zerotier,
 		found_app_smartdns,
 		found_app_adguardhome,
 		found_app_xupnpd
@@ -2471,7 +2486,9 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		"function support_2g_stream_tx() { return %d;}\n"
 		"function support_2g_stream_rx() { return %d;}\n"
 		"function support_2g_turbo_qam() { return %d;}\n"
+		"function support_2g_airtimefairness() { return %d;}\n"
 		"function support_5g_txbf() { return %d;}\n"
+		"function support_5g_band_steering() { return %d;}\n"
 		"function support_5g_mumimo() { return %d;}\n"
 		"function support_sfe() { return %d;}\n"
 		"function support_lan_ap_isolate() { return %d;}\n"
@@ -2509,7 +2526,9 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		BOARD_NUM_ANT_2G_TX,
 		BOARD_NUM_ANT_2G_RX,
 		has_2g_turbo_qam,
+		has_2g_airtimefairness,
 		has_5g_txbf,
+		has_5g_band_steering,
 		has_5g_mumimo,
 		has_sfe,
 		has_lan_ap_isolate,
@@ -4111,6 +4130,9 @@ struct ej_handler ej_handlers[] =
 #endif
 #if defined (APP_SMARTDNS)
 	{ "smartdns_status", smartdns_status_hook},
+#endif
+#if defined (APP_ZEROTIER)
+	{ "zerotier_status", zerotier_status_hook},
 #endif
 	{ "openssl_util_hook", openssl_util_hook},
 	{ "openvpn_srv_cert_hook", openvpn_srv_cert_hook},

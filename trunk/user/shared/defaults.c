@@ -328,6 +328,8 @@ struct nvram_pair router_defaults[] = {
 	{ "rt_greenap", "0" },
 	{ "rt_HT_RDG", "0" },
 	{ "rt_HT_AMSDU", "0" },
+	{ "rt_HT_80211KV", "1" },
+	{ "rt_HT_80211R", "0" },
 	{ "rt_HT_MpduDensity", "5" },
 #if defined (USE_WID_2G) && (USE_WID_2G==7615 || USE_WID_2G==7915)
 	{ "rt_HT_BAWinSize", "256" },
@@ -578,6 +580,15 @@ struct nvram_pair router_defaults[] = {
 	{ "wyy_staticnum_x", "0" },
 #endif
 
+#if defined(APP_ZEROTIER)
+	/*Zerotier*/
+	{ "zerotier_enable", "0" },
+	{ "zerotier_id", "" },
+	{ "zerotier_nat", "0" },
+	{ "zerotier_secret", "" },
+	{ "zero_staticnum_x", "0" },
+#endif
+
 #if defined(SmartDns)
 	/*SmartDns*/
 	{ "sdns_enable", "0" },
@@ -710,7 +721,7 @@ struct nvram_pair router_defaults[] = {
 	{ "di_addr5", "185.228.168.168" },
 	{ "di_port0", "53" },
 	{ "di_port1", "53" },
-	{ "di_port2", "53" },
+	{ "di_port2", "80" },
 	{ "di_port3", "53" },
 	{ "di_port4", "53" },
 	{ "di_port5", "53" },
@@ -739,7 +750,7 @@ struct nvram_pair router_defaults[] = {
 	{ "wol_mac_last", "" },
 	{ "gw_arp_ping", "0" },
 	{ "ez_action_short", "0" },
-#if defined(BOARD_K2P)
+#if !defined(BOARD_GPIO_BTN_RESET)
 	{ "ez_action_long", "15" },		/* Reset */
 #else
 	{ "ez_action_long", "0" },

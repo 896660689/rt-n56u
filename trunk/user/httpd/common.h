@@ -151,6 +151,7 @@ typedef u_int8_t u8;
 #define EVT_RESTART_WYY		2
 #define EVT_RESTART_SMARTDNS		1
 #define EVT_RESTART_ADGUARDHOME		1
+#define EVT_RESTART_ZEROTIER     	2
 #define EVT_RESTART_REBOOT		40
 
 struct variable
