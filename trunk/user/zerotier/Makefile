@@ -1,17 +1,20 @@
-SRC_NAME = ZeroTierOne-1.10.5
+SRC_NAME = ZeroTierOne-1.8.4
 THISDIR = $(shell pwd)
 FLAGS := DEFS=""
 CFLAGS := -Os -ffunction-sections -fdata-sections
 LDFLAGS := -Wl,--gc-sections,--as-needed
 
-
 all: extract_test
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
 
 extract_test:
-	( if [ ! -d $(SRC_NAME) ]; then \
-		tar zxf $(SRC_NAME).tar.gz ; \
-	fi )
+	 if [ ! -d $(SRC_NAME) ] ; then \
+		tar xf $(SRC_NAME).tar.gz ; \
+		patch -d $(SRC_NAME) -p1 -i ../0001-fix-makefile.patch ; \
+		patch -d $(SRC_NAME) -p1 -i ../0006-gcc10.patch ; \
+		patch -d $(SRC_NAME) -p1 -i ../0007-add-cerrno-header-for-str-errno.patch ; \
+		patch -d $(SRC_NAME) -p1 -i ../0008-fix-compilation-for-arm_cortex-a7-neon.patch; \
+	 fi ;
 
 config_test:
 clean:

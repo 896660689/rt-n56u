@@ -41,9 +41,9 @@ start_instance() {
 	add_join $(nvram get zerotier_id)
 
 	$PROG $args $config_path >/dev/null 2>&1 &
-
+		
 	rules
-
+	
 	if [ -n "$moonid" ]; then
 		$PROGCLI -D$config_path orbit $moonid $moonid
 		logger -t "zerotier" "orbit moonid $moonid ok!"
@@ -175,7 +175,7 @@ creat_moon(){
 		if [ ! -d "$config_path/moons.d" ]; then
 			mkdir -p $config_path/moons.d
 		fi
-
+		
 		#服务器加入moon server
 		mv $config_path/*.moon $config_path/moons.d/ >/dev/null 2>&1
 		logger -t "zerotier" "moon节点创建完成"
@@ -193,7 +193,7 @@ creat_moon(){
 
 remove_moon(){
 	zmoonid="$(nvram get zerotiermoon_id)"
-
+	
 	if [ ! -n "$zmoonid"]; then
 		rm -f $config_path/moons.d/000000$zmoonid.moon
 		rm -f $config_path/moon.json
