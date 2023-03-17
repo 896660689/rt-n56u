@@ -2,12 +2,12 @@
 # Copyright (C) 2018 Nick Peng (pymumu@gmail.com)
 # Copyright (C) 2019 chongshengB
 
-STORAGE_DIR="/etc/storage"
-SMARTDNS_CONF="$STORAGE_DIR/smartdns.conf"
-ADDRESS_CONF="$STORAGE_DIR/smartdns_address.conf"
-BLACKLIST_IP_CONF="$STORAGE_DIR/smartdns_blacklist-ip.conf"
-WHITELIST_IP_CONF="$STORAGE_DIR/smartdns_whitelist-ip.conf"
-CUSTOM_CONF="$STORAGE_DIR/smartdns_custom.conf"
+SMT_DIR="/etc/storage"
+SMT_CONF="$SMT_DIR/smartdns.conf"
+ADDRESS_CONF="$SMT_DIR/smartdns_address.conf"
+BLACKLIST_IP_CONF="$SMT_DIR/smartdns_blacklist-ip.conf"
+WHITELIST_IP_CONF="$SMT_DIR/smartdns_whitelist-ip.conf"
+CUSTOM_CONF="$SMT_DIR/smartdns_custom.conf"
 smartdns_file="/usr/bin/smartdns"
 sdns_enable=`nvram get sdns_enable`
 snds_name=`nvram get snds_name`
@@ -37,8 +37,8 @@ sdnse_cache=`nvram get sdnse_cache`
 ss_white=`nvram get ss_white`
 ss_black=`nvram get ss_black`
 
-export PATH=$PATH:/etc/storage/smartdns
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etc/storage/smartdns
+export PATH=$PATH:$SMT_DIR/smartdns
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SMT_DIR/smartdns
 
 check_ss(){
 if [ $(nvram get ss_enable) = "1" ] && [ $(nvram get ss_mode) = "1" ]; then
@@ -64,9 +64,9 @@ get_tz() {
 }
 
 func_chnroute_file() {
-    dir_chnroute_file="$STORAGE_DIR/chinadns/chnroute.txt"
-    if [ ! -f "$dir_chnroute_file" ] || [ ! -s "$dir_chnroute_file" ] ; then
-        [ ! -d $STORAGE_DIR/chinadns ] && mkdir -p "$STORAGE/chinadns"
+    dir_chnroute_file="$SMT_DIR/chinadns/chnroute.txt"
+    if [ ! -f "$dir_chnroute_file" ] || [ ! -s "$dir_chnroute_file" ]; then
+        [ ! -d $SMT_DIR/chinadns ] && mkdir -p "$STORAGE/chinadns"
         tar jxf "/etc_ro/chnroute.bz2" -C "$STORAGE/chinadns"
         chmod 644 "$dir_chnroute_file"
     fi
@@ -78,52 +78,52 @@ func_smt_Close() {
 }
 
 gensmartconf() {
-    rm -f $SMARTDNS_CONF
-    touch $SMARTDNS_CONF
-    echo "server-name $snds_name" >> $SMARTDNS_CONF
+    [ -f $SMT_CONF ] && rm -f $SMT_CONF
+    touch $SMT_CONF
+    echo "server-name $snds_name" >> $SMT_CONF
     if [ "$sdns_ipv6_server" = "1" ]; then
-        echo "bind" "[::]:$sdns_port" >> $SMARTDNS_CONF
+        echo "bind" "[::]:$sdns_port" >> $SMT_CONF
     else
-        echo "bind" ":$sdns_port" >> $SMARTDNS_CONF
+        echo "bind" ":$sdns_port" >> $SMT_CONF
     fi
     if [ "$sdns_tcp_server" = "1" ]; then
         if [ "$sdns_ipv6_server" = "1" ]; then
-            echo "bind-tcp" "[::]:$sdns_port" >> $SMARTDNS_CONF
+            echo "bind-tcp" "[::]:$sdns_port" >> $SMT_CONF
         else
-            echo "bind-tcp" ":$sdns_port" >> $SMARTDNS_CONF
+            echo "bind-tcp" ":$sdns_port" >> $SMT_CONF
         fi
     fi
     gensdnssecond
-    echo "cache-size $snds_cache" >> $SMARTDNS_CONF
+    echo "cache-size $snds_cache" >> $SMT_CONF
     if [ $snds_ip_change -eq 1 ]; then
-        echo "dualstack-ip-selection yes" >> $SMARTDNS_CONF
-        echo "dualstack-ip-selection-threshold $(nvram get snds_ip_change_time)" >> $SMARTDNS_CONF
+        echo "dualstack-ip-selection yes" >> $SMT_CONF
+        echo "dualstack-ip-selection-threshold $(nvram get snds_ip_change_time)" >> $SMT_CONF
     elif [ $snds_ipv6 -eq 1 ]; then
-        echo "force-AAAA-SOA yes" >> $SMARTDNS_CONF
+        echo "force-AAAA-SOA yes" >> $SMT_CONF
     fi
     if [ $sdns_www -eq 1 ]; then
-        echo "prefetch-domain yes" >> $SMARTDNS_CONF
+        echo "prefetch-domain yes" >> $SMT_CONF
     else
-        echo "prefetch-domain no" >> $SMARTDNS_CONF
+        echo "prefetch-domain no" >> $SMT_CONF
     fi
     if [ $sdns_exp -eq 1 ]; then
-        echo "serve-expired yes" >> $SMARTDNS_CONF
+        echo "serve-expired yes" >> $SMT_CONF
     else
-        echo "serve-expired no" >> $SMARTDNS_CONF
+        echo "serve-expired no" >> $SMT_CONF
     fi
-    echo "log-level info" >> $SMARTDNS_CONF
+    echo "log-level info" >> $SMT_CONF
     pass_order
     if [ $ss_white = "1" ]; then
         func_chnroute_file && sleep 5
         func_smt_Close && \
         logger -t "SmartDNS" "开始处理白名单IP"
-        awk '{printf("whitelist-ip %s\n", $1, $1 )}' $STORAGE_DIR/chinadns/chnroute.txt >> /tmp/whitelist.conf
-        echo "conf-file /tmp/whitelist.conf" >> $SMARTDNS_CONF
+        awk '{printf("whitelist-ip %s\n", $1, $1 )}' $SMT_DIR/chinadns/chnroute.txt >> /tmp/whitelist.conf
+        echo "conf-file /tmp/whitelist.conf" >> $SMT_CONF
     fi
     if [ $ss_black = "1" ]; then
         logger -t "SmartDNS" "开始处理黑名单IP"
-        awk '{printf("blacklist-ip %s\n", $1, $1 )}' $STORAGE_DIR/chinadns/chnroute.txt >> /tmp/blacklist.conf
-        echo "conf-file /tmp/blacklist.conf" >> $SMARTDNS_CONF
+        awk '{printf("blacklist-ip %s\n", $1, $1 )}' $SMT_DIR/chinadns/chnroute.txt >> /tmp/blacklist.conf
+        echo "conf-file /tmp/blacklist.conf" >> $SMT_CONF
     fi
 }
 
@@ -155,32 +155,32 @@ pass_order() {
         [ $sdnss_non = "1" ] && non="-exclude-default-group"
         if [ $sdnss_type = "tcp" ]; then
             if [ $sdnss_port = "default" ]; then
-                echo "server-tcp $sdnss_ip:53 $ipc $named $non" >> $SMARTDNS_CONF
+                echo "server-tcp $sdnss_ip:53 $ipc $named $non" >> $SMT_CONF
             else
-                echo "server-tcp $sdnss_ip:$sdnss_port $ipc $named $non" >> $SMARTDNS_CONF
+                echo "server-tcp $sdnss_ip:$sdnss_port $ipc $named $non" >> $SMT_CONF
             fi
         elif [ $sdnss_type = "udp" ]; then
             if [ $sdnss_port = "default" ]; then
-                echo "server $sdnss_ip:53 $ipc $named $non" >> $SMARTDNS_CONF
+                echo "server $sdnss_ip:53 $ipc $named $non" >> $SMT_CONF
             else
-                echo "server $sdnss_ip:$sdnss_port $ipc $named $non" >> $SMARTDNS_CONF
+                echo "server $sdnss_ip:$sdnss_port $ipc $named $non" >> $SMT_CONF
             fi
         elif [ $sdnss_type = "tls" ]; then
             if [ $sdnss_port = "default" ]; then
-                echo "server-tls $sdnss_ip:53 $ipc $named $non" >> $SMARTDNS_CONF
+                echo "server-tls $sdnss_ip:53 $ipc $named $non" >> $SMT_CONF
             else
-                echo "server-tls $sdnss_ip:$sdnss_port $ipc $named $non" >> $SMARTDNS_CONF
+                echo "server-tls $sdnss_ip:$sdnss_port $ipc $named $non" >> $SMT_CONF
             fi
         elif [ $sdnss_type = "https" ]; then
             if [ $sdnss_port = "default" ]; then
-                echo "server-https $sdnss_ip $ipc $named $non" >> $SMARTDNS_CONF
+                echo "server-https $sdnss_ip $ipc $named $non" >> $SMT_CONF
             fi
         fi
         if [ $sdnss_ipset != "" ]; then
             #ipset add gfwlist $sdnss_ipset 2>/dev/null
             CheckIPAddr $sdnss_ipset
             if [ "$?" == "1" ]; then
-                echo "ipset /$sdnss_ipset/smartdns" >> $SMARTDNS_CONF
+                echo "ipset /$sdnss_ipset/smartdns" >> $SMT_CONF
             else
                 ipset add smartdns $sdnss_ipset 2>/dev/null
             fi
@@ -205,30 +205,30 @@ if  [ $sdnse_enable -eq 1 ]; then
 else
     ADDR=""
 fi
-echo "bind" "$ADDR:$sdnse_port $ARGS" >> $SMARTDNS_CONF
+echo "bind" "$ADDR:$sdnse_port $ARGS" >> $SMT_CONF
 if [ "$sdnse_tcp" = "1" ]; then
-    echo "bind-tcp" "$ADDR:$sdnse_port $ARGS" >> $SMARTDNS_CONF
+    echo "bind-tcp" "$ADDR:$sdnse_port $ARGS" >> $SMT_CONF
 fi
 }
 
 change_dns() {
     if [ $(nvram get ss_mode) = "2" ] || [ $(nvram get ss_router_proxy) = "5" ]
     then
-        if grep -q "no-resolv" "/etc/storage/dnsmasq/dnsmasq.conf"
+        if grep -q "no-resolv" "$SMT_DIR/dnsmasq/dnsmasq.conf"
         then
             echo ''
 		else
-cat >> /etc/storage/dnsmasq/dnsmasq.conf << EOF
+cat >> $SMT_DIR/dnsmasq/dnsmasq.conf << EOF
 no-resolv
 server=127.0.0.1#$sdns_port
 EOF
 		fi
     else
-        if grep -q "no-resolv" "/etc/storage/dnsmasq/dnsmasq.conf"
+        if grep -q "no-resolv" "$SMT_DIR/dnsmasq/dnsmasq.conf"
         then
-            sed -i '/no-resolv/d; /server=127.0.0.1/d' /etc/storage/dnsmasq/dnsmasq.conf
+            sed -i '/no-resolv/d; /server=127.0.0.1/d' $SMT_DIR/dnsmasq/dnsmasq.conf
         fi
-        cat >> /etc/storage/dnsmasq/dnsmasq.conf << EOF
+        cat >> $SMT_DIR/dnsmasq/dnsmasq.conf << EOF
 no-resolv
 server=127.0.0.1#$sdns_port
 EOF
@@ -242,9 +242,9 @@ del_dns() {
     then
         echo ''
     else
-        if grep -q "no-resolv" "/etc/storage/dnsmasq/dnsmasq.conf"
+        if grep -q "no-resolv" "$SMT_DIR/dnsmasq/dnsmasq.conf"
         then
-            sed -i '/no-resolv/d; /server=127.0.0.1/d' /etc/storage/dnsmasq/dnsmasq.conf
+            sed -i '/no-resolv/d; /server=127.0.0.1/d' $SMT_DIR/dnsmasq/dnsmasq.conf
         fi
         restart_dhcpd &
     fi
@@ -299,26 +299,26 @@ clear_iptable() {
 }
 
 smartdns_folder() {
-    if [ ! -d "$STORAGE_DIR/smartdns" ] ; then
-        tar zxf "/etc_ro/smartdns.tar.gz" -C "$STORAGE_DIR" && sleep 2
+    if [ ! -d "$SMT_DIR/smartdns" ] ; then
+        tar zxf "/etc_ro/smartdns.tar.gz" -C "$SMT_DIR" && sleep 2
     fi
 }
 
 smartdns_rule() {
     if [ ! -f "$ADDRESS_CONF" ] || [ ! -s "$ADDRESS_CONF" ] ; then
-        cp -f "/$STORAGE_DIR/smartdns/smartdns_address.conf" $ADDRESS_CONF && \
+        cp -f "/$SMT_DIR/smartdns/smartdns_address.conf" $ADDRESS_CONF && \
         chmod 644 "$ADDRESS_CONF"
     fi
     if [ ! -f "$BLACKLIST_IP_CONF" ] || [ ! -s "$BLACKLIST_IP_CONF" ] ; then
-        cp -f "/$STORAGE_DIR/smartdns/smartdns_blacklist-ip.conf" $BLACKLIST_IP_CONF && \
+        cp -f "/$SMT_DIR/smartdns/smartdns_blacklist-ip.conf" $BLACKLIST_IP_CONF && \
         chmod 644 "$BLACKLIST_IP_CONF"
     fi
     if [ ! -f "$WHITELIST_IP_CONF" ] || [ ! -s "$WHITELIST_IP_CONF" ] ; then
-        cp -f "/$STORAGE_DIR/smartdns/smartdns_whitelist-ip.conf" $WHITELIST_IP_CONF && \
+        cp -f "/$SMT_DIR/smartdns/smartdns_whitelist-ip.conf" $WHITELIST_IP_CONF && \
         chmod 644 "$WHITELIST_IP_CONF"
     fi
     if [ ! -f "$CUSTOM_CONF" ] || [ ! -s "$CUSTOM_CONF" ] ; then
-        cp -f "/$STORAGE_DIR/smartdns/smartdns_custom.conf" $CUSTOM_CONF && \
+        cp -f "/$SMT_DIR/smartdns/smartdns_custom.conf" $CUSTOM_CONF && \
         chmod 644 "$CUSTOM_CONF"
     fi
 }
@@ -331,14 +331,14 @@ start_smartdns() {
     ipset -N smartdns hash:net 2>/dev/null
     gensmartconf
 
-    grep -v '^#' $ADDRESS_CONF | grep -v "^$" >> $SMARTDNS_CONF
-    grep -v '^#' $BLACKLIST_IP_CONF | grep -v "^$" >> $SMARTDNS_CONF
-    grep -v '^#' $WHITELIST_IP_CONF | grep -v "^$" >> $SMARTDNS_CONF
-    grep -v '^#' $CUSTOM_CONF | grep -v "^$" >> $SMARTDNS_CONF
+    grep -v '^#' $ADDRESS_CONF | grep -v "^$" >> $SMT_CONF
+    grep -v '^#' $BLACKLIST_IP_CONF | grep -v "^$" >> $SMT_CONF
+    grep -v '^#' $WHITELIST_IP_CONF | grep -v "^$" >> $SMT_CONF
+    grep -v '^#' $CUSTOM_CONF | grep -v "^$" >> $SMT_CONF
     if [ "$sdns_coredump" = "1" ]; then
         args="$args -S"
     fi
-    $smartdns_file -f -c $SMARTDNS_CONF $args &>/dev/null &
+    $smartdns_file -f -c $SMT_CONF $args &>/dev/null &
     logger -t "SmartDNS" "SmartDNS启动成功"
     if [ $snds_redirect = "2" ]; then
         set_iptable $sdns_ipv6_server $sdns_tcp_server
@@ -372,7 +372,8 @@ CheckIPAddr() {
 stop_smartdns() {
     func_smt_Close
     if [ $(nvram get sdns_enable) = "0" ]; then
-    	[ -d "$STORAGE_DIR/smartdns" ] && rm -rf "$STORAGE_DIR/smartdns"
+    	[ -d "$SMT_DIR/smartdns" ] && rm -rf "$SMT_DIR/smartdns"
+		[ -f "$SMT_DIR/smartdns.conf" ] && rm -rf "$SMT_DIR/smartdns.conf"
 	fi
     smartdns_process=`pidof smartdns`
     if [ -n "$smartdns_process" ]; then
