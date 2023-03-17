@@ -468,6 +468,10 @@ if (found_app_shadowsocks()){
 }
 if (found_app_smartdns()){
 	tabtitle[11] = new Array("", "<#menu5_24#>");
+}else{
+	if (found_app_adguardhome()){
+		tabtitle[13] = new Array("", "<#menu5_25#>");
+	}
 }
 
 //Level 3 Tab title
@@ -496,6 +500,9 @@ if (found_app_shadowsocks()){
 if (found_app_smartdns()){
 	smartdns_array = new Array("","Advanced_smartdns.asp");
 	tablink[11] = (smartdns_array);
+}else if (found_app_adguardhome()){
+	adg_array = new Array("","Advanced_adguardhome.asp");
+	tablink[13] = (adg_array);
 }
 
 //Level 2 Menu
@@ -510,6 +517,8 @@ if (found_app_shadowsocks()){
 } else menuL2_link.push("");
 if (found_app_smartdns()){
 	menuL2_link.push(tablink[11][1]);
+} else if (found_app_adguardhome()){
+	menuL2_title.push("adg_array[1]");
 } else menuL2_link.push("");
 //Level 1 Menu in Gateway, Router mode
 menuL1_title = new Array("", "<#menu1#>", "", "<#menu2#>", "<#menu6#>", "<#menu4#>", "<#menu5_8#>", "<#menu5#>");
