@@ -41,7 +41,7 @@ export PATH=$PATH:/etc/storage/smartdns
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etc/storage/smartdns
 
 check_ss(){
-if [ $(nvram get ss_enable) = "1" ] && [ $(nvram get ss_mode) = "1" ] && [ $(nvram get ss_router_proxy) = "4" ]; then
+if [ $(nvram get ss_enable) = "1" ] && [ $(nvram get ss_mode) = "1" ]; then
     logger -t "SmartDNS" "系统检测到SS模式为绕过大陆模式，并且启用了pdnsd,请先调整SS解析使用SmartDNS+手动配置模式！程序将退出。"
     nvram set sdns_enable=0
     exit 0
@@ -216,7 +216,7 @@ fi
 }
 
 change_dns(){
-    if [ $(nvram get ss_mode) = "2" ] && [ $(nvram get ss_router_proxy) = "5" ]
+    if [ $(nvram get ss_mode) = "2" ] || [ $(nvram get ss_router_proxy) = "5" ]
     then
         echo ''
     else
@@ -326,7 +326,7 @@ smartdns_rule(){
 }
 
 start_smartdns(){
-rm -f /tmp/sdnsipset.conf
+[ -f "/tmp/sdnsipset.conf" ] && rm -f /tmp/sdnsipset.conf
 smartdns_folder && \
 smartdns_rule
 args=""
@@ -382,8 +382,8 @@ echo $1|grep "^[0-9]\{1,3\}\.\([0-9]\{1,3\}\.\)\{2\}[0-9]\{1,3\}$" > /dev/null;
 }
 
 stop_smartdns(){
-rm -f /tmp/whitelist.conf
-rm -f /tmp/blacklist.conf
+[ -f "/tmp/whitelist.conf" ] && rm -f /tmp/whitelist.conf
+[ -f "/tmp/blacklist.conf" ] && rm -f /tmp/blacklist.conf
 [ -d "$STORAGE_DIR/smartdns" ] && rm -rf "$STORAGE_DIR/smartdns"
 smartdns_process=`pidof smartdns`
 if [ -n "$smartdns_process" ]; then
