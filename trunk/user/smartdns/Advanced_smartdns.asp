@@ -588,8 +588,8 @@ function showMRULESList(){
                                             </td>
                                         </tr>
 
-                                        <tr id="sdns_ipv6_option">
-                                            <th>禁用IPV6解析</th>
+
+                                        <tr> <th>禁用IPV6解析</th>
                                             <td>
                                                 <div class="main_itoggle">
                                                     <div id="sdns_ipv6_on_of">
