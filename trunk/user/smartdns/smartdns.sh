@@ -228,9 +228,9 @@ change_dns(){
 no-resolv
 server=127.0.0.1#$sdns_port
 EOF
-    /sbin/restart_dhcpd
-    logger -t "SmartDNS" "添加DNS转发到$sdns_port端口"
-    if
+        /sbin/restart_dhcpd
+        logger -t "SmartDNS" "添加DNS转发到$sdns_port端口"
+    fi
 }
 
 del_dns(){
