@@ -317,10 +317,6 @@ smartdns_rule() {
         cp -f "/$SMT_DIR/smartdns/smartdns_whitelist-ip.conf" $WHITELIST_IP_CONF && \
         chmod 644 "$WHITELIST_IP_CONF"
     fi
-    if [ ! -f "$CUSTOM_CONF" ] || [ ! -s "$CUSTOM_CONF" ] ; then
-        cp -f "/$SMT_DIR/smartdns/smartdns_custom.conf" $CUSTOM_CONF && \
-        chmod 644 "$CUSTOM_CONF"
-    fi
 }
 
 start_smartdns() {
@@ -330,13 +326,16 @@ start_smartdns() {
     logger -t "SmartDNS" "创建配置文件."
     ipset -N smartdns hash:net 2>/dev/null
     gensmartconf
-
     grep -v '^#' $ADDRESS_CONF | grep -v "^$" >> $SMT_CONF
     grep -v '^#' $BLACKLIST_IP_CONF | grep -v "^$" >> $SMT_CONF
     grep -v '^#' $WHITELIST_IP_CONF | grep -v "^$" >> $SMT_CONF
     grep -v '^#' $CUSTOM_CONF | grep -v "^$" >> $SMT_CONF
     if [ "$sdns_coredump" = "1" ]; then
         args="$args -S"
+    fi
+	if [ ! -f "$CUSTOM_CONF" ] || [ ! -s "$CUSTOM_CONF" ] ; then
+        cp -f "/$CUSTOM_CONF" $CUSTOM_CONF && \
+        chmod 644 "$CUSTOM_CONF"
     fi
     $smartdns_file -f -c $SMT_CONF $args &>/dev/null &
     logger -t "SmartDNS" "SmartDNS启动成功"
