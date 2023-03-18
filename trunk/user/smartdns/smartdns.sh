@@ -372,7 +372,7 @@ CheckIPAddr() {
 stop_smartdns() {
     func_smt_Close
     if [ $(nvram get sdns_enable) = "0" ]; then
-    	[ -d "$SMT_DIR/smartdns" ] && rm -rf "$SMT_DIR/smartdns"
+    	#[ -d "$SMT_DIR/smartdns" ] && rm -rf "$SMT_DIR/smartdns"
 		[ -f "$SMT_DIR/smartdns.conf" ] && rm -rf "$SMT_DIR/smartdns.conf"
 	fi
     smartdns_process=`pidof smartdns`
