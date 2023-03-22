@@ -11,16 +11,16 @@ diff --git a/Configure b/Configure
 index 74d057c219..5813e9f8fe 100755
 --- a/Configure
 +++ b/Configure
-@@ -318,7 +318,7 @@ my $auto_threads=1;    # enable threads automatically? true by default
+@@ -318,7 +318,7 @@
  my $default_ranlib;
  
  # Top level directories to build
 -$config{dirs} = [ "crypto", "ssl", "engines", "apps", "test", "util", "tools", "fuzz" ];
-+$config{dirs} = [ "crypto", "ssl", "engines", "apps", "util", "tools" ];
++$config{dirs} = [ "crypto", "ssl", "engines", "apps", "test", "util", "tools" ];
  # crypto/ subdirectories to build
  $config{sdirs} = [
      "objects",
-@@ -330,7 +330,7 @@ $config{sdirs} = [
+@@ -330,7 +330,7 @@
      "cms", "ts", "srp", "cmac", "ct", "async", "kdf", "store"
      ];
  # test/ subdirectories to build
@@ -43,7 +43,7 @@ diff --git a/crypto/build.info b/crypto/build.info
 index 2c619c62e8..893128345a 100644
 --- a/crypto/build.info
 +++ b/crypto/build.info
-@@ -10,7 +10,7 @@ EXTRA=  ../ms/uplink-x86.pl ../ms/uplink.c ../ms/applink.c \
+@@ -10,7 +10,7 @@
          ppccpuid.pl pariscid.pl alphacpuid.pl arm64cpuid.pl armv4cpuid.pl
  
  DEPEND[cversion.o]=buildinf.h
@@ -72,7 +72,7 @@ diff --git a/include/openssl/ssl.h b/include/openssl/ssl.h
 index 6724ccf2d2..96d959427e 100644
 --- a/include/openssl/ssl.h
 +++ b/include/openssl/ssl.h
-@@ -173,9 +173,15 @@ extern "C" {
+@@ -173,9 +173,15 @@
  # define SSL_DEFAULT_CIPHER_LIST "ALL:!COMPLEMENTOFDEFAULT:!eNULL"
  /* This is the default set of TLSv1.3 ciphersuites */
  # if !defined(OPENSSL_NO_CHACHA) && !defined(OPENSSL_NO_POLY1305)
@@ -95,7 +95,7 @@ diff --git a/ssl/ssl_ciph.c b/ssl/ssl_ciph.c
 index 27a1b2ec68..7039811323 100644
 --- a/ssl/ssl_ciph.c
 +++ b/ssl/ssl_ciph.c
-@@ -1467,11 +1467,29 @@ STACK_OF(SSL_CIPHER) *ssl_create_cipher_list(const SSL_METHOD *ssl_method,
+@@ -1465,11 +1465,29 @@
      ssl_cipher_apply_rule(0, SSL_kECDHE, 0, 0, 0, 0, 0, CIPHER_DEL, -1, &head,
                            &tail);
  
@@ -125,7 +125,7 @@ index 27a1b2ec68..7039811323 100644
  
      /*
       * ...and generally, our preferred cipher is AES.
-@@ -1527,7 +1545,7 @@ STACK_OF(SSL_CIPHER) *ssl_create_cipher_list(const SSL_METHOD *ssl_method,
+@@ -1525,7 +1543,7 @@
       * Within each group, ciphers remain sorted by strength and previous
       * preference, i.e.,
       * 1) ECDHE > DHE
