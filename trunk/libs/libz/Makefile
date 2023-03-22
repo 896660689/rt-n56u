@@ -1,4 +1,4 @@
-SRC_NAME=zlib-1.2.11
+SRC_NAME=zlib-1.2.13
 SRC_URL=http://www.zlib.net/$(SRC_NAME).tar.gz
 
 all: download_test extract_test config_test
@@ -12,6 +12,7 @@ download_test:
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
 		tar zxf $(SRC_NAME).tar.gz; \
+		patch -d $(SRC_NAME) -p1 -i ../101-pass-ldflags-to-link-tests.patch; \
 	fi )
 
 config_test:
