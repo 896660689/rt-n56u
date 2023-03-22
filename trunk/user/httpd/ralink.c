@@ -240,7 +240,7 @@ ej_nat_table(int eid, webs_t wp, int argc, char **argv)
 		while (fgets(line, sizeof(line), fp) != NULL) {
 			tmp[0] = 0;
 			if (sscanf(line,
-				"%15s%*[ \t]"		// target
+				"%15s%*[ \t]"		// target	
 				"%15s%*[ \t]"		// prot
 				"%*s%*[ \t]"		// opt
 				"%18s%*[ \t]"		// source
@@ -397,7 +397,6 @@ ej_conntrack_table(int eid, webs_t wp, int argc, char **argv)
 	return ret;
 }
 
-
 /************************ CONSTANTS & MACROS ************************/
 
 /*
@@ -493,91 +492,91 @@ ralink_get_range_info(iwrange *	range, char* buffer, int length)
   /* For new versions, we can check the version directly, for old versions
    * we use magic. 300 bytes is a also magic number, don't touch... */
   if (length < 300)
-	{
-	  /* That's v10 or earlier. Ouch ! Let's make a guess...*/
-	  range_raw->range.we_version_compiled = 9;
-	}
+    {
+      /* That's v10 or earlier. Ouch ! Let's make a guess...*/
+ range_raw->range.we_version_compiled = 9;
+    }
 
   /* Check how it needs to be processed */
   if (range_raw->range.we_version_compiled > 15)
-	{
-	  /* This is our native format, that's easy... */
-	  /* Copy stuff at the right place, ignore extra */
-	  memcpy((char *) range, buffer, sizeof(iwrange));
-	}
+    {
+      /* This is our native format, that's easy... */
+      /* Copy stuff at the right place, ignore extra */
+      memcpy((char *) range, buffer, sizeof(iwrange));
+    }
   else
-	{
-	  /* Zero unknown fields */
-	  bzero((char *) range, sizeof(struct iw_range));
+    {
+      /* Zero unknown fields */
+      bzero((char *) range, sizeof(struct iw_range));
 
-	  /* Initial part unmoved */
-	  memcpy((char *) range,
-		 buffer,
-		 iwr15_off(num_channels));
-	  /* Frequencies pushed futher down towards the end */
-	  memcpy((char *) range + iwr_off(num_channels),
-		 buffer + iwr15_off(num_channels),
-		 iwr15_off(sensitivity) - iwr15_off(num_channels));
-	  /* This one moved up */
-	  memcpy((char *) range + iwr_off(sensitivity),
-		 buffer + iwr15_off(sensitivity),
-		 iwr15_off(num_bitrates) - iwr15_off(sensitivity));
-	  /* This one goes after avg_qual */
-	  memcpy((char *) range + iwr_off(num_bitrates),
-		 buffer + iwr15_off(num_bitrates),
-		 iwr15_off(min_rts) - iwr15_off(num_bitrates));
-	  /* Number of bitrates has changed, put it after */
-	  memcpy((char *) range + iwr_off(min_rts),
-		 buffer + iwr15_off(min_rts),
-		 iwr15_off(txpower_capa) - iwr15_off(min_rts));
-	  /* Added encoding_login_index, put it after */
-	  memcpy((char *) range + iwr_off(txpower_capa),
-		 buffer + iwr15_off(txpower_capa),
-		 iwr15_off(txpower) - iwr15_off(txpower_capa));
-	  /* Hum... That's an unexpected glitch. Bummer. */
-	  memcpy((char *) range + iwr_off(txpower),
-		 buffer + iwr15_off(txpower),
-		 iwr15_off(avg_qual) - iwr15_off(txpower));
-	  /* Avg qual moved up next to max_qual */
-	  memcpy((char *) range + iwr_off(avg_qual),
-		 buffer + iwr15_off(avg_qual),
-		 sizeof(struct iw_quality));
-	}
+      /* Initial part unmoved */
+      memcpy((char *) range,
+	     buffer,
+	     iwr15_off(num_channels));
+      /* Frequencies pushed futher down towards the end */
+      memcpy((char *) range + iwr_off(num_channels),
+	     buffer + iwr15_off(num_channels),
+	     iwr15_off(sensitivity) - iwr15_off(num_channels));
+      /* This one moved up */
+      memcpy((char *) range + iwr_off(sensitivity),
+	     buffer + iwr15_off(sensitivity),
+	     iwr15_off(num_bitrates) - iwr15_off(sensitivity));
+      /* This one goes after avg_qual */
+      memcpy((char *) range + iwr_off(num_bitrates),
+	     buffer + iwr15_off(num_bitrates),
+	     iwr15_off(min_rts) - iwr15_off(num_bitrates));
+      /* Number of bitrates has changed, put it after */
+      memcpy((char *) range + iwr_off(min_rts),
+	     buffer + iwr15_off(min_rts),
+	     iwr15_off(txpower_capa) - iwr15_off(min_rts));
+      /* Added encoding_login_index, put it after */
+      memcpy((char *) range + iwr_off(txpower_capa),
+	     buffer + iwr15_off(txpower_capa),
+	     iwr15_off(txpower) - iwr15_off(txpower_capa));
+      /* Hum... That's an unexpected glitch. Bummer. */
+      memcpy((char *) range + iwr_off(txpower),
+	     buffer + iwr15_off(txpower),
+	     iwr15_off(avg_qual) - iwr15_off(txpower));
+      /* Avg qual moved up next to max_qual */
+      memcpy((char *) range + iwr_off(avg_qual),
+	     buffer + iwr15_off(avg_qual),
+	     sizeof(struct iw_quality));
+    }
 
   /* We are now checking much less than we used to do, because we can
    * accomodate more WE version. But, there are still cases where things
    * will break... */
   if (!iw_ignore_version_sp)
-	{
-	  /* We don't like very old version (unfortunately kernel 2.2.X) */
-	  if (range->we_version_compiled <= 10)
+    {
+      /* We don't like very old version (unfortunately kernel 2.2.X) */
+      if (range->we_version_compiled <= 10)
 	{
 	  fprintf(stderr, "Warning: Driver for device %s has been compiled with an ancient version\n", "raxx");
 	  fprintf(stderr, "of Wireless Extension, while this program support version 11 and later.\n");
 	  fprintf(stderr, "Some things may be broken...\n\n");
 	}
 
-	  /* We don't like future versions of WE, because we can't cope with
-	   * the unknown */
-	  if (range->we_version_compiled > WE_MAX_VERSION)
+      /* We don't like future versions of WE, because we can't cope with
+       * the unknown */
+      if (range->we_version_compiled > WE_MAX_VERSION)
 	{
 	  fprintf(stderr, "Warning: Driver for device %s has been compiled with version %d\n", "raxx", range->we_version_compiled);
 	  fprintf(stderr, "of Wireless Extension, while this program supports up to version %d.\n", WE_VERSION);
 	  fprintf(stderr, "Some things may be broken...\n\n");
 	}
 
-	  /* Driver version verification */
-	  if ((range->we_version_compiled > 10) &&
+      /* Driver version verification */
+      if ((range->we_version_compiled > 10) &&
 	 (range->we_version_compiled < range->we_version_source))
 	{
 	  fprintf(stderr, "Warning: Driver for device %s recommend version %d of Wireless Extension,\n", "raxx", range->we_version_source);
 	  fprintf(stderr, "but has been compiled with version %d, therefore some driver features\n", range->we_version_compiled);
 	  fprintf(stderr, "may not be available...\n\n");
 	}
-	  /* Note : we are only trying to catch compile difference, not source.
-	   * If the driver source has not been updated to the latest, it doesn't
-	   * matter because the new fields are set to zero */
-	}
+      /* Note : we are only trying to catch compile difference, not source.
+       * If the driver source has not been updated to the latest, it doesn't
+       * matter because the new fields are set to zero */
+    }
 
   /* Don't complain twice.
    * In theory, the test apply to each individual driver, but usually
@@ -646,14 +645,6 @@ char* GetPhyMode(int Mode)
 		return "HT_GF";
 	case MODE_VHT:
 		return "VHT";
-	case MODE_HE:
-	case MODE_HE_SU:
-	case MODE_HE_24G:
-	case MODE_HE_5G:
-	case MODE_HE_EXT_SU:
-	case MODE_HE_TRIG:
-	case MODE_HE_MU:
-		return "HE";
 	default:
 		return "N/A";
 	}
@@ -675,182 +666,52 @@ getMCS(MACHTTRANSMIT_SETTING HTSetting)
 static const int
 MCSMappingRateTable[] =
 {
-	/* CCK */
-	1, 2, 5, 11,
+	 2,  4,   11,  22,								// CCK
 
-	/* OFDM */	
-	6, 9, 12, 18, 24, 36, 48, 54,
+	12,  18,  24,  36,  48,  72,  96, 108,						// OFDM
 
-	/* 11n 20MHz, 800ns GI */
-	6, 13, 19, 26, 39, 52, 58, 65,	  /* 1ss , MCS 0-7 */
-	13, 26, 39, 52, 78, 104, 117, 130,		/* 2ss , MCS 8-15 */
-	19, 39, 58, 78, 117, 156, 175, 195,		/* 3ss , MCS 16-23 */
-	26, 52, 78, 104, 156, 208, 234, 260,		/* 4ss , MCS 24-31 */
+	13,  26,  39,  52,  78, 104, 117, 130, 26,  52,  78, 104, 156, 208, 234, 260,	// 11n: 20MHz, 800ns GI, MCS: 0 ~ 15
+	39,  78, 117, 156, 234, 312, 351, 390,						// 11n: 20MHz, 800ns GI, MCS: 16 ~ 23
+	27,  54,  81, 108, 162, 216, 243, 270, 54, 108, 162, 216, 324, 432, 486, 540,	// 11n: 40MHz, 800ns GI, MCS: 0 ~ 15
+	81, 162, 243, 324, 486, 648, 729, 810,						// 11n: 40MHz, 800ns GI, MCS: 16 ~ 23
+	14,  29,  43,  57,  87, 115, 130, 144, 29, 59,   87, 115, 173, 230, 260, 288,	// 11n: 20MHz, 400ns GI, MCS: 0 ~ 15
+	43,  87, 130, 173, 260, 317, 390, 433,						// 11n: 20MHz, 400ns GI, MCS: 16 ~ 23
+	30,  60,  90, 120, 180, 240, 270, 300, 60, 120, 180, 240, 360, 480, 540, 600,	// 11n: 40MHz, 400ns GI, MCS: 0 ~ 15
+	90, 180, 270, 360, 540, 720, 810, 900,
 
-	/* 11n 40MHz, 800ns GI */
-	13, 27, 40, 54, 81, 108, 121, 135,
-	27, 54, 81, 108, 162, 216, 243, 270,
-	40, 81, 121, 162, 243, 324, 364, 405,
-	54, 108, 162, 216, 324, 432, 486, 540,
-
-	/* 11n 20MHz, 400ns GI */
-	7, 14, 21, 28, 43, 57, 65, 72,
-	14, 28, 43, 57, 86, 115, 130, 144,
-	21, 43, 65, 86, 130, 173, 195, 216,
-	28, 57, 86, 115, 173, 231, 260, 288,
-
-	/* 11n 40MHz, 400ns GI */
-	15, 30, 45, 60, 90, 120, 135, 150,
-	30, 60, 90, 120, 180, 240, 270, 300,
-	45, 90, 135, 180, 270, 360, 405, 450,
-	60, 120, 180, 240, 360, 480, 540, 600,
-
-	/* 11ac 20 Mhz 800ns GI */
-	6, 13, 19, 26, 39, 52, 58, 65, 78, 87, /*1ss mcs 0~8*/
-	13, 26, 39, 52, 78, 104, 117, 130, 156, 173, /*2ss mcs 0~8*/
-	19, 39, 58, 78, 117, 156, 175, 195, 234, 260, /*3ss mcs 0~9*/
-	26, 52, 78, 104, 156, 208, 234, 260, 312, 0, /*4ss mcs 0~8*/
-
-	/* 11ac 40 Mhz 800ns GI */
-	13,	27,	40,	54,	 81, 108, 121, 135, 162, 180, /*1ss mcs 0~9*/
-	27,	54,	81,	108, 162, 216, 243, 270, 324, 360, /*2ss mcs 0~9*/
-	40,	81,	121, 162, 243, 324, 364, 405, 486, 540, /*3ss mcs 0~9*/
-	54,	108, 162, 216, 324, 432, 486, 540, 648, 720, /*4ss mcs 0~9*/
-
-	/* 11ac 80 Mhz 800ns GI */
-	29,	58,	87,	117, 175, 234, 263, 292, 351, 390, /*1ss mcs 0~9*/
-	58,	117, 175, 243, 351, 468, 526, 585, 702, 780, /*2ss mcs 0~9*/
-	87,	175, 263, 351, 526, 702, 0,	877, 1053, 1170, /*3ss mcs 0~9*/
-	117, 234, 351, 468, 702, 936, 1053, 1170, 1404, 1560, /*4ss mcs 0~9*/
-
-	/* 11ac 160 Mhz 800ns GI */
-	58,	117, 175, 234, 351, 468, 526, 585, 702, 780, /*1ss mcs 0~9*/
-	117, 234, 351, 468, 702, 936, 1053, 1170, 1404, 1560, /*2ss mcs 0~9*/
-	175, 351, 526, 702, 1053, 1404, 1579, 1755, 2160, 0, /*3ss mcs 0~8*/
-	234, 468, 702, 936, 1404, 1872, 2106, 2340, 2808, 3120, /*4ss mcs 0~9*/
-
-	/* 11ac 20 Mhz 400ns GI */
-	7,	14,	21,	28, 43, 57, 65,	 72, 86, 96, /*1ss mcs 0~8*/
-	14,	28,	43,	57,	 86, 115, 130, 144, 173, 192, /*2ss mcs 0~8*/
-	21,	43,	65,	86,	 130, 173, 195, 216, 260, 288, /*3ss mcs 0~9*/
-	28,	57,	86,	115, 173, 231, 260, 288, 346, 0, /*4ss mcs 0~8*/
-
-	/* 11ac 40 Mhz 400ns GI */
-	15,	30,	45,	60,	 90, 120, 135, 150, 180, 200, /*1ss mcs 0~9*/
-	30,	60,	90,	120, 180, 240, 270, 300, 360, 400, /*2ss mcs 0~9*/
-	45,	90,	135, 180, 270, 360, 405, 450, 540, 600, /*3ss mcs 0~9*/
-	60,	120, 180, 240, 360, 480, 540, 600, 720, 800, /*4ss mcs 0~9*/
-
-	/* 11ac 80 Mhz 400ns GI */
-	32,	65,	97,	130, 195, 260, 292, 325, 390, 433, /*1ss mcs 0~9*/
-	65,	130, 195, 260, 390, 520, 585, 650, 780, 866, /*2ss mcs 0~9*/
-	97,	195, 292, 390, 585, 780, 0, 975, 1170, 1300, /*3ss mcs 0~9*/
-	130, 260, 390, 520, 780, 1040,	1170, 1300, 1560, 1733, /*4ss mcs 0~9*/
-
-	/* 11ac 160 Mhz 400ns GI */
-	65,	130, 195, 260, 390, 520, 585, 650, 780, 866, /*1ss mcs 0~9*/
-	130, 260, 390, 520, 780, 1040,	1170, 1300, 1560, 1733, /*2ss mcs 0~9*/
-	195, 390, 585, 780, 1170, 1560,	1755, 1950, 2340, 0, /*3ss mcs 0~8*/
-	260, 520, 780, 1040, 1560, 2080, 2340, 2600, 3120, 3466, /*4ss mcs 0~9*/
-
+	13,  26,  39,  52,  78, 104, 117, 130, 156,					// 11ac: 20Mhz, 800ns GI, MCS: 0~8
+	27,  54,  81, 108, 162, 216, 243, 270, 324, 360,				// 11ac: 40Mhz, 800ns GI, MCS: 0~9
+	59, 117, 176, 234, 351, 468, 527, 585, 702, 780,				// 11ac: 80Mhz, 800ns GI, MCS: 0~9
+	14,  29,  43,  57,  87, 115, 130, 144, 173,					// 11ac: 20Mhz, 400ns GI, MCS: 0~8
+	30,  60,  90, 120, 180, 240, 270, 300, 360, 400,				// 11ac: 40Mhz, 400ns GI, MCS: 0~9
+	65, 130, 195, 260, 390, 520, 585, 650, 780, 867					// 11ac: 80Mhz, 400ns GI, MCS: 0~9
 };
-
-#define MAX_NUM_HE_BANDWIDTHS 4
-#define MAX_NUM_HE_SPATIAL_STREAMS 4
-#define MAX_NUM_HE_MCS_ENTRIES 12
-static const int he_mcs_phyrate_mapping_table[MAX_NUM_HE_BANDWIDTHS][MAX_NUM_HE_SPATIAL_STREAMS][MAX_NUM_HE_MCS_ENTRIES] =
-{
-	{ /* 20 Mhz*/
-		{ 8, 17, 25, 34, 51, 68, 77, 86, 103, 114, 129, 143 },		/* 1 SS */
-		{ 17, 34, 51, 68, 103, 137, 154, 172, 206, 229, 258, 286 },		/* 2 SS */
-		{ 25, 51, 77, 103, 154, 206, 232, 258, 309, 344, 387, 430 },		/* 3 SS */
-		{ 34, 68, 103, 137, 206, 275, 309, 344, 412, 458, 516, 573 }		/* 4 SS */
-	},
-	{ /* 40 Mhz*/
-		{ 17, 34, 51, 68, 103, 137, 154, 172, 206, 229, 258, 286 },	
-		{ 34, 68, 103, 137, 206, 275, 309, 344, 412, 458, 516, 573 },	
-		{ 51, 103, 154, 206, 309, 412, 464, 516, 619, 688, 774, 860 },	
-		{ 68, 137, 206, 275, 412, 550, 619, 688, 825, 917, 1032, 1147 }
-	},
-	{ /* 80 Mhz*/
-		{ 36, 72, 108, 144, 216, 288, 324, 360, 432, 480, 540, 600 },
-		{ 72, 144, 216, 288, 432, 576, 648, 720, 864, 960, 1080, 1201 },
-		{ 108, 216, 324, 432, 648, 864, 972, 1080, 1297, 1441, 1621, 1801 },
-		{ 144, 288, 432, 576, 864, 1152, 1297, 1141, 1729, 1921, 2161, 2401 }
-	},
-	{ /* 160 Mhz*/
-		{ 72, 144, 216, 288, 432, 576, 648, 720, 864, 960, 1080, 1201 },
-		{ 144, 288, 432, 576, 864, 1152, 1297, 1441, 1729, 1921, 2161, 2401 },
-		{ 216, 432, 648, 864, 1297, 1729, 1945, 2161, 2594, 2882, 3242, 3602 },
-		{ 288, 576, 864, 1152, 1729, 2305, 2594, 2882, 3458, 3843, 4323, 4803 },
-	}
-};
-
-static int getLegacyOFDMMCSIndex(unsigned char MCS)
-{
-	int mcs_index = MCS;
-	if (MCS == 0xb)
-		mcs_index = 0;
-	else if (MCS == 0xf)
-		mcs_index = 1;
-	else if (MCS == 0xa)
-		mcs_index = 2;
-	else if (MCS == 0xe)
-		mcs_index = 3;
-	else if (MCS == 0x9)
-		mcs_index = 4;
-	else if (MCS == 0xd)
-		mcs_index = 5;
-	else if (MCS == 0x8)
-		mcs_index = 6;
-	else if (MCS == 0xc)
-		mcs_index = 7;
-
-	return mcs_index;
-}
 
 static int
 getRate(MACHTTRANSMIT_SETTING HTSetting)
 {
 	int rate_count = sizeof(MCSMappingRateTable)/sizeof(int);
 	int rate_index = 0;
-	int mcs_1ss = 0;
-	int num_ss_vht = 0;
-	int bw = 0;
-
-	if (HTSetting.field.MODE >= MODE_HE) {
-		mcs_1ss = (unsigned char)HTSetting.field.MCS & 0xf;
-		num_ss_vht = ((unsigned char)HTSetting.field.MCS >> 4) + 1;
-		bw = (unsigned char)HTSetting.field.BW;
-
-		if (bw > MAX_NUM_HE_BANDWIDTHS)
-			bw = MAX_NUM_HE_BANDWIDTHS - 1;
-
-		if (mcs_1ss > MAX_NUM_HE_MCS_ENTRIES)
-			mcs_1ss = MAX_NUM_HE_MCS_ENTRIES - 1;
-
-		if (num_ss_vht > MAX_NUM_HE_SPATIAL_STREAMS)
-			num_ss_vht = MAX_NUM_HE_SPATIAL_STREAMS;
-		return he_mcs_phyrate_mapping_table[bw][num_ss_vht-1][mcs_1ss];
-	}
+	int num_ss_vht = 1;
 
 	if (HTSetting.field.MODE >= MODE_VHT) {
-		mcs_1ss = (unsigned char)HTSetting.field.MCS & 0xf;
-		num_ss_vht = ((unsigned char)HTSetting.field.MCS >> 4) + 1;
+		int mcs_1ss = (int)HTSetting.field.MCS;
 
+		if (mcs_1ss > 9) {
+			num_ss_vht = (mcs_1ss / 16) + 1;
+			mcs_1ss %= 16;
+		}
 		if (HTSetting.field.BW == BW_20)
-			rate_index = 140 + ((unsigned char)HTSetting.field.ShortGI * 160) + ((num_ss_vht - 1) * 10) + mcs_1ss;
+			rate_index = 108 + ((unsigned char)HTSetting.field.ShortGI * 29) + mcs_1ss;
 		else if (HTSetting.field.BW == BW_40)
-			rate_index = 180 + ((unsigned char)HTSetting.field.ShortGI * 160) + ((num_ss_vht - 1) * 10) + mcs_1ss;
+			rate_index = 117 + ((unsigned char)HTSetting.field.ShortGI * 29) + mcs_1ss;
 		else if (HTSetting.field.BW == BW_80)
-			rate_index = 220 + ((unsigned char)HTSetting.field.ShortGI * 160) + ((num_ss_vht - 1) * 10) + mcs_1ss;
-		else if (HTSetting.field.BW == BW_160)
-			rate_index = 260 + ((unsigned char)HTSetting.field.ShortGI * 160) + ((num_ss_vht - 1) * 10) + mcs_1ss;
+			rate_index = 127 + ((unsigned char)HTSetting.field.ShortGI * 29) + mcs_1ss;
 	}
 	else if (HTSetting.field.MODE >= MODE_HTMIX)
-		rate_index = 12 + ((unsigned char)HTSetting.field.BW * 32) + ((unsigned char)HTSetting.field.ShortGI * 64) + ((unsigned char)HTSetting.field.MCS);
+		rate_index = 12 + ((unsigned char)HTSetting.field.BW * 24) + ((unsigned char)HTSetting.field.ShortGI * 48) + ((unsigned char)HTSetting.field.MCS);
 	else if (HTSetting.field.MODE == MODE_OFDM)
-		rate_index = getLegacyOFDMMCSIndex((unsigned char)(HTSetting.field.MCS)) + 4;
+		rate_index = (unsigned char)(HTSetting.field.MCS) + 4;
 	else if (HTSetting.field.MODE == MODE_CCK)
 		rate_index = (unsigned char)(HTSetting.field.MCS);
 
@@ -860,8 +721,7 @@ getRate(MACHTTRANSMIT_SETTING HTSetting)
 	if (rate_index >= rate_count)
 		rate_index = rate_count-1;
 
-	return (MCSMappingRateTable[rate_index]);
-
+	return (MCSMappingRateTable[rate_index] * num_ss_vht * 5)/10;
 }
 
 int
@@ -870,11 +730,11 @@ get_apcli_peer_connected(const char *ifname, struct iwreq *p_wrq)
 	if (wl_ioctl(ifname, SIOCGIWAP, p_wrq) >= 0) {
 		p_wrq->u.ap_addr.sa_family = ARPHRD_ETHER;
 		if (p_wrq->u.ap_addr.sa_data[0] ||
-			p_wrq->u.ap_addr.sa_data[1] ||
-			p_wrq->u.ap_addr.sa_data[2] ||
-			p_wrq->u.ap_addr.sa_data[3] ||
-			p_wrq->u.ap_addr.sa_data[4] ||
-			p_wrq->u.ap_addr.sa_data[5] ) {
+		    p_wrq->u.ap_addr.sa_data[1] ||
+		    p_wrq->u.ap_addr.sa_data[2] ||
+		    p_wrq->u.ap_addr.sa_data[3] ||
+		    p_wrq->u.ap_addr.sa_data[4] ||
+		    p_wrq->u.ap_addr.sa_data[5] ) {
 			return 1;
 		}
 	}
@@ -893,7 +753,7 @@ get_apcli_wds_entry(const char *ifname, RT_802_11_MAC_ENTRY *pme)
 	wrq.u.data.flags = 0;
 
 	if (wl_ioctl(ifname, RTPRIV_IOCTL_GET_MAC_TABLE_STRUCT, &wrq) >= 0 &&
-		wrq.u.data.length == sizeof(RT_802_11_MAC_ENTRY)) {
+	    wrq.u.data.length == sizeof(RT_802_11_MAC_ENTRY)) { //bug with mt7615 driver
 		return 1;
 	}
 
@@ -917,11 +777,7 @@ is_mac_in_sta_list(const unsigned char* p_mac)
 		RT_802_11_MAC_TABLE *mp = (RT_802_11_MAC_TABLE *)wrq.u.data.pointer;
 		for (i = 0; i < mp->Num; i++) {
 			if (memcmp(mp->Entry[i].Addr, p_mac, ETHER_ADDR_LEN) == 0)
-#if defined (BOARD_MT7915_DBDC)
-				return (mp->Entry[i].ApIdx == 2) ? 3 : 4;
-#else
 				return (mp->Entry[i].ApIdx == 0) ? 3 : 4;
-#endif
 		}
 	}
 #endif
@@ -1021,7 +877,7 @@ print_apcli_wds_entry(webs_t wp, RT_802_11_MAC_ENTRY *me, int num_ss_rx)
 	ret += websWrite(wp, "%02X:%02X:%02X:%02X:%02X:%02X  %-7s %3s %3d %3s %4s %4s %4dM %4d\n",
 			me->Addr[0], me->Addr[1], me->Addr[2],
 			me->Addr[3], me->Addr[4], me->Addr[5],
-			GetPhyMode(me->TxRate.field.MODE),
+	GetPhyMode(me->TxRate.field.MODE),
 			GetBW(me->TxRate.field.BW),
 			getMCS(me->TxRate),
 			me->TxRate.field.ShortGI ? "YES" : "NO",
@@ -1041,7 +897,7 @@ print_sta_list(webs_t wp, RT_802_11_MAC_TABLE *mp, int num_ss_rx, int ap_idx)
 
 	ret = 0;
 
-#if defined (BOARD_MT7615_DBDC) || (BOARD_MT7915_DBDC)
+#if defined (BOARD_MT7615_DBDC)
 	ret += websWrite(wp, "\nAP %s Stations List\n", (ap_idx == 0 || ap_idx == 2) ? "Main" : "Guest");
 #else
 	ret += websWrite(wp, "\nAP %s Stations List\n", (ap_idx == 0) ? "Main" : "Guest");
@@ -1072,8 +928,8 @@ print_sta_list(webs_t wp, RT_802_11_MAC_TABLE *mp, int num_ss_rx, int ap_idx)
 		ret += websWrite(wp, "%02X:%02X:%02X:%02X:%02X:%02X  %-7s %3s %3d %3s %4s %4s %4dM %4d %3s %02d:%02d:%02d\n",
 				mp->Entry[i].Addr[0], mp->Entry[i].Addr[1], mp->Entry[i].Addr[2],
 				mp->Entry[i].Addr[3], mp->Entry[i].Addr[4], mp->Entry[i].Addr[5],
-				GetPhyMode(mp->Entry[i].TxRate.field.MODE),
-				GetBW(mp->Entry[i].TxRate.field.BW),
+	GetPhyMode(mp->Entry[i].TxRate.field.MODE),
+	GetBW(mp->Entry[i].TxRate.field.BW),
 				getMCS(mp->Entry[i].TxRate),
 				mp->Entry[i].TxRate.field.ShortGI ? "YES" : "NO",
 				mp->Entry[i].TxRate.field.ldpc ? "YES" : "NO",
@@ -1141,8 +997,8 @@ print_sta_list_inic(webs_t wp, RT_802_11_MAC_TABLE_INIC* mp, int num_ss_rx, int 
 		ret += websWrite(wp, "%02X:%02X:%02X:%02X:%02X:%02X  %-7s %3s %3d %3s %4s %4s %4dM %4d %3s %02d:%02d:%02d\n",
 				mp->Entry[i].Addr[0], mp->Entry[i].Addr[1], mp->Entry[i].Addr[2],
 				mp->Entry[i].Addr[3], mp->Entry[i].Addr[4], mp->Entry[i].Addr[5],
-				GetPhyMode(mp->Entry[i].TxRate.field.MODE),
-				GetBW(mp->Entry[i].TxRate.field.BW),
+	GetPhyMode(mp->Entry[i].TxRate.field.MODE),
+	GetBW(mp->Entry[i].TxRate.field.BW),
 				mp->Entry[i].TxRate.field.MCS,
 				mp->Entry[i].TxRate.field.ShortGI ? "YES" : "NO",
 				"NO",
@@ -1185,7 +1041,7 @@ print_mac_table_inic(webs_t wp, const char *wif_name, int num_ss_rx, int is_gues
 static int
 print_wmode(webs_t wp, unsigned int wmode, unsigned int phy_mode)
 {
-	char buf[32] = {0};
+	char buf[16] = {0};
 	int ret = 0;
 
 	if (wmode) {
@@ -1202,8 +1058,6 @@ print_wmode(webs_t wp, unsigned int wmode, unsigned int phy_mode)
 			p += sprintf(p, "/n");
 		if (wmode & WMODE_AC)
 			p += sprintf(p, "/ac");
-		if ((wmode & WMODE_AX_24G) || (wmode & WMODE_AX_5G) || (wmode & WMODE_AX_6G))
-			p += sprintf(p, "/ax");
 		if (p != buf)
 			ret += websWrite(wp, "WPHY Mode\t: 11%s\n", buf+1);
 	} else {
@@ -1243,24 +1097,6 @@ print_wmode(webs_t wp, unsigned int wmode, unsigned int phy_mode)
 		case PHY_11AGN_MIXED:
 			strcpy(buf, "a/g/n");
 			break;
-		case PHY_11AX_24G:
-			strcpy(buf, "b/g/n/ax");
-			break;
-		case PHY_11AX_5G:
-			strcpy(buf, "a/n/ac/ax");
-			break;
-		case PHY_11AX_6G:
-			strcpy(buf, "ax");
-			break;
-		case PHY_11AX_24G_6G:
-			strcpy(buf, "g/n/ax");
-			break;
-		case PHY_11AX_5G_6G:
-			strcpy(buf, "a/n/ac/ax");
-			break;
-		case PHY_11AX_24G_5G_6G:
-			strcpy(buf, "a/b/g/n/ac/ax");
-			break;
 		}
 		if (buf[0])
 			ret += websWrite(wp, "WPHY Mode\t: 11%s\n", buf);
@@ -1290,13 +1126,6 @@ print_mac_table(webs_t wp, const char *wif_name, int num_ss_rx, int is_guest_on)
 		apidx = 2;
 		apidx_guest = 3;
 	}
-#elif defined (BOARD_MT7915_DBDC)
-	int apidx = 2;
-	int apidx_guest = 3;
-	if (!strcmp(wif_name, IFNAME_2G_MAIN)) {
-		apidx = 0;
-		apidx_guest = 1;
-	}
 #endif
 	bzero(mac_table_data, sizeof(mac_table_data));
 	wrq.u.data.pointer = mac_table_data;
@@ -1305,13 +1134,13 @@ print_mac_table(webs_t wp, const char *wif_name, int num_ss_rx, int is_guest_on)
 
 	if (wl_ioctl(wif_name, RTPRIV_IOCTL_GET_MAC_TABLE_STRUCT, &wrq) >= 0) {
 		mp = (RT_802_11_MAC_TABLE*)wrq.u.data.pointer;
-#if defined (BOARD_MT7615_DBDC) || defined (BOARD_MT7915_DBDC)
-		ret += print_sta_list(wp, mp, num_ss_rx, apidx);
+#if defined (BOARD_MT7615_DBDC)
+		ret += print_sta_list(wp, mp, num_ss_rx, apidx); 
 #else
 		ret += print_sta_list(wp, mp, num_ss_rx, 0);
 #endif
 		if (is_guest_on)
-#if defined (BOARD_MT7615_DBDC) || defined (BOARD_MT7915_DBDC)
+#if defined (BOARD_MT7615_DBDC)
 			ret += print_sta_list(wp, mp, num_ss_rx, apidx_guest);
 #else
 			ret += print_sta_list(wp, mp, num_ss_rx, 1);
@@ -1510,10 +1339,10 @@ print_radio_status(webs_t wp, int is_aband)
 
 	if ((op_mode == 1 || op_mode == 2)
 #if defined(USE_RT3352_MII)
-		&& (is_aband)
+	    && (is_aband)
 #endif
-		) {
-		RT_802_11_MAC_ENTRY me;
+	    ) {
+		RT_802_11_MAC_ENTRY me
 
 		ret += print_apcli_wds_header(wp, "\nWDS Peers\n");
 
@@ -1643,8 +1472,7 @@ ej_wl_auth_list(int eid, webs_t wp, int argc, char **argv)
 	return ret;
 }
 
-
-#define SSURV_LINE_LEN		(4+33+20+23+9+12+7+3)		// Channel+SSID+Bssid+Security+Signal+WiressMode+ExtCh+NetworkType
+#define SSURV_LINE_LEN		(4+33+20+23+9+9+7+3)		// Channel+SSID+Bssid+Security+Signal+WiressMode+ExtCh+NetworkType
 #define SSURV_LINE_LEN_WPS	(4+33+20+23+9+7+7+3+4+5)	// Channel+SSID+Bssid+Security+Signal+WiressMode+ExtCh+NetworkType+WPS+PIN
 
 #if BOARD_HAS_5G_RADIO
