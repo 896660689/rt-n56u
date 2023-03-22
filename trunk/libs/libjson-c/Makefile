@@ -1,18 +1,18 @@
-SRC_NAME=json-c-json-c-0.16-20220414
-SRC_URL=https://github.com/json-c/json-c/archive/refs/tags/json-c-0.16-20220414.tar.gz
-ARCHIVE_NAME=json-c-json-c-0.16-20220414
+SRC_NAME=json-c-0.16
+SRC_URL=https://s3.amazonaws.com/json-c_releases/releases/json-c-0.16.tar.gz
 
 all: download_test extract_test config_test
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)/build
 
 download_test:
-	( if [ ! -f $(ARCHIVE_NAME).tar.gz ]; then \
+	( if [ ! -f $(SRC_NAME).tar.gz ]; then \
 		wget -t5 --timeout=20 --no-check-certificate $(SRC_URL); \
 	fi )
 
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
-		tar zxf $(ARCHIVE_NAME).tar.gz; \
+		tar zxf $(SRC_NAME).tar.gz; \
+		patch -d $(SRC_NAME) -p1 < json-c-0.16.patch; \
 	fi )
 
 config_test:
@@ -23,22 +23,23 @@ config_test:
 	fi )
 
 configure:
-	( cd $(SRC_NAME) ; \
-	mkdir build; \
-	cd build; \
-	../cmake-configure \
-		--prefix=$(STAGEDIR) \
-		--enable-static \
-		--enable-shared ; \
+	( mkdir -p $(SRC_NAME)/build && cd $(SRC_NAME)/build ; \
+	cmake -DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_INSTALL_PREFIX=$(STAGEDIR) \
+	-DCMAKE_TOOLCHAIN_FILE=../../cross-mipsel-linux.cmake \
+	-DDISABLE_EXTRA_LIBS=TRUE \
+	.. \
 	)
 
 clean:
-	( rm -f $(SRC_NAME) ; \
-	rm -f config_done ; \
-	)
+	if [ -f $(SRC_NAME)/Makefile ] ; then \
+		$(MAKE) -C $(SRC_NAME) distclean ; \
+	fi ; \
+	rm -rf $(SRC_NAME)/build
+	rm -f config_done
 
 install:
 	$(MAKE) -C $(SRC_NAME)/build install DESTDIR=""
 
 romfs:
-	cp -fP $(SRC_NAME)/build/libjson-c.so* $(ROMFSDIR)/lib
+	cp -fP $(DESTDIR)/lib/libjson-c.so* $(ROMFSDIR)/lib
