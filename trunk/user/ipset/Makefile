@@ -38,4 +38,3 @@ clean:
 
 romfs:
 	$(ROMFSINST) $(THISDIR)/$(SRC_NAME)/src/ipset /sbin/ipset
-

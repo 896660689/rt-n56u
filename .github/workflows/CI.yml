@@ -26,10 +26,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - build_variant: "mt7620"
-            targets: "K2"
-          - build_variant: "mt7628"
-            targets: "HC5761A"
           - build_variant: "mt7621"
             targets: "K2P"
     steps:
@@ -37,7 +33,7 @@ jobs:
       - name: Prepare environment
         run: |
           sudo apt update
-          sudo apt install libtool-bin gperf python-docutils autopoint gettext
+          sudo apt install libtool-bin gperf python3-docutils autopoint gettext help2man ccache
       - name: Run shellcheck
         run: sh ./trunk/tools/shellcheck.sh
       - name: Prepare toolchain

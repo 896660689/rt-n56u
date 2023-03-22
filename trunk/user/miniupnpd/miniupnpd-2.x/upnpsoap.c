@@ -1840,6 +1840,13 @@ GetOutboundPinholeTimeout(struct upnphttp * h, const char * action, const char *
 	rem_port = GetValueFromNameValueList(&data, "RemotePort");
 	protocol = GetValueFromNameValueList(&data, "Protocol");
 
+	if (!int_port || !rem_port || !protocol)
+	{
+		ClearNameValueList(&data);
+		SoapError(h, 402, "Invalid Args");
+		return;
+	}
+
 	rport = (unsigned short)atoi(rem_port);
 	iport = (unsigned short)atoi(int_port);
 	/*proto = atoi(protocol);*/
@@ -2317,4 +2324,3 @@ SoapError(struct upnphttp * h, int errCode, const char * errDesc)
 	BuildResp2_upnphttp(h, 500, "Internal Server Error", body, bodylen);
 	SendRespAndClose_upnphttp(h);
 }
-

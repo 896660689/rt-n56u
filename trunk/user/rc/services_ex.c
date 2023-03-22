@@ -1205,4 +1205,3 @@ manual_ddns_hostname_check(void)
 
 	start_ddns(0);
 }
-

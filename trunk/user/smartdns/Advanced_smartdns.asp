@@ -31,7 +31,7 @@ $j(document).ready(function(){
 	init_itoggle('sdns_ipv6_server');
 	init_itoggle('snds_ip_change');
 	init_itoggle('sdns_www');
-	init_itoggle('sdns_ipv6');
+	init_itoggle('snds_ipv6');
 	init_itoggle('sdns_exp');
 	init_itoggle('sdnse_enable');
 	init_itoggle('sdnse_address');
@@ -318,16 +318,6 @@ function showMRULESList(){
                                                 <input type="text" maxlength="5" class="input" size="15" name="sdns_port" style="width: 120px" value="<% nvram_get_x("", "sdns_port"); %>">
                                             </td>
                                         </tr>
-                                        <tr id="snds_redirect_option">
-                                            <th width="50%">重定向</th>
-                                            <td>
-                                                <select name="snds_redirect" class="input" style="width: 180px;">
-                                                    <option value="0" <% nvram_match_x("","snds_redirect", "0","selected"); %>>无</option>
-                                                    <option value="1" <% nvram_match_x("","snds_redirect", "1","selected"); %>>作为dnsmasq的上游服务器</option>
-                                                    <option value="2" <% nvram_match_x("","snds_redirect", "2","selected"); %>>重定向53端口到SmartDns</option>
-                                                </select>
-                                            </td>
-                                        </tr>
 
                                         <tr id="sdns_tcp_server_option">
                                             <th>TCP服务器</th>
@@ -359,18 +349,25 @@ function showMRULESList(){
                                             </td>
                                         </tr>
 
-                                        <tr id="sdns_ipv6_option">
-                                            <th>禁用IPV6解析</th>
+                                        <tr id="snds_ip_change_option">
+                                            <th>双栈IP优选</th>
                                             <td>
                                                 <div class="main_itoggle">
-                                                    <div id="sdns_ipv6_on_of">
-                                                        <input type="checkbox" id="sdns_ipv6_fake" <% nvram_match_x("", "sdns_ipv6", "1", "value=1 checked"); %><% nvram_match_x("", "sdns_ipv6", "0", "value=0"); %>>
+                                                    <div id="snds_ip_change_on_of">
+                                                        <input type="checkbox" id="snds_ip_change_fake" <% nvram_match_x("", "snds_ip_change", "1", "value=1 checked"); %><% nvram_match_x("", "snds_ip_change", "0", "value=0"); %>>
                                                     </div>
                                                 </div>
                                                 <div style="position: absolute; margin-left: -10000px;">
-                                                    <input type="radio" value="1" name="sdns_ipv6" id="sdns_ipv6_1" <% nvram_match_x("", "sdns_ipv6", "1", "checked"); %>><#checkbox_Yes#>
-                                                    <input type="radio" value="0" name="sdns_ipv6" id="sdns_ipv6_0" <% nvram_match_x("", "sdns_ipv6", "0", "checked"); %>><#checkbox_No#>
+                                                    <input type="radio" value="1" name="snds_ip_change" id="snds_ip_change_1" <% nvram_match_x("", "snds_ip_change", "1", "checked"); %>><#checkbox_Yes#>
+                                                    <input type="radio" value="0" name="snds_ip_change" id="snds_ip_change_0" <% nvram_match_x("", "snds_ip_change", "0", "checked"); %>><#checkbox_No#>
                                                 </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr id="snds_ip_change_time_option">
+                                            <th width="50%">双栈IP优选阈值</th>
+                                            <td>
+                                                <input type="text" maxlength="64" class="input" size="64" name="snds_ip_change_time" style="width: 60px" value="<% nvram_get_x("", "snds_ip_change_time"); %>">&nbsp;&nbsp;毫秒（0-100）
                                             </td>
                                         </tr>
 
@@ -386,6 +383,17 @@ function showMRULESList(){
                                                     <input type="radio" value="1" name="sdns_www" id="sdns_www_1" <% nvram_match_x("", "sdns_www", "1", "checked"); %>><#checkbox_Yes#>
                                                     <input type="radio" value="0" name="sdns_www" id="sdns_www_0" <% nvram_match_x("", "sdns_www", "0", "checked"); %>><#checkbox_No#>
                                                 </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr id="snds_redirect_option">
+                                            <th width="50%">重定向</th>
+                                            <td>
+                                                <select name="snds_redirect" class="input" style="width: 180px;">
+                                                    <option value="0" <% nvram_match_x("","snds_redirect", "0","selected"); %>>无</option>
+                                                    <option value="1" <% nvram_match_x("","snds_redirect", "1","selected"); %>>作为dnsmasq的上游服务器</option>
+                                                    <option value="2" <% nvram_match_x("","snds_redirect", "2","selected"); %>>重定向53端口到SmartDns</option>
+                                                </select>
                                             </td>
                                         </tr>
 
@@ -433,28 +441,6 @@ function showMRULESList(){
                                             <td>
                                                 <input type="text" maxlength="64" class="input" size="64" name="sdns_ttl_max" style="width: 120px" value="<% nvram_get_x("", "sdns_ttl_max"); %>">
                                                 <div><span style="color:#888;">设置所有域名的TTL最大值</span></div>
-                                            </td>
-                                        </tr>
-
-                                        <tr id="snds_ip_change_option">
-                                            <th>双栈IP优选</th>
-                                            <td>
-                                                <div class="main_itoggle">
-                                                    <div id="snds_ip_change_on_of">
-                                                        <input type="checkbox" id="snds_ip_change_fake" <% nvram_match_x("", "snds_ip_change", "1", "value=1 checked"); %><% nvram_match_x("", "snds_ip_change", "0", "value=0"); %>>
-                                                    </div>
-                                                </div>
-                                                <div style="position: absolute; margin-left: -10000px;">
-                                                    <input type="radio" value="1" name="snds_ip_change" id="snds_ip_change_1" <% nvram_match_x("", "snds_ip_change", "1", "checked"); %>><#checkbox_Yes#>
-                                                    <input type="radio" value="0" name="snds_ip_change" id="snds_ip_change_0" <% nvram_match_x("", "snds_ip_change", "0", "checked"); %>><#checkbox_No#>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr id="snds_ip_change_time_option">
-                                            <th width="50%">双栈IP优选阈值</th>
-                                            <td>
-                                                <input type="text" maxlength="64" class="input" size="64" name="snds_ip_change_time" style="width: 60px" value="<% nvram_get_x("", "snds_ip_change_time"); %>">&nbsp;&nbsp;毫秒（0-100）
                                             </td>
                                         </tr>
                                     </table>
@@ -601,6 +587,21 @@ function showMRULESList(){
                                                 </div>
                                             </td>
                                         </tr>
+
+
+                                        <tr> <th>禁用IPV6解析</th>
+                                            <td>
+                                                <div class="main_itoggle">
+                                                    <div id="snds_ipv6_on_of">
+                                                        <input type="checkbox" id="snds_ipv6_fake" <% nvram_match_x("", "snds_ipv6", "1", "value=1 checked"); %><% nvram_match_x("", "snds_ipv6", "0", "value=0"); %>>
+                                                    </div>
+                                                </div>
+                                                <div style="position: absolute; margin-left: -10000px;">
+                                                    <input type="radio" value="1" name="snds_ipv6" id="snds_ipv6_1" <% nvram_match_x("", "snds_ipv6", "1", "checked"); %>><#checkbox_Yes#>
+                                                    <input type="radio" value="0" name="snds_ipv6" id="snds_ipv6_0" <% nvram_match_x("", "snds_ipv6", "0", "checked"); %>><#checkbox_No#>
+                                                </div>
+                                            </td>
+                                        </tr>
                                     </table>
                                 </div>
 
@@ -621,31 +622,31 @@ function showMRULESList(){
                                                 </td>
                                             </tr>
 
-                                            <tr id="sdnss_name_option" style="display:none;">
+                                            <tr id="sdnss_name_option">
                                                 <th>上游名称:</th>
                                                 <td>
                                                     <input type="text" maxlength="255" class="span12" style="width: 200px" size="200" name="sdnss_name_x_0" value="<% nvram_get_x("", "sdnss_name_x_0"); %>" onKeyPress="return is_string(this,event);"/>
                                                 </td>
                                             </tr>
 
-                                            <tr id="sdnss_ip_option" style="display:none;">
+                                            <tr id="sdnss_ip_option">
                                                 <th>上游地址:</th>
                                                 <td>
                                                     <input type="text" maxlength="255" class="span12" style="width: 200px" size="200" name="sdnss_ip_x_0" value="<% nvram_get_x("", "sdnss_ip_x_0"); %>" onKeyPress="return is_string(this,event);"/>
                                                 </td>
                                             </tr>
 
-                                            <tr id="sdnss_port_option" style="display:none;">
+                                            <tr id="sdnss_port_option">
                                                 <th>上游服务器端口:</th>
                                                 <td>
                                                     <input type="text" maxlength="255" class="span12" style="width: 120px" size="200" name="sdnss_port_x_0" value="default" onKeyPress="return is_string(this,event);"/>
                                                 </td>
                                             </tr>
 
-                                            <tr id="sdnss_type_option" style="display:none;">
+                                            <tr id="sdnss_type_option">
                                                 <th>上游类型</th>
                                                 <td>
-                                                    <select name="sdnss_type_x_0" class="input" style="width: 145px">
+                                                    <select name="sdnss_type_x_0" class="input" style="width: 120px">
                                                         <option value="tcp" <% nvram_match_x("","sdnss_type_x_0", "0","selected"); %>>tcp</option>
                                                         <option value="udp" <% nvram_match_x("","sdnss_type_x_0", "udp","selected"); %>>udp</option>
                                                         <option value="tls" <% nvram_match_x("","sdnss_type_x_0", "tls","selected"); %>>tls</option>
@@ -654,7 +655,7 @@ function showMRULESList(){
                                                 </td>
                                             </tr>
 
-                                            <tr id="sdnss_ipc_option" style="display:none;">
+                                            <tr id="sdnss_ipc_option">
                                                 <th>IP过滤</th>
                                                 <td>
                                                     <select name="sdnss_ipc_x_0" class="input" style="width: 120px">

@@ -67,6 +67,7 @@
 #define RCN_RESTART_GFWLIST_UPD		"restart_gfwlist_upd"
 #define RCN_RESTART_ADBYBY		"restart_adbyby"
 #define RCN_RESTART_WYY		"restart_wyy"
+#define RCN_RESTART_ZEROTIER		"restart_zerotier"
 #define RCN_RESTART_SMARTDNS		"restart_smartdns"
 #define RCN_RESTART_ADGUARDHOME		"restart_adguardhome"
 #define RCN_RESTART_UPDATEADB		"update_adb"

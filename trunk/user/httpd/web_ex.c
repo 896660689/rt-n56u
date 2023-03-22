@@ -2049,6 +2049,14 @@ static int smartdns_status_hook(int eid, webs_t wp, int argc, char **argv)
 	return 0;
 }
 #endif
+#if defined (APP_ZEROTIER)
+static int zerotier_status_hook(int eid, webs_t wp, int argc, char **argv)
+{
+	int zerotier_status_code = pids("zerotier-one");
+	websWrite(wp, "function zerotier_status() { return %d;}\n", zerotier_status_code);
+	return 0;
+}
+#endif
 
 static int
 ej_detect_internet_hook(int eid, webs_t wp, int argc, char **argv)
@@ -2229,6 +2237,11 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 #else
 	int found_app_wyy = 0;
 #endif
+#if defined(APP_ZEROTIER)
+	int found_app_zerotier = 1;
+#else
+	int found_app_zerotier = 0;
+#endif
 #if defined(APP_SMARTDNS)
 	int found_app_smartdns = 1;
 #else
@@ -2347,7 +2360,7 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 #if defined (USE_WID_5G) && (USE_WID_5G==7615 || USE_WID_5G==7915)
 	int has_5g_mumimo = 1;
 	int has_5g_txbf = 1;
-#if defined (BOARD_MT7615_DBDC) || (BOARD_MT7915_DBDC)
+#if defined (BOARD_MT7615_DBDC) || defined (BOARD_MT7915_DBDC)
 	int has_5g_160mhz = 0;
 #else
 	int has_5g_160mhz = 1;
@@ -2413,6 +2426,7 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		"function found_app_shadowsocks() { return %d;}\n"
 		"function found_app_adbyby() { return %d;}\n"
 		"function found_app_wyy() { return %d;}\n"
+		"function found_app_zerotier() { return %d;}\n"
 		"function found_app_smartdns() { return %d;}\n"
 		"function found_app_adguardhome() { return %d;}\n"
 		"function found_app_xupnpd() { return %d;}\n",
@@ -2435,6 +2449,7 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		found_app_shadowsocks,
 		found_app_adbyby,
 		found_app_wyy,
+		found_app_zerotier,
 		found_app_smartdns,
 		found_app_adguardhome,
 		found_app_xupnpd
@@ -2613,22 +2628,26 @@ openvpn_srv_cert_hook(int eid, webs_t wp, int argc, char **argv)
 {
 	int has_found_cert = 0;
 #if defined(APP_OPENVPN)
-	int i, i_atls;
+	int i, i_atls, i_tcv2;
 	char key_file[64];
-	static const char *openvpn_server_keys[5] = {
+	static const char *openvpn_server_keys[6] = {
 		"ca.crt",
 		"dh1024.pem",
 		"server.crt",
 		"server.key",
-		"ta.key"
+		"ta.key",
+		"stc2.key"
 	};
 
 	has_found_cert = 1;
 
 	i_atls = nvram_get_int("vpns_ov_atls");
+	i_tcv2 = nvram_get_int("vpns_ov_tcv2");
 
-	for (i=0; i<5; i++) {
+	for (i=0; i<6; i++) {
 		if (!i_atls && (i == 4))
+			continue;
+		if (!i_tcv2 && (i == 5))
 			continue;
 		sprintf(key_file, "%s/%s", STORAGE_OVPNSVR_DIR, openvpn_server_keys[i]);
 		if (!f_exists(key_file)) {
@@ -4107,6 +4126,9 @@ struct ej_handler ej_handlers[] =
 #endif
 #if defined (APP_SMARTDNS)
 	{ "smartdns_status", smartdns_status_hook},
+#endif
+#if defined (APP_ZEROTIER)
+	{ "zerotier_status", zerotier_status_hook},
 #endif
 	{ "openssl_util_hook", openssl_util_hook},
 	{ "openvpn_srv_cert_hook", openvpn_srv_cert_hook},

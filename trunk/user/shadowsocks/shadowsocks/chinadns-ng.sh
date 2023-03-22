@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2020-05-08
+# Compile:by-lanse	2023-03-06
 
 modprobe xt_set
 modprobe ip_set_hash_ip
@@ -9,46 +9,75 @@ STORAGE="/etc/storage"
 SSR_HOME="$STORAGE/shadowsocks"
 DNSMASQ_RURE="$STORAGE/dnsmasq/dnsmasq.conf"
 STORAGE_V2SH="$STORAGE/storage_v2ray.sh"
-
 ss_tunnel_local_port=$(nvram get ss-tunnel_local_port)
+wan_dns=$(nvram get wan_dns1_x)
 
 func_del_rule(){
     if [ -n "$(pidof chinadns-ng)" ] ; then
-        killall chinadns-ng >/dev/null 2>&1 &
-        sleep 2
+        killall chinadns-ng >/dev/null 2>&1
+        kill -9 "$(pidof chinadns-ng)" >/dev/null 2>&1
     fi
-    if grep -q "no-resolv" "$DNSMASQ_RURE"
+    if grep -q "65353" "$DNSMASQ_RURE"
     then
         sed -i '/no-resolv/d; /server=127.0.0.1/d' $DNSMASQ_RURE
     fi
 }
 
 func_del_ipt(){
-iptables-save -c | grep -v CNNG_ | iptables-restore -c && sleep 1
-for setname in $(ipset -n list | grep "gateway"); do
-    ipset destroy "$setname" 2>/dev/null
-done
-}
-
-func_cdn_file(){
-    logger -t "[CHINADNS-NG]" "下载 [cdn] 域名文件..."
-    curl -k -s -o /tmp/cdn.txt --connect-timeout 10 --retry 3 https://gitee.com/bkye/rules/raw/master/cdn.txt
-}
-
-func_cnng_file(){
-    /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c 119.29.29.29#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
-    if grep -q "no-resolv" "$DNSMASQ_RURE"
+    if [ $(nvram get ss_enable) = "0" ]
     then
-        sed -i '/no-resolv/d; /server=127.0.0.1/d' $DNSMASQ_RURE
+        flush_iptables(){
+            ipt="iptables -t $1"
+            DAT=$(iptables-save -t $1)
+            eval $(echo "$DAT" | grep "CNNG" | sed -e 's/^-A/$ipt -D/' -e 's/$/;/')
+            for chain in $(echo "$DAT" | awk '/^:CNNG/{print $1}'); do
+                $ipt -F ${chain:1} 2>/dev/null && $ipt -X ${chain:1}
+            done
+        }
+        sleep 2 && flush_iptables net
     fi
-    cat >> $DNSMASQ_RURE << EOF
+    ipt="iptables -t nat"
+    $ipt -D CNNG_PRE -d $v2_address -j RETURN
+    $ipt -D CNNG_PRE -m set --match-set gateway dst -j RETURN
+    $ipt -D CNNG_PRE -m set --match-set chnroute dst -j RETURN
+    $ipt -D CNNG_OUT -m set --match-set chnroute dst -j RETURN
+    $ipt -D CNNG_OUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-ports 65353
+    $ipt -D CNNG_OUT -p tcp -j CNNG_PRE
+    $ipt -D CNNG_PRE -p tcp -j REDIRECT --to-ports 12345
+    iptables-save -c | grep -v gateway | iptables-restore -c
+    for setname in $(ipset -n list | grep "gateway"); do
+        ipset destroy "$setname" 2>/dev/null
+    done
+    $ipt -D PREROUTING -j CNNG_OUT
+    $ipt -D OUTPUT -j CNNG_PRE
+}
+
+func_conf(){
+    /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
+    #/usr/bin/chinadns-ng -c $wan_dns#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
+    if [ $(nvram get sdns_enable) = "1" ]; then
+        if grep -q "no-resolv" "$DNSMASQ_RURE"
+        then
+            echo ''
+        else
+            cat >> $DNSMASQ_RURE << EOF
 no-resolv
 server=127.0.0.1#65353
 EOF
-sleep 2
+        fi
+    else
+        if grep -q "65353" "$DNSMASQ_RURE"
+        then
+            sed -i '/no-resolv/d; /server=127.0.0.1/d' $DNSMASQ_RURE
+        fi
+        cat >> $DNSMASQ_RURE << EOF
+no-resolv
+server=127.0.0.1#65353
+EOF
+    fi
 }
 
-func_lan_ip(){
+func_gmlan(){
 ipset -! restore <<-EOF
 create gateway hash:net hashsize 64
 $(gen_lan_ip | sed -e "s/^/add gateway /")
@@ -76,7 +105,7 @@ chmod +x $FWI
 return 0
 }
 
-func_cnng_ipt(){
+func_ipt_n(){
 if grep -q "vmess" "$STORAGE_V2SH"
 then
     V2RUL=/tmp/V2mi.txt
@@ -95,7 +124,7 @@ $ipt -A OUTPUT -j CNNG_PRE
 $ipt -A CNNG_PRE -d $v2_address -j RETURN
 $ipt -A CNNG_PRE -m set --match-set gateway dst -j RETURN
 $ipt -A CNNG_PRE -m set --match-set chnroute dst -j RETURN
-#$ipt -A CNNG_OUT -m set --match-set chnroute dst -j RETURN
+$ipt -A CNNG_OUT -m set --match-set chnroute dst -j RETURN
 $ipt -A CNNG_OUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-ports 65353
 
 $ipt -A CNNG_OUT -p tcp -j CNNG_PRE
@@ -114,14 +143,11 @@ return 0
 func_start(){
     func_del_rule && \
     echo -e "\033[41;37m 部署 [CHINADNS-NG] 文件,请稍后...\e[0m\n"
-    #func_cdn_file &
+    func_del_ipt
+    func_gmlan && flush_ipt_file && func_ipt_n
     wait
-    echo ""
-    func_del_ipt && \
-    func_cnng_file
-    func_lan_ip && \
-    flush_ipt_file && \
-    func_cnng_ipt &
+    echo "dns"
+    func_conf
     logger -t "[CHINADNS-NG]" "开始运行…"
 }
 
@@ -132,8 +158,6 @@ func_stop(){
     if [ $(nvram get ss_mode) = "3" ]
     then
         echo "V2RAY Not closed "
-    else
-        [ -f /tmp/cdn.txt ] && rm -rf /tmp/cdn.txt
     fi
 }
 

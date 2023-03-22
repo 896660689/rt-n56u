@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2021-03-21
+# Compile:by-lanse	2023-03-06
 
 v2_home="/tmp/v2fly"
 v2_json="$v2_home/config.json"
@@ -19,8 +19,8 @@ func_download(){
     if [ ! -f "$v2_home/v2ray" ]
     then
         mkdir -p "$v2_home"
-        wget --no-check-certificate -c $v2fly_url -qO $v2_home/v2ray && \
         #curl -k -s -o $v2_home/v2ray --connect-timeout 10 --retry 3 $v2fly_url && \
+        ln -sf /usr/bin/xray $v2_home/v2ray && \
         chmod 777 "$v2_home/v2ray"
     fi
 }
@@ -95,8 +95,8 @@ v2_tmp_json(){
   "dns": {
     "servers": [
       "1.1.1.1",
+      "8.8.8.8",
       "208.67.220.220",
-      "8.8.4.4",
       "localhost"
     ]
   },
@@ -142,11 +142,16 @@ v2_tmp_json(){
             "users": [
               {
                 "id": "$v2_userid",
-                "alterId": $v2_alterId
+                "alterId": $v2_alterId,
+                "security": "auto"
               }
             ]
           }
         ]
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 8
       },
       "tag": "proxy",
       "streamSettings": {
@@ -163,10 +168,6 @@ v2_tmp_json(){
             "Host": "$v2_domain_name"
           }
         }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 8
       }
     }
   ]
@@ -176,8 +177,8 @@ EOF
 
 func_Del_rule(){
     if [ -n "$(pidof v2ray)" ] ; then
-        killall v2ray &
-        sleep 2
+        killall v2ray >/dev/null 2>&1
+        kill -9 "$(pidof v2ray)" >/dev/null 2>&1
     fi
 }
 
@@ -216,8 +217,9 @@ func_start(){
 
 func_stop(){
     func_Del_rule &
+    iptables-save -c | grep -v "chnroute" | iptables-restore -c
     for setname in $(ipset -n list | grep "chnroute"); do
-        ipset destroy chnroute 2>/dev/null &
+        sleep 3 && ipset destroy "$setname" 2>/dev/null
     done
     if [ $(nvram get ss_enable) = "0" ]
     then

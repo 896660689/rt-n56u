@@ -542,6 +542,11 @@ void stop_wyy(void);
 void start_wyy(void);
 void restart_wyy(void);
 #endif
+#if defined(APP_ZEROTIER)
+void stop_zerotier(void);
+void start_zerotier(void);
+void restart_zerotier(void);
+#endif
 #if defined(APP_ADGUARDHOME)
 void stop_adguardhome(void);
 void start_adguardhome(void);

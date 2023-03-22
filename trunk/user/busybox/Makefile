@@ -1,5 +1,10 @@
 SRC_NAME=busybox-1.24.x
 
+extract_test:
+	( if [ ! -d $(SRC_NAME) ]; then \
+		tar xzf $(SRC_NAME).tar.gz; \
+	fi )
+
 all:
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
 
@@ -8,4 +13,3 @@ clean:
 
 romfs:
 	$(MAKE) -C $(SRC_NAME) CONFIG_PREFIX=$(ROMFSDIR) install
-

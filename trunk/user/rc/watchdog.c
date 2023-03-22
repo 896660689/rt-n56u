@@ -1002,6 +1002,8 @@ ntpc_updated_main(int argc, char *argv[])
 		system("hwclock -w");
 #endif
 		logmessage("NTP Client", "System time changed, offset: %ss", offset);
+                sleep(5);
+                nvram_set_int("ntp_ready", 1);
 	}
 
 	return 0;

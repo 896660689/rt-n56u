@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2021-05-10
+# Compile:by-lanse	2023-03-06
 
 export PATH=$PATH:/etc/storage/shadowsocks
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etc/storage/shadowsocks
@@ -42,7 +42,7 @@ ss2_protocol=$(nvram get ss2_protocol)
 ss2_proto_param=$(nvram get ss2_proto_param)
 ss2_obfs=$(nvram get ss2_obfs)
 ss2_obfs_param=$(nvram get ss2_obfs_param)
-v2_address=$(cat /tmp/V2mi.txt | grep "add:" | awk -F '[:/]' '{print $2}')
+
 dns2_ip=$(nvram get ss-tunnel_remote | awk -F '[:/]' '{print $1}')
 dns2_port=$(nvram get ss-tunnel_remote | sed 's/:/#/g')
 
@@ -116,15 +116,15 @@ func_start_ss_rules(){
 func_ss_Close(){
     loger $ss_bin "stop"; ss-rules -f &
     if [ -n "$(pidof ss-redir)" ] ; then
-        killall ss-redir >/dev/null 2>&1 &
-        sleep 2
+        killall ss-redir >/dev/null 2>&1
+        kill -9 "$(pidof ss-redir)" >/dev/null 2>&1
     fi
     kill -9 $(busybox ps -w | grep dns-forwarder | grep -v grep | awk '{print $1}') >/dev/null 2>&1
     kill -9 $(busybox ps -w | grep dnsproxy | grep -v grep | awk '{print $1}') >/dev/null 2>&1
     kill -9 $(busybox ps -w | grep dns2tcp | grep -v grep | awk '{print $1}') >/dev/null 2>&1
     if [ -n "$(pidof pdnsd)" ] ; then
-        killall pdnsd >/dev/null 2>&1 &
-        sleep 2
+        killall pdnsd >/dev/null 2>&1
+        kill -9 "$(pidof pdnsd)" >/dev/null 2>&1
     fi
     if grep -q "ssr-watchcat" "$TIME_SCRIPT"
     then
@@ -133,7 +133,7 @@ func_ss_Close(){
     fi
     if grep -q "v2ray-watchdog" "$TIME_SCRIPT"
     then
-        sed -i '/v2ray-watchdog/d' "$TIME_SCRIPT" >/dev/null 2>&1
+        sed -i '/v2ray-watchdog/d; /V2RAY-网络正常/d' $TIME_SCRIPT &
         sleep 2
     fi
     if grep -q "gfwlist" "$DNSMASQ_RURE"
@@ -255,7 +255,7 @@ func_gfwlist_file(){
     then
         sh -c "$SSR_HOME/ss-gfwlist.sh -s $SS_SERVER_LINK -l $SS_LOCAL_PORT_LINK"
         wait
-        echo ""
+        echo "gfw"
         $ss_bin -c $ss_json -b 0.0.0.0 -l $SS_LOCAL_PORT_LINK >/dev/null 2>&1 &
         sleep 2 && logger -t "[ShadowsocksR]" "使用 [gfwlist] 代理模式开始运行..."
     fi
@@ -295,6 +295,10 @@ func_cron(){
             cat >> "$TIME_SCRIPT" << EOF
 */3 * * * * sh $SSR_HOME/v2ray-watchdog 2>&1 >/dev/null &
 EOF
+            sed -i '/V2RAY-网络正常/d' "$TIME_SCRIPT"
+            cat >> "$TIME_SCRIPT" << EOF
+0 */6 * * * sed -i '/V2RAY-网络正常/d' "/tmp/ss-watchcat.log" &
+EOF
         else
             sed -i '/ssr-watchcat/d' "$TIME_SCRIPT"
             cat >> "$TIME_SCRIPT" << EOF
@@ -307,17 +311,17 @@ EOF
 dog_restart(){
     if [ -n "$(pidof ss-redir)" ] ; then
         killall ss-redir >/dev/null 2>&1
+        kill -9 "$(pidof ss-redir)" >/dev/null 2>&1
     fi
     sleep 2 && $ss_bin -c $ss_json -b 0.0.0.0 -l $SS_LOCAL_PORT_LINK >/dev/null 2>&1 &
 }
 
 ipt_ss_del()
 {
-    iptables-save -c | grep -v "gfwlist" | iptables-restore -c && sleep 2
+    iptables-save -c | grep -v "gfwlist" | iptables-restore -c
     for setname in $(ipset -n list | grep "gfwlist"); do
         ipset destroy "$setname" 2>/dev/null
     done
-    sleep 1 && restart_dhcpd
 }
 
 func_sshome_file(){
@@ -334,7 +338,10 @@ func_v2fly(){
 
 func_redsocks(){
     /bin/sh $SSR_HOME/redsocks.sh start 127.0.0.1 $SS_LOCAL_PORT_LINK
-    /bin/sh $SSR_HOME/redsocks.sh iptables $v2_address
+    if [ -f /tmp/V2mi.txt ] ; then
+        v2_address=$(cat /tmp/V2mi.txt | grep "add:" | awk -F '[:/]' '{print $2}')
+        /bin/sh $SSR_HOME/redsocks.sh iptables $v2_address
+    fi
 }
 
 func_chinadns_ng(){
@@ -354,7 +361,7 @@ func_start(){
             func_chnroute_file &
         fi
         wait
-        echo ""
+        echo "mode"
         func_gfwlist_list && \
         func_port_agent_mode &
         if [ "$ss_mode" = "3" ]
@@ -363,8 +370,9 @@ func_start(){
             func_v2fly && \
             func_redsocks &
             wait
-            echo ""
+            echo "v2"
             func_chinadns_ng &
+            restart_firewall &
         else
             echo -e "\033[41;37m 部署 [ShadowsocksR] 文件,请稍后...\e[0m\n"
             func_gen_ss_json && \
@@ -373,12 +381,12 @@ func_start(){
             func_start_ss_redir && \
             func_start_ss_rules &
             wait
-            echo ""
+            echo "run"
             loger $ss_bin "ShadowsocksR Start up" || { ss-rules -f && loger $ss_bin "ShadowsocksR Start fail!"; }
         fi
         func_cron && \
-        #[ -d /tmp/adbyby ] && sh /tmp/adbyby/ad_watchcat 2>&1 >/dev/null
-        restart_firewall &
+        /sbin/restart_dhcpd
+        wait
         logger -t "[ShadowsocksR]" "开始运行…"
     else
         exit 0
@@ -388,14 +396,15 @@ func_start(){
 func_stop(){
     nvram set ss-tunnel_enable=0
     /usr/bin/ss-tunnel.sh stop &
-    /bin/sh $SSR_HOME/v2ray.sh stop &
-    /bin/sh $SSR_HOME/redsocks.sh stop &
     /bin/sh $SSR_HOME/chinadns-ng.sh stop &
-    sleep 2
+    /bin/sh $SSR_HOME/redsocks.sh stop &
+    /bin/sh $SSR_HOME/v2ray.sh stop && sleep 5
     func_ss_Close && \
     ipt_ss_del && \
     func_ss_down &
-    sleep 2 && logger -t "[ShadowsocksR]" "已停止运行!"
+    /sbin/restart_dhcpd
+    wait
+    logger -t "[ShadowsocksR]" "已停止运行!"
 }
 
 case "$1" in

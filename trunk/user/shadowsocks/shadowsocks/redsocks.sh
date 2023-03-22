@@ -1,6 +1,5 @@
 #!/bin/sh
-# github:http://github.com/SuzukiHonoka
-# Compile:by-lanse	2021-02-15
+# Compile:by-lanse	2023-03-06
 
 modprobe xt_set
 modprobe ip_set_hash_ip
@@ -17,6 +16,7 @@ CHAIN_NAME="REDSOCKS"
 SET_NAME="chnroute"
 SOCKS_LOG="/tmp/ss-watchcat.log"
 ss_router_proxy=$(nvram get ss_router_proxy)
+v2_port=$(cat /tmp/V2mi.txt | grep "port:" | awk -F '[:/]' '{print $2}') 
 SOCKS5_IP=$(nvram get lan_ipaddr)
 SOCKS5_PORT=$(nvram get ss_local_port)
 REMOTE_IP="127.0.0.1"
@@ -27,7 +27,7 @@ ARG3=$3
 
 func_redsocks(){
 if [ "$ss_router_proxy" = "5" ] ; then
-    IPT2SOCKS_CMD="ipt2socks -s 127.0.0.1 -p $SOCKS5_PORT -b 0.0.0.0 -l 12345 -j `cat /proc/cpuinfo|grep processor|wc -l` -T -4 -R"
+    IPT2SOCKS_CMD="ipt2socks -s 127.0.0.1 -p $SOCKS5_PORT -l 12345 -r -4 -R"
     $IPT2SOCKS_CMD >/dev/null 2>&1 &
 else
     ln -sf $BINARY_PATH $REDSOCKS_FILE
@@ -73,8 +73,6 @@ ip = $SOCKS5_IP;
 port = $SOCKS5_PORT;
 type = socks5;
 }
-
-//Keep this line
 EOF
 chmod 644 $REDSOCKS_CONF
 logger -t $BINARY_NAME "CONFIG FILE SAVED."
@@ -113,7 +111,6 @@ $ipt -A $CHAIN_NAME -d 240.0.0.0/4 -j RETURN
 $ipt -A $CHAIN_NAME -m set --match-set chnroute dst -j RETURN
 $ipt -A $CHAIN_NAME -p tcp -j REDIRECT --to-ports 12345
 $ipt -A PREROUTING -i br0 -p tcp -j $CHAIN_NAME
-#$ipt -A OUTPUT -j $CHAIN_NAME
 
 cat <<-CAT >>$FWI
 iptables-save -c | grep -v $CHAIN_NAME | iptables-restore -c
@@ -144,12 +141,30 @@ fi
 }
 
 func_clean(){
-iptables-save -c | grep -v $CHAIN_NAME | iptables-restore -c && sleep 2
-#ipset -X $SET_NAME >/dev/null 2>&1 &
-for setname in $(ipset -n list | grep "chnroute"); do
-ipset flush chnroute 2>/dev/null &
-#ipset destroy "$setname" 2>/dev/null
+if [ $(nvram get ss_enable) = "0" ]; then
+flush_iptables() {
+ipt="iptables -t $1"
+DAT=$(iptables-save -t $1)
+eval $(echo "$DAT" | grep "REDSOCKS" | sed -e 's/^-A/$ipt -D/' -e 's/$/;/')
+for chain in $(echo "$DAT" | awk '/^:REDSOCKS/{print $1}'); do
+$ipt -F ${chain:1} 2>/dev/null && $ipt -X ${chain:1}
 done
+}
+sleep 3 && flush_iptables nat &
+fi
+ipt="iptables -t nat"
+$ipt -D $CHAIN_NAME -d $REMOTE_IP -j RETURN
+$ipt -D $CHAIN_NAME -d 0.0.0.0/8 -j RETURN
+$ipt -D $CHAIN_NAME -d 10.0.0.0/8 -j RETURN
+$ipt -D $CHAIN_NAME -d 127.0.0.0/8 -j RETURN
+$ipt -D $CHAIN_NAME -d 169.254.0.0/16 -j RETURN
+$ipt -D $CHAIN_NAME -d 172.16.0.0/12 -j RETURN
+$ipt -D $CHAIN_NAME -d 192.168.0.0/16 -j RETURN
+$ipt -D $CHAIN_NAME -d 224.0.0.0/4 -j RETURN
+$ipt -D $CHAIN_NAME -d 240.0.0.0/4 -j RETURN
+$ipt -D $CHAIN_NAME -m set --match-set chnroute dst -j RETURN
+$ipt -D $CHAIN_NAME -p tcp -j REDIRECT --to-ports 12345
+$ipt -D PREROUTING -i br0 -p tcp -j $CHAIN_NAME
 [ -d "$SOCKS_LOG" ] && cat /dev/null > $SOCKS_LOG
 }
 
@@ -159,7 +174,8 @@ killall $BINARY_NAME &
 sleep 2
 fi
 if [ -n "$(pidof ipt2socks)" ] ; then
-killall ipt2socks &
+killall ipt2socks >/dev/null 2>&1
+kill -9 "$(pidof ipt2socks)" >/dev/null 2>&1
 fi
 func_clean
 [ -d "$TMP_HOME" ] && rm -rf "$TMP_HOME"

@@ -11,7 +11,13 @@ endif
 include $(PROJECT_CONFIG)
 include $(ARCH_CONFIG)
 
+SRC_NAME=uClibc-ng-1.0.38
 DESTDIR=$(ROOTDIR)/stage
+
+extract_test:
+	( if [ ! -d $(SRC_NAME) ]; then \
+		tar -xzvf $(SRC_NAME).tar.gz; \
+	fi )
 
 all:
 	if [ ! -f $(DESTDIR)/.installed_uclibc ] ; then \
