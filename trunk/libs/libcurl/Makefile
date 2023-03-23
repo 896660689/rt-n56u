@@ -1,5 +1,5 @@
-SRC_NAME=curl-7.83.1
-SRC_URL=https://github.com/curl/curl/releases/download/curl-7_83_1/$(SRC_NAME).tar.xz
+SRC_NAME=curl-7.87.0
+SRC_URL=https://github.com/curl/curl/releases/download/curl-7_87_0/curl-7.87.0.tar.xz
 
 LDFLAGS += -Wl,-rpath-link=$(STAGEDIR)/lib
 
@@ -29,7 +29,7 @@ configure:
 	./configure \
 		--prefix=$(STAGEDIR) \
 		--enable-static \
-		--enable-shared \
+		--disable-shared \
 		$(if $(CONFIG_IPV6),--enable-ipv6,--disable-ipv6) \
 		--disable-gopher \
 		--disable-ldap \
