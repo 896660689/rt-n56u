@@ -1,0 +1,11 @@
+--- ncurses-6.4/misc/run_tic.in
++++ ncurses-6.4/misc/run_tic.in
+@@ -43,7 +43,7 @@
+ #	make install.data
+ 
+ : "${suffix:=@EXEEXT@}"
+-: "${DESTDIR:=@DESTDIR@}"
++#: "${DESTDIR:=@DESTDIR@}"
+ : "${prefix:=@prefix@}"
+ : "${exec_prefix:=@exec_prefix@}"
+ : "${bindir:=@bindir@}"
