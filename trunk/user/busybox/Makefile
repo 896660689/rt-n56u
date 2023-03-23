@@ -1,8 +1,8 @@
-SRC_NAME=busybox-1.24.x
+SRC_NAME=busybox-1.3X.X
 
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
-		tar xzf $(SRC_NAME).tar.gz; \
+		unzip -qq $(SRC_NAME).zip; \
 	fi )
 
 all:
