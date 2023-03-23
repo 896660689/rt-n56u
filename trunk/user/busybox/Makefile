@@ -1,4 +1,4 @@
-SRC_NAME=busybox-1.24.x
+SRC_NAME=busybox-1.34.1
 
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
