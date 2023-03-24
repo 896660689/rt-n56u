@@ -1,6 +1,8 @@
 .EXPORT_ALL_VARIABLES:
 .PHONY: all romfs clean
 
+SRC_NAME=uClibc-ng-1.0.42
+
 ifndef ROOTDIR
 ROOTDIR=..
 endif
@@ -11,15 +13,14 @@ endif
 include $(PROJECT_CONFIG)
 include $(ARCH_CONFIG)
 
-SRC_NAME=uClibc-ng-1.0.38
 DESTDIR=$(ROOTDIR)/stage
 
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
-		tar -xzvf $(SRC_NAME).tar.gz; \
+		unzip -qq $(SRC_NAME).zip ; \
 	fi )
 
-all:
+all: extract_test
 	if [ ! -f $(DESTDIR)/.installed_uclibc ] ; then \
 		mkdir -p $(DESTDIR) ; \
 		touch $(DESTDIR)/.installed_uclibc ; \
