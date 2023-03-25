@@ -141,9 +141,12 @@ Get_sdns_conf () {
     # 【】
     :>"$smartdns_tmp_Conf"
     echo "server-name $snds_name" >> "$smartdns_tmp_Conf"
+    if [ -f "$smartdns_custom_Conf" ] ; then
+        grep -v '^#' $smartdns_custom_Conf | grep -v "^$" >> "$smartdns_tmp_Conf"
+    fi
     ARGS_1=""
     if [ "$sdns_address" = "1" ] ; then
-     ARGS_1="$ARGS_1 -no-rule-addr"
+        ARGS_1="$ARGS_1 -no-rule-addr"
     fi
     if [ "$sdns_ns" = "1" ] ; then
         ARGS_1="$ARGS_1 -no-rule-nameserver"
