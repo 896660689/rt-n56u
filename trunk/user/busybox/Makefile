@@ -1,4 +1,4 @@
-SRC_NAME=busybox-1.24.x
+SRC_NAME=busybox-1.34.1
 
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
@@ -12,5 +12,5 @@ clean:
 	$(MAKE) -C $(SRC_NAME) distclean
 
 romfs:
-	$(MAKE) -C $(SRC_NAME) CONFIG_PREFIX=$(ROMFSDIR) install
-
+	$(MAKE) -C $(SRC_NAME)
+	CONFIG_PREFIX=$(ROMFSDIR) install
