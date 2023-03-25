@@ -13,4 +13,3 @@ clean:
 
 romfs:
 	$(MAKE) -C $(SRC_NAME) CONFIG_PREFIX=$(ROMFSDIR) install
-
