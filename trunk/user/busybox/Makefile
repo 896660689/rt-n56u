@@ -1,8 +1,8 @@
-SRC_NAME=busybox-1.34.1
+SRC_NAME=busybox-1.3X.X
 
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
-		tar xzf $(SRC_NAME).tar.gz; \
+		unzip -qq $(SRC_NAME).zip; \
 	fi )
 
 all:
@@ -12,5 +12,4 @@ clean:
 	$(MAKE) -C $(SRC_NAME) distclean
 
 romfs:
-	$(MAKE) -C $(SRC_NAME)
-	CONFIG_PREFIX=$(ROMFSDIR) install
+	$(MAKE) -C $(SRC_NAME) CONFIG_PREFIX=$(ROMFSDIR) install
