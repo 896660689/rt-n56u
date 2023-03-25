@@ -360,13 +360,13 @@ Change_dnsmasq () {
         fi
         if [ $(nvram get ss_enable) = "1" ] && [ $(nvram get ss_router_proxy) = "5" ]
         then
-	    if grep -q "$sdns_port" "$dnsmasq_Conf"
+            if grep -q "65353" "$dnsmasq_Conf"
             then
-	        echo "ok"
-	    else
+                echo "ok"
+            else
                 echo "no-resolv" >> "$dnsmasq_Conf"
                 echo "server=127.0.0.1#65353" >> "$dnsmasq_Conf"
-	    fi
+            fi
         fi
         ;;
     start)
