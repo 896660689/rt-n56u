@@ -47,7 +47,7 @@ dns2_ip=$(nvram get ss-tunnel_remote | awk -F '[:/]' '{print $1}')
 dns2_port=$(nvram get ss-tunnel_remote | sed 's/:/#/g')
 
 check_music(){
-if [ $(nvram get wyy_enable) = "1" ] && [ $(nvram get sdns_enable) = "1" ]; then
+if [ $(nvram get wyy_enable) = "1" ]; then
     logger -t "[ShadowsocksR]" "系统检测到音乐解锁或 [SMT] 正在运行, 请改变使用 [gfwlist] 以外其它代理模式, 再重启 [ShadowsocksR], 程序将退出!"
     nvram get ss_enable=0
     exit 0
