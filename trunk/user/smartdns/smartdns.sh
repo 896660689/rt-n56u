@@ -355,6 +355,11 @@ Change_dnsmasq () {
             [ "$sdns_ported" = "53" ] && logger -t "SmartDNS" "已启用 dnsmasq 域名解析（DNS）功能" 
             [ "$snds_redirected" = "1" ] && logger -t "SmartDNS" "删除 dnsmasq 上游服务器：127.0.0.1:$sdns_ported" 
         fi
+        if [ $(nvram get ss_enable) = "1" ] && [ $(nvram get ss_router_proxy) = "5" ]
+        then
+            echo "no-resolv" >> "$dnsmasq_Conf"
+            echo "server=127.0.0.1#65353" >> "$dnsmasq_Conf"
+        fi
         ;;
     start)
         # 启动 SmartDNS 时
