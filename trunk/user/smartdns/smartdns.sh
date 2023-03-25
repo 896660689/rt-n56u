@@ -141,9 +141,12 @@ Get_sdns_conf () {
     # 【】
     :>"$smartdns_tmp_Conf"
     echo "server-name $snds_name" >> "$smartdns_tmp_Conf"
+    if [ -f "$smartdns_custom_Conf" ] ; then
+        grep -v '^#' $smartdns_custom_Conf | grep -v "^$" >> "$smartdns_tmp_Conf"
+    fi
     ARGS_1=""
     if [ "$sdns_address" = "1" ] ; then
-     ARGS_1="$ARGS_1 -no-rule-addr"
+        ARGS_1="$ARGS_1 -no-rule-addr"
     fi
     if [ "$sdns_ns" = "1" ] ; then
         ARGS_1="$ARGS_1 -no-rule-nameserver"
@@ -354,6 +357,11 @@ Change_dnsmasq () {
         if [ "$sdns_enable" = 0 ] ; then
             [ "$sdns_ported" = "53" ] && logger -t "SmartDNS" "已启用 dnsmasq 域名解析（DNS）功能" 
             [ "$snds_redirected" = "1" ] && logger -t "SmartDNS" "删除 dnsmasq 上游服务器：127.0.0.1:$sdns_ported" 
+        fi
+        if [ $(nvram get ss_enable) = "1" ] && [ $(nvram get ss_router_proxy) = "5" ]
+        then
+            echo "no-resolv" >> "$dnsmasq_Conf"
+            echo "server=127.0.0.1#65353" >> "$dnsmasq_Conf"
         fi
         ;;
     start)
