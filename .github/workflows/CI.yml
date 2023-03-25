@@ -26,6 +26,8 @@ jobs:
     strategy:
       matrix:
         include:
+          - build_variant: "mt7620"
+            targets: "K2"
           - build_variant: "mt7621"
             targets: "K2P"
     steps:
