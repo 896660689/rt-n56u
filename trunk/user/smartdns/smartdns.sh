@@ -141,6 +141,7 @@ Get_sdns_conf () {
     # 【】
     :>"$smartdns_tmp_Conf"
     echo "server-name $snds_name" >> "$smartdns_tmp_Conf"
+    grep -v '^#' $storage_Path/smartdns/smartdns_custom.conf | grep -v "^$" >> "$smartdns_tmp_Conf"
     if [ -f "$smartdns_custom_Conf" ] ; then
         grep -v '^#' $smartdns_custom_Conf | grep -v "^$" >> "$smartdns_tmp_Conf"
     fi
@@ -521,7 +522,7 @@ Stop_smartdns () {
     smartdns_process=$(pidof smartdns | awk '{ print $1 }')
     if [ "$smartdns_process"x = x ] && [ "$sdns_enable" = 0 ] ; then 
         rm  -f "$smartdns_Ini"
-        logger -t "SmartDNS" "已停用"
+        /sbin/restart_dhcpd >/dev/null 2>&1 && logger -t "SmartDNS" "已停用"
     fi
 }
 
