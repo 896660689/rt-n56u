@@ -49,7 +49,7 @@ if(m_list.length > 0){
 var isMenuopen = 0;
 function initial(){
 	show_banner(2);
-	show_menu(5,17,0);
+	show_menu(5,13,0);
 	showmenu();
 	fill_status(zerotier_status());
 	showMRULESList();
@@ -197,7 +197,7 @@ function showMRULESList(){
 				<div class="row-fluid">
 					<div class="span12">
 						<div class="box well grad_colour_dark_blue">
-							<h2 class="box_head round_top"><#menu5_32#> - <#menu5_30#></h2>
+							<h2 class="box_head round_top"><#menu5_13_0#> - <#menu5_30#></h2>
 							<div class="round_bottom">
 							<div>
 							    <ul class="nav nav-tabs" style="margin-bottom: 10px;">
