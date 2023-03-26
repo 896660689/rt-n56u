@@ -598,7 +598,7 @@ struct nvram_pair router_defaults[] = {
 	{ "sdns_ipv6_server", "0" },
 	{ "snds_ip_change", "0" },
 	{ "snds_ip_change_time", "30" },
-	{ "sdns_ipv6", "1" },
+	{ "snds_ipv6", "1" },
 	{ "sdns_www", "1" },
 	{ "sdns_exp", "1" },
 	{ "sdns_exp_ttl", "0" },
