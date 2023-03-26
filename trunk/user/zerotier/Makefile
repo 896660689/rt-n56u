@@ -9,7 +9,8 @@ all: extract_test
 
 extract_test:
 	 if [ ! -d $(SRC_NAME) ] ; then \
-		tar xf $(SRC_NAME).tar.gz ; \
+		zip -s 0 ZeroTierOne.zip --out $(SRC_NAME).zip ; \
+		unzip -qq $(SRC_NAME).zip ; \
 		patch -d $(SRC_NAME) -p1 -i ../0002-remove-pie.patch; \
 		patch -d $(SRC_NAME) -p1 -i ../0007-add-cerrno-header-for-str-errno.patch ; \
 		patch -d $(SRC_NAME) -p1 -i ../0009-fix-set-mac-and-change-confpath.patch ; \
