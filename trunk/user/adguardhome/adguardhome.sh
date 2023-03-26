@@ -61,9 +61,8 @@ getconfig(){
         cat > "$adg_file" <<-\EEE
 bind_host: 0.0.0.0
 bind_port: 3030
-users:
-- name: admin
-  password: $2a$10$cXxR/BU7DZEtKMc/bM/G5u05Z3xap6T4dqXrx8UFRYP1V9e3W3.3W
+auth_name: adguardhome
+auth_pass: adguardhome
 language: zh-cn
 rlimit_nofile: 0
 web_session_ttl: 720
