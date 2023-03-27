@@ -202,7 +202,7 @@ Get_sdns_conf () {
     else
         echo "serve-expired no" >> "$smartdns_tmp_Conf"
     fi
-    #pass_order
+    pass_order
     func_chnroute_file && sleep 5
     if [ "$ss_white" = "1" ] && [ -f "$chn_Route" ] ; then
         :>/tmp/whitelist.conf
