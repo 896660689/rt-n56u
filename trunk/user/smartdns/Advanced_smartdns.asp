@@ -30,23 +30,29 @@ $j(document).ready(function(){
 	init_itoggle('sdns_tcp_server');
 	init_itoggle('sdns_ipv6_server');
 	init_itoggle('snds_ip_change');
+	init_itoggle('sdns_cache_persist');
 	init_itoggle('sdns_www');
 	init_itoggle('snds_ipv6');
 	init_itoggle('sdns_exp');
 	init_itoggle('sdnse_enable');
 	init_itoggle('sdnse_address');
+	init_itoggle('sdns_address');
 	init_itoggle('sdnse_tcp');
 	init_itoggle('sdnse_as');
+	init_itoggle('sdns_as');
 	init_itoggle('sdnse_speed');
+	init_itoggle('sdns_speed');
 	init_itoggle('sdnse_ns');
+	init_itoggle('sdns_ns');
 	init_itoggle('sdnse_ipc');
 	init_itoggle('sdnse_ipset');
+	init_itoggle('sdns_ipset');
 	init_itoggle('sdnse_cache');
-	init_itoggle('sdnse_coredump');
+	init_itoggle('sdns_coredump');
 	init_itoggle('ss_black');
 	init_itoggle('ss_white');
 	init_itoggle('sdnss_enable_x_0');
-	$j("#tab_sm_cfg, #tab_sm_sec, #tab_sm_dns, #tab_sm_cou").click(function(){
+	$j("#tab_sm_cfg, #tab_sm_exp, #tab_sm_sec, #tab_sm_dns, #tab_sm_cou").click(function(){
 		var newHash = $j(this).attr('href').toLowerCase();
 		showTab(newHash);
 		return false;
@@ -63,7 +69,7 @@ if(m_list.length > 0){
 }
 function initial(){
 	show_banner(2);
-	show_menu(5,12,0);
+	show_menu(5,12);
 	show_footer();
 	showTab(getHash());
 	showMRULESList();
@@ -78,7 +84,7 @@ function applyRule(){
 	document.form.next_page.value = "";
 	document.form.submit();
 }
-var arrHashes = ["cfg", "sec", "dns", "cou"];
+var arrHashes = ["cfg", "exp", "sec", "dns", "cou"];
 function showTab(curHash){
 	var obj = $('tab_sm_'+curHash.slice(1));
 	if (obj == null || obj.style.display == 'none')
@@ -258,208 +264,210 @@ function showMRULESList(){
                                     <ul class="nav nav-tabs" style="margin-bottom: 10px;">
                                         <li class="active">
                                             <a href="Advanced_smartdns.asp"><#menu5_24#></a>
-                                        </li>
-                                        <li id="adglink" style="display:none">
-                                            <a href="Advanced_adguardhome.asp"><#menu5_25#></a>
-                                        </li>
-                                    </ul>
+                                       </li>
+                                       <li id="adglink" style="display:none">
+                                           <a href="Advanced_adguardhome.asp"><#menu5_25#></a>
+                                       </li>
+                                   </ul>
                                 </div>
                                 <div>
                                     <ul class="nav nav-tabs" style="margin-bottom: 10px;">
-                                        <li class="active">
-                                            <a id="tab_sm_cfg" href="#cfg">基本设置</a>
-                                        </li>
-                                        <li>
-                                            <a id="tab_sm_sec" href="#sec">第二服务器</a>
-                                        </li>
-                                        <li>
-                                            <a id="tab_sm_dns" href="#dns">上游服务器</a>
-                                        </li>
-                                        <li>
-                                            <a id="tab_sm_cou" href="#cou">自定义设置</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div class="row-fluid">
-                                    <div id="tabMenu" class="submenuBlock"></div>
-                                    <div class="alert alert-info" style="margin: 10px;">SmartDNS是一个本地高性能DNS服务器，支持避免域名污染，支持返回最快IP，支持广告过滤。</br>
+                                       <li class="active">
+                                           <a id="tab_sm_cfg" href="#cfg">基本设置</a>
+                                       </li>
+                                           <li>
+                                               <a id="tab_sm_exp" href="#exp">默认服务器</a>
+                                           </li>
+                                           <li>
+                                               <a id="tab_sm_sec" href="#sec">第二服务器</a>
+                                           </li>
+                                       <li>
+                                           <a id="tab_sm_dns" href="#dns">上游服务器</a>
+                                       </li>
+                                       <li>
+                                           <a id="tab_sm_cou" href="#cou">其他设置</a>
+                                       </li>
+                                   </ul>
+					                       	</div> class="row-fluid">
+                                   <div id="tabMenu" class="submenuBlock"></div>
+                                   <div class="alert alert-info" style="margin: 10px;">SmartDNS是一个本地高性能DNS服务器，支持避免域名污染，支持返回最快IP，支持广告过滤。</br>
                                         SmartDNS官方网站:<a href="https://pymumu.github.io/smartdns/">https://pymumu.github.io/smartdns/</a>
-                                    </div>
-                                </div>
-                                <div id="wnd_sm_cfg">
-                                    <table width="100%" cellpadding="4" cellspacing="0" class="table">
-                                        <tr> <th><#running_status#></th>
+                                   </div>
+                               </div>
+                               <div id="wnd_sm_cfg">
+                                   <table width="100%" cellpadding="4" cellspacing="0" class="table">
+                                       <tr> <th><#running_status#></th>
                                             <td id="smartdns_status" colspan="2"></td>
-                                        </tr>
+                                       </tr>
 
-                                        <tr>
-                                            <th width="50%" style="border-top: 0 none"><#menu5_24_1#></th>
-                                            <td style="border-top: 0 none">
-                                                <div class="main_itoggle">
-                                                <div id="sdns_enable_on_of">
-                                                    <input type="checkbox" id="sdns_enable_fake" <% nvram_match_x("", "sdns_enable", "1", "value=1 checked"); %><% nvram_match_x("", "sdns_enable", "0", "value=0"); %>>
-                                                </div>
-                                                </div>
-                                                <div style="position: absolute; margin-left: -10000px;">
-                                                    <input type="radio" value="1" name="sdns_enable" id="sdns_enable_1" <% nvram_match_x("", "sdns_enable", "1", "checked"); %>><#checkbox_Yes#>
-                                                    <input type="radio" value="0" name="sdns_enable" id="sdns_enable_0" <% nvram_match_x("", "sdns_enable", "0", "checked"); %>><#checkbox_No#>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                       <tr>
+                                           <th width="50%" style="border-top: 0 none"><#menu5_24_1#></th>
+                                           <td style="border-top: 0 none">
+                                              <div class="main_itoggle">
+                                              <div id="sdns_enable_on_of">
+                                                  <input type="checkbox" id="sdns_enable_fake" <% nvram_match_x("", "sdns_enable", "1", "value=1 checked"); %><% nvram_match_x("", "sdns_enable", "0", "value=0"); %>>
+                                               </div>
+                                               </div>
+                                               <div style="position: absolute; margin-left: -10000px;">
+                                                   <input type="radio" value="1" name="sdns_enable" id="sdns_enable_1" <% nvram_match_x("", "sdns_enable", "1", "checked"); %>><#checkbox_Yes#>
+                                                   <input type="radio" value="0" name="sdns_enable" id="sdns_enable_0" <% nvram_match_x("", "sdns_enable", "0", "checked"); %>><#checkbox_No#>
+                                               </div>
+                                           </td>
+                                       </tr>
 
-                                        <tr> <th width="50%">服务器名称</th>
-                                            <td>
-                                                <input type="text" maxlength="15" class="input" size="15" name="snds_name" style="width: 180px" value="<% nvram_get_x("","snds_name"); %>">
-                                            </td>
-                                        </tr>
+                                       <tr> <th width="50%">服务器名称</th>
+                                           <td>
+                                               <input type="text" maxlength="15" class="input" size="15" name="snds_name" style="width: 180px" value="<% nvram_get_x("","snds_name"); %>">
+                                           </td>
+                                       </tr>
 
-                                        <tr> <th width="50%">本地端口</th>
-                                            <td>
-                                                <input type="text" maxlength="5" class="input" size="15" name="sdns_port" style="width: 120px" value="<% nvram_get_x("", "sdns_port"); %>">
-                                            </td>
-                                        </tr>
+                                       <tr> <th width="50%">本地端口</th>
+                                           <td>
+                                               <input type="text" maxlength="5" class="input" size="15" name="sdns_port" style="width: 120px" value="<% nvram_get_x("", "sdns_port"); %>">
+                                           </td>
+                                       </tr>
 
-                                        <tr id="sdns_tcp_server_option">
-                                            <th>TCP服务器</th>
-                                            <td>
-                                                <div class="main_itoggle">
-                                                    <div id="sdns_tcp_server_on_of">
-                                                        <input type="checkbox" id="sdns_tcp_server_fake" <% nvram_match_x("", "sdns_tcp_server", "1", "value=1 checked"); %><% nvram_match_x("", "sdns_tcp_server", "0", "value=0"); %>>
-                                                    </div>
-                                                </div>
-                                                <div style="position: absolute; margin-left: -10000px;">
-                                                    <input type="radio" value="1" name="sdns_tcp_server" id="sdns_tcp_server_1" <% nvram_match_x("", "sdns_tcp_server", "1", "checked"); %>><#checkbox_Yes#>
-                                                    <input type="radio" value="0" name="sdns_tcp_server" id="sdns_tcp_server_0" <% nvram_match_x("", "sdns_tcp_server", "0", "checked"); %>><#checkbox_No#>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                       <tr id="sdns_tcp_server_option">
+                                           <th>TCP服务器</th>
+                                           <td>
+                                               <div class="main_itoggle">
+                                                   <div id="sdns_tcp_server_on_of">
+                                                       <input type="checkbox" id="sdns_tcp_server_fake" <% nvram_match_x("", "sdns_tcp_server", "1", "value=1 checked"); %><% nvram_match_x("", "sdns_tcp_server", "0", "value=0"); %>>
+                                                   </div>
+                                               </div>
+                                               <div style="position: absolute; margin-left: -10000px;">
+                                                   <input type="radio" value="1" name="sdns_tcp_server" id="sdns_tcp_server_1" <% nvram_match_x("", "sdns_tcp_server", "1", "checked"); %>><#checkbox_Yes#>
+                                                   <input type="radio" value="0" name="sdns_tcp_server" id="sdns_tcp_server_0" <% nvram_match_x("", "sdns_tcp_server", "0", "checked"); %>><#checkbox_No#>
+                                               </div>
+                                           </td>
+                                       </tr>
 
-                                        <tr id="sdns_ipv6_server_option">
-                                            <th>IPV6服务器</th>
-                                            <td>
-                                                <div class="main_itoggle">
-                                                    <div id="sdns_ipv6_server_on_of">
+                                       <tr id="sdns_ipv6_server_option">
+                                           <th>IPV6服务器</th>
+                                           <td>
+                                               <div class="main_itoggle">
+                                                   <div id="sdns_ipv6_server_on_of">
                                                         <input type="checkbox" id="sdns_ipv6_server_fake" <% nvram_match_x("", "sdns_ipv6_server", "1", "value=1 checked"); %><% nvram_match_x("", "sdns_ipv6_server", "0", "value=0"); %>>
-                                                    </div>
-                                                </div>
-                                                <div style="position: absolute; margin-left: -10000px;">
-                                                    <input type="radio" value="1" name="sdns_ipv6_server" id="sdns_ipv6_server_1" <% nvram_match_x("", "sdns_ipv6_server", "1", "checked"); %>><#checkbox_Yes#>
-                                                    <input type="radio" value="0" name="sdns_ipv6_server" id="sdns_ipv6_server_0" <% nvram_match_x("", "sdns_ipv6_server", "0", "checked"); %>><#checkbox_No#>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                                   </div>
+                                               </div>
+                                               <div style="position: absolute; margin-left: -10000px;">
+                                                   <input type="radio" value="1" name="sdns_ipv6_server" id="sdns_ipv6_server_1" <% nvram_match_x("", "sdns_ipv6_server", "1", "checked"); %>><#checkbox_Yes#>
+                                                   <input type="radio" value="0" name="sdns_ipv6_server" id="sdns_ipv6_server_0" <% nvram_match_x("", "sdns_ipv6_server", "0", "checked"); %>><#checkbox_No#>
+                                               </div>
+                                           </td>
+                                       </tr>
 
-                                        <tr id="snds_ip_change_option">
-                                            <th>双栈IP优选</th>
-                                            <td>
-                                                <div class="main_itoggle">
-                                                    <div id="snds_ip_change_on_of">
-                                                        <input type="checkbox" id="snds_ip_change_fake" <% nvram_match_x("", "snds_ip_change", "1", "value=1 checked"); %><% nvram_match_x("", "snds_ip_change", "0", "value=0"); %>>
-                                                    </div>
-                                                </div>
-                                                <div style="position: absolute; margin-left: -10000px;">
-                                                    <input type="radio" value="1" name="snds_ip_change" id="snds_ip_change_1" <% nvram_match_x("", "snds_ip_change", "1", "checked"); %>><#checkbox_Yes#>
-                                                    <input type="radio" value="0" name="snds_ip_change" id="snds_ip_change_0" <% nvram_match_x("", "snds_ip_change", "0", "checked"); %>><#checkbox_No#>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                       <tr id="snds_ip_change_option">
+                                           <th>双栈IP优选</th>
+                                           <td>
+                                               <div class="main_itoggle">
+                                                   <div id="snds_ip_change_on_of">
+                                                       <input type="checkbox" id="snds_ip_change_fake" <% nvram_match_x("", "snds_ip_change", "1", "value=1 checked"); %><% nvram_match_x("", "snds_ip_change", "0", "value=0"); %>>
+                                                   </div>
+                                               </div>
+                                               <div style="position: absolute; margin-left: -10000px;">
+                                                   <input type="radio" value="1" name="snds_ip_change" id="snds_ip_change_1" <% nvram_match_x("", "snds_ip_change", "1", "checked"); %>><#checkbox_Yes#>
+                                                   <input type="radio" value="0" name="snds_ip_change" id="snds_ip_change_0" <% nvram_match_x("", "snds_ip_change", "0", "checked"); %>><#checkbox_No#>
+                                               </div>
+                                           </td>
+                                       </tr>
 
-                                        <tr id="snds_ip_change_time_option">
-                                            <th width="50%">双栈IP优选阈值</th>
-                                            <td>
-                                                <input type="text" maxlength="64" class="input" size="64" name="snds_ip_change_time" style="width: 60px" value="<% nvram_get_x("", "snds_ip_change_time"); %>">&nbsp;&nbsp;毫秒（0-100）
-                                            </td>
-                                        </tr>
+                                       <tr id="snds_ip_change_time_option">
+                                           <th width="50%">双栈IP优选阈值</th>
+                                           <td>
+                                               <input type="text" maxlength="64" class="input" size="64" name="snds_ip_change_time" style="width: 60px" value="<% nvram_get_x("", "snds_ip_change_time"); %>">&nbsp;&nbsp;毫秒（0-100）
+                                           </td>
+                                       </tr>
 
-                                        <tr id="sdns_www_option">
-                                            <th>域名预加载</th>
-                                            <td>
-                                                <div class="main_itoggle">
-                                                    <div id="sdns_www_on_of">
+                                       <tr id="sdns_www_option">
+                                           <th>域名预加载</th>
+                                           <td>
+                                               <div class="main_itoggle">
+                                                   <div id="sdns_www_on_of">
                                                         <input type="checkbox" id="sdns_www_fake" <% nvram_match_x("", "sdns_www", "1", "value=1 checked"); %><% nvram_match_x("", "sdns_www", "0", "value=0"); %>>
-                                                    </div>
-                                                </div>
-                                                <div style="position: absolute; margin-left: -10000px;">
-                                                    <input type="radio" value="1" name="sdns_www" id="sdns_www_1" <% nvram_match_x("", "sdns_www", "1", "checked"); %>><#checkbox_Yes#>
-                                                    <input type="radio" value="0" name="sdns_www" id="sdns_www_0" <% nvram_match_x("", "sdns_www", "0", "checked"); %>><#checkbox_No#>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                                   </div>
+                                               </div>
+                                               <div style="position: absolute; margin-left: -10000px;">
+                                                   <input type="radio" value="1" name="sdns_www" id="sdns_www_1" <% nvram_match_x("", "sdns_www", "1", "checked"); %>><#checkbox_Yes#>
+                                                   <input type="radio" value="0" name="sdns_www" id="sdns_www_0" <% nvram_match_x("", "sdns_www", "0", "checked"); %>><#checkbox_No#>
+                                               </div>
+                                           </td>
+                                       </tr>
 
-                                        <tr id="snds_redirect_option">
-                                            <th width="50%">重定向</th>
-                                            <td>
-                                                <select name="snds_redirect" class="input" style="width: 180px;">
+                                       <tr id="snds_redirect_option">
+                                           <th width="50%">重定向</th>
+                                           <td>
+                                               <select name="snds_redirect" class="input" style="width: 180px;">
                                                     <option value="0" <% nvram_match_x("","snds_redirect", "0","selected"); %>>无</option>
                                                     <option value="1" <% nvram_match_x("","snds_redirect", "1","selected"); %>>作为dnsmasq的上游服务器</option>
                                                     <option value="2" <% nvram_match_x("","snds_redirect", "2","selected"); %>>重定向53端口到SmartDns</option>
-                                                </select>
-                                            </td>
-                                        </tr>
+                                               </select>
+                                           </td>
+                                       </tr>
 
-                                        <tr id="sdns_exp_option">
-                                            <th>过期缓存服务</th>
-                                            <td>
-                                                <div class="main_itoggle">
-                                                    <div id="sdns_exp_on_of">
-                                                        <input type="checkbox" id="sdns_exp_fake" <% nvram_match_x("", "sdns_exp", "1", "value=1 checked"); %><% nvram_match_x("", "sdns_exp", "0", "value=0"); %>>
-                                                    </div>
-                                                </div>
-                                                <div style="position: absolute; margin-left: -10000px;">
-                                                    <input type="radio" value="1" name="sdns_exp" id="sdns_exp_1" <% nvram_match_x("", "sdns_exp", "1", "checked"); %>><#checkbox_Yes#>
-                                                    <input type="radio" value="0" name="sdns_exp" id="sdns_exp_0" <% nvram_match_x("", "sdns_exp", "0", "checked"); %>><#checkbox_No#>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                       <tr id="sdns_exp_option">
+                                           <th>过期缓存服务</th>
+                                           <td>
+                                               <div class="main_itoggle">
+                                                   <div id="sdns_exp_on_of">
+                                                       <input type="checkbox" id="sdns_exp_fake" <% nvram_match_x("", "sdns_exp", "1", "value=1 checked"); %><% nvram_match_x("", "sdns_exp", "0", "value=0"); %>>
+                                                   </div>
+                                               </div>
+                                               <div style="position: absolute; margin-left: -10000px;">
+                                                   <input type="radio" value="1" name="sdns_exp" id="sdns_exp_1" <% nvram_match_x("", "sdns_exp", "1", "checked"); %>><#checkbox_Yes#>
+                                                   <input type="radio" value="0" name="sdns_exp" id="sdns_exp_0" <% nvram_match_x("", "sdns_exp", "0", "checked"); %>><#checkbox_No#>
+                                               </div>
+                                           </td>
+                                       </tr>
 
-                                        <tr id="snds_cache_option">
-                                            <th width="50%">缓存大小</th>
-                                            <td>
-                                                <input type="text" maxlength="64" class="input" size="64" name="snds_cache" style="width: 120px" value="<% nvram_get_x("", "snds_cache"); %>">
+                                       <tr id="snds_cache_option">
+                                           <th width="50%">缓存大小</th>
+                                           <td>
+                                               <input type="text" maxlength="64" class="input" size="64" name="snds_cache" style="width: 120px" value="<% nvram_get_x("", "snds_cache"); %>">
                                                 <div><span style="color:#888;">缓存DNS的结果，缓存大小，配置零则不缓存</span></div>
-                                            </td>
-                                        </tr>
+                                           </td>
+                                       </tr>
 
-                                        <tr id="sdns_ttl_option">
-                                            <th width="50%">域名TTL</th>
-                                            <td>
-                                                <input type="text" maxlength="64" class="input" size="64" name="sdns_ttl" style="width: 120px" value="<% nvram_get_x("", "sdns_ttl"); %>">
+                                       <tr id="sdns_ttl_option">
+                                           <th width="50%">域名TTL</th>
+                                           <td>
+                                               <input type="text" maxlength="64" class="input" size="64" name="sdns_ttl" style="width: 120px" value="<% nvram_get_x("", "sdns_ttl"); %>">
                                                 <div><span style="color:#888;">设置所有域名的TTL</span></div>
-                                            </td>
-                                        </tr>
+                                           </td>
+                                       </tr>
 
-                                        <tr id="sdns_ttl_min_option">
-                                            <th width="50%">域名TTL最小值</th>
-                                            <td>
-                                                <input type="text" maxlength="64" class="input" size="64" name="sdns_ttl_min" style="width: 120px" value="<% nvram_get_x("", "sdns_ttl_min"); %>">
+                                       <tr id="sdns_ttl_min_option">
+                                           <th width="50%">域名TTL最小值</th>
+                                           <td>
+                                               <input type="text" maxlength="64" class="input" size="64" name="sdns_ttl_min" style="width: 120px" value="<% nvram_get_x("", "sdns_ttl_min"); %>">
                                                 <div><span style="color:#888;">设置所有域名的TTL最小值</span></div>
-                                            </td>
-                                        </tr>
+                                           </td>
+                                       </tr>
 
-                                        <tr id="sdns_ttl_max_option">
-                                            <th width="50%">域名TTL最大值</th>
-                                            <td>
-                                                <input type="text" maxlength="64" class="input" size="64" name="sdns_ttl_max" style="width: 120px" value="<% nvram_get_x("", "sdns_ttl_max"); %>">
+                                       <tr id="sdns_ttl_max_option">
+                                           <th width="50%">域名TTL最大值</th>
+                                           <td>
+                                               <input type="text" maxlength="64" class="input" size="64" name="sdns_ttl_max" style="width: 120px" value="<% nvram_get_x("", "sdns_ttl_max"); %>">
                                                 <div><span style="color:#888;">设置所有域名的TTL最大值</span></div>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </div>
+                                           </td>
+                                       </tr>
+                                   </table>
+                               </div>
 
-                                <div id="wnd_sm_sec">
-                                    <table width="100%" cellpadding="2" cellspacing="0" class="table">
-                                        <tr> <th>启用</th>
-                                            <td>
-                                                <div class="main_itoggle">
-                                                    <div id="sdnse_enable_on_of">
+                               <div id="wnd_sm_sec">
+                                   <table width="100%" cellpadding="2" cellspacing="0" class="table">
+                                       <tr> <th>启用</th>
+                                           <td>
+                                               <div class="main_itoggle">
+                                                   <div id="sdnse_enable_on_of">
                                                         <input type="checkbox" id="sdnse_enable_fake" <% nvram_match_x("", "sdnse_enable", "1", "value=1 checked"); %><% nvram_match_x("", "sdnse_enable", "0", "value=0"); %>>
-                                                    </div>
-                                                </div>
-                                                <div style="position: absolute; margin-left: -10000px;">
-                                                    <input type="radio" value="1" name="sdnse_enable" id="sdnse_enable_1" <% nvram_match_x("", "sdnse_enable", "1", "checked"); %>><#checkbox_Yes#>
-                                                    <input type="radio" value="0" name="sdnse_enable" id="sdnse_enable_0" <% nvram_match_x("", "sdnse_enable", "0", "checked"); %>><#checkbox_No#>
-                                                </div>
-                                            </td>
+                                                   </div>
+                                               </div>
+                                               <div style="position: absolute; margin-left: -10000px;">
+                                                   <input type="radio" value="1" name="sdnse_enable" id="sdnse_enable_1" <% nvram_match_x("", "sdnse_enable", "1", "checked"); %>><#checkbox_Yes#>
+                                                   <input type="radio" value="0" name="sdnse_enable" id="sdnse_enable_0" <% nvram_match_x("", "sdnse_enable", "0", "checked"); %>><#checkbox_No#>
+                                               </div>
+                                           </td>
                                         </tr>
 
                                         <tr> <th width="50%">本地端口</th>
