@@ -264,38 +264,38 @@ function showMRULESList(){
                                     <ul class="nav nav-tabs" style="margin-bottom: 10px;">
                                         <li class="active">
                                             <a href="Advanced_smartdns.asp"><#menu5_24#></a>
-                                       </li>
-                                       <li id="adglink" style="display:none">
+                                        </li>
+                                        <li id="adglink" style="display:none">
                                            <a href="Advanced_adguardhome.asp"><#menu5_25#></a>
-                                       </li>
-                                   </ul>
-                                </div>
-                                <div>
-                                    <ul class="nav nav-tabs" style="margin-bottom: 10px;">
-                                       <li class="active">
-                                           <a id="tab_sm_cfg" href="#cfg">基本设置</a>
-                                       </li>
-                                           <li>
-                                               <a id="tab_sm_exp" href="#exp">默认服务器</a>
-                                           </li>
-                                           <li>
-                                               <a id="tab_sm_sec" href="#sec">第二服务器</a>
-                                           </li>
-                                       <li>
-                                           <a id="tab_sm_dns" href="#dns">上游服务器</a>
-                                       </li>
-                                       <li>
-                                           <a id="tab_sm_cou" href="#cou">其他设置</a>
-                                       </li>
-                                   </ul>
-					                       	</div> class="row-fluid">
-                                   <div id="tabMenu" class="submenuBlock"></div>
-                                   <div class="alert alert-info" style="margin: 10px;">SmartDNS是一个本地高性能DNS服务器，支持避免域名污染，支持返回最快IP，支持广告过滤。</br>
-                                        SmartDNS官方网站:<a href="https://pymumu.github.io/smartdns/">https://pymumu.github.io/smartdns/</a>
-                                   </div>
-                               </div>
-                               <div id="wnd_sm_cfg">
-                                   <table width="100%" cellpadding="4" cellspacing="0" class="table">
+                                        </li>
+                                    </ul>
+                                 </div>
+                                 <div>
+                                     <ul class="nav nav-tabs" style="margin-bottom: 10px;">
+                                         <li class="active">
+                                             <a id="tab_sm_cfg" href="#cfg">基本设置</a>
+                                         </li>
+                                         <li>
+                                             <a id="tab_sm_exp" href="#exp">默认服务器</a>
+                                         </li>
+                                         <li>
+                                             <a id="tab_sm_sec" href="#sec">第二服务器</a>
+                                         </li>
+                                         <li>
+                                             <a id="tab_sm_dns" href="#dns">上游服务器</a>
+                                         </li>
+                                         <li>
+                                             <a id="tab_sm_cou" href="#cou">其他设置</a>
+                                         </li>
+                                     </ul>
+                                 </div class="row-fluid">
+                                 <div id="tabMenu" class="submenuBlock"></div>
+                                     <div class="alert alert-info" style="margin: 10px;">SmartDNS是一个本地高性能DNS服务器，支持避免域名污染，支持返回最快IP，支持广告过滤。</br>
+                                          SmartDNS官方网站:<a href="https://pymumu.github.io/smartdns/">https://pymumu.github.io/smartdns/</a>
+                                     </div>
+                                 </div>
+                                 <div id="wnd_sm_cfg">
+                                     <table width="100%" cellpadding="4" cellspacing="0" class="table">
                                        <tr> <th><#running_status#></th>
                                             <td id="smartdns_status" colspan="2"></td>
                                        </tr>
