@@ -324,8 +324,10 @@ function showMRULESList(){
                                          <tr id="sdns_tcp_server_option">
                                              <th>TCP服务器</th>
                                              <td>
-                                                 <div id="sdns_tcp_server_on_of">
-                                                     <input type="checkbox" id="sdns_tcp_server_fake" <% nvram_match_x("", "sdns_tcp_server", "1", "value=1 checked"); %><% nvram_match_x("", "sdns_tcp_server", "0", "value=0"); %>>
+                                                 <div class="main_itoggle">
+                                                     <div id="sdns_tcp_server_on_of">
+                                                         <input type="checkbox" id="sdns_tcp_server_fake" <% nvram_match_x("", "sdns_tcp_server", "1", "value=1 checked"); %><% nvram_match_x("", "sdns_tcp_server", "0", "value=0"); %>>
+                                                     </div>
                                                  </div>
                                                  <div><span style="color:#888;">支持TCP的53端口重定向到SmartDNS</span></div>
                                                  <div style="position: absolute; margin-left: -10000px;">
