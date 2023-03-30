@@ -167,11 +167,6 @@ function showMRULESList(){
 		code +='<tr><td colspan="3" style="text-align: center;"><div class="alert alert-info"><#IPConnection_VSList_Norule#></div></td></tr>';
 	else{
 		for(var i = 0; i < m_list.length; i++){
-		if(m_list[i][0] == 0)
-			adbybyrulesroad="已禁用";
-		else{
-			adbybyrulesroad="已启用";
-		}
 		if(m_list[i][5] == 0)
 		ipc="禁用";
 		else if(m_list[i][5] == "whitelist"){
@@ -180,7 +175,6 @@ function showMRULESList(){
 		ipc="黑名单";
 		}
 		code +='<tr id="rowrl' + i + '">';
-		code +='<td width="10%">&nbsp;' + adbybyrulesroad + '</td>';
 		code +='<td width="20%">&nbsp;' + m_list[i][1] + '</td>';
 		code +='<td width="25%" class="spanb">' + m_list[i][2] + '</td>';
 		code +='<td width="10%">&nbsp;' + m_list[i][3] + '</td>';
