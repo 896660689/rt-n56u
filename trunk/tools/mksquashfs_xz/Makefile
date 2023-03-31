@@ -1,17 +1,7 @@
-SRC_NAME1=squashfs-4.5.1
-SRC_NAME2=xz-5.2.10
+SRC_NAME1=squashfs-4.3
+SRC_NAME2=xz-5.2.4
 
-extract_test1:
-	( if [ ! -d $(SRC_NAME1) ]; then \
-		unzip -qq $(SRC_NAME1).zip; \
-	fi )
-
-extract_test2:
-	( if [ ! -d $(SRC_NAME2) ]; then \
-		unzip -qq $(SRC_NAME2).zip; \
-	fi )
-
-all: extract_test1 extract_test2 config_xz build_xz build_squashfs
+all: config_xz build_xz build_squashfs
 
 config_xz:
 	( if [ -f ./config_xz_done ]; then \
