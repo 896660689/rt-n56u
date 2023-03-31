@@ -47,4 +47,4 @@ clean:
 	fi
 	make -C $(SRC_NAME1) clean
 	rm -f config_xz_done
-	rm -f mksquashfs
+	rm -f mksquashfs unsquashfs
