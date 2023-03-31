@@ -1,24 +1,53 @@
-/bin/sh /usr/bin/smartdns.sh start
+THISDIR = $(shell pwd)
+go_version = 1.19.7
+# use host target
+CC        = gcc
+GCC       = gcc
+CXX       = g++
+AS        = as
+AR        = ar
+LD        = ld
+NM        = nm
+OBJCOPY   = objcopy
+RANLIB    = ranlib
+STRIP     = strip
+STRIPTOOL = $(STRIP)
+SSTRIP_NAME = ELFkickers-3.2
 
-/bin/sh /tmp/smartdns.sh start
+CFLAGS    = -Wall -O2
+LDFLAGS   =
 
+-include $(LINUX_CONFIG)
 
+extract_test:
+	( if [ ! -d $(SSTRIP_NAME) ]; then \
+		unzip -qq $(SSTRIP_NAME).zip; \
+	fi )
 
-/tmp/smartdns.sh start
+all: extract_test go_build
+	make -C mkimage
+	mkdir -p sstrip
+	make -C $(SSTRIP_NAME)
+	make -C lzma
+ifeq ($(CONFIG_RT2880_ROOTFS_IN_FLASH),y)
+	make -C mksquashfs_xz
+endif
 
+go_build:
+	mkdir -p $(THISDIR)/go
+	( if [ ! -f $(THISDIR)/go/go$(go_version).linux-amd64.tar.gz ]; then \
+	curl --create-dirs -L https://dl.google.com/go/go$(go_version).linux-amd64.tar.gz -o $(THISDIR)/go/go$(go_version).linux-amd64.tar.gz ; \
+	fi )
+	( if [ ! -d $(THISDIR)/go/go ]; then \
+	tar zxfv $(THISDIR)/go/go$(go_version).linux-amd64.tar.gz -C go ; \
+	fi )
 
-
-/tmp/smartdns.sh
-
-mount --bind /tmp/smartdns.sh /usr/bin/smartdns.sh
-
-STORAGE_DIR="/etc/storage"
-SMARTDNS_CONF="$STORAGE_DIR/smartdns.conf"
-if [ ! -d $STORAGE_DIR/smartdns ]; then
-    mkdir -p "$STORAGE_DIR/smartdns"
-	touch $SMARTDNS_CONF &
-else
-    [ -f $SMARTDNS_CONF ] && rm -f $SMARTDNS_CONF
-    touch $SMARTDNS_CONF &
-
-smartdns_folder
+clean:
+	if [ -f $(SSTRIP_NAME)/Makefile ] ; then \
+		make -C $(SSTRIP_NAME) clean ; \
+	fi ;
+	rm -rf sstrip
+	make -C mkimage clean
+	make -C lzma clean
+	make -C mksquashfs_xz clean
+	rm -rf $(THISDIR)/go/go
