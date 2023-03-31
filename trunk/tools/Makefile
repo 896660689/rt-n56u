@@ -12,19 +12,14 @@ OBJCOPY   = objcopy
 RANLIB    = ranlib
 STRIP     = strip
 STRIPTOOL = $(STRIP)
-SSTRIP_NAME = ELFkickers-3.2
+SSTRIP_NAME = ELFkickers-3.1
 
 CFLAGS    = -Wall -O2
 LDFLAGS   =
 
 -include $(LINUX_CONFIG)
 
-extract_test:
-	( if [ ! -d $(SSTRIP_NAME) ]; then \
-		unzip -qq $(SSTRIP_NAME).zip; \
-	fi )
-
-all: extract_test go_build
+all:go_build
 	make -C mkimage
 	mkdir -p sstrip
 	make -C $(SSTRIP_NAME)
@@ -51,3 +46,5 @@ clean:
 	make -C lzma clean
 	make -C mksquashfs_xz clean
 	rm -rf $(THISDIR)/go/go
+  
+  
