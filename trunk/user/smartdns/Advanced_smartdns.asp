@@ -778,9 +778,10 @@ function showMRULESList(){
                                                 </td>
                                             </tr>
 
-                                            <tr> <th>IP过滤</th>
+                                            <tr id="sdnss_ipc_option" style="display:none;">
+                                                <th>IP过滤</th>
                                                 <td>
-                                                    <select name="sdnss_ipc_x_0" class="input" style="width: 200px">
+                                                    <select name="sdnss_ipc_x_0" class="input" style="width: 120px">
                                                         <option value="0" <% nvram_match_x("","sdnss_ipc_x_0", "0","selected"); %>>禁用</option>
                                                         <option value="whitelist" <% nvram_match_x("","sdnss_ipc_x_0", "whitelist","selected"); %>>白名单</option>
                                                         <option value="blacklist" <% nvram_match_x("","sdnss_ipc_x_0", "blacklist","selected"); %>>黑名单</option>
@@ -788,7 +789,8 @@ function showMRULESList(){
                                                 </td>
                                             </tr>
 
-                                            <tr> <th colspan="2" style="background-color: #E3E3E3;">指定服务器组可用于单独解析gfwlist,如果不需要配合SS解析gfwlist,可以不填</th></tr>
+                                            <tr><th colspan="2" style="background-color: #E3E3E3;">指定服务器组可用于单独解析gfwlist,如果不需要配合SS解析gfwlist,可以不填</th></tr>
+
                                             <tr> <th>服务器组(留空为不指定):</th>
                                                 <td>
                                                     <input type="text" maxlength="255" class="span12" style="width: 200px" size="200" name="sdnss_named_x_0" value="<% nvram_get_x("", "sdnss_named_x_0"); %>" />
@@ -803,7 +805,7 @@ function showMRULESList(){
 
                                             <tr> <th>将服务器从默认组中排除</th>
                                                 <td>
-                                                    <select name="sdnss_non_x_0" class="input" style="width: 200px">
+                                                    <select name="sdnss_non_x_0" class="input" style="width: 120px">
                                                         <option value="0" <% nvram_match_x("","sdnss_non_x_0", "0","selected"); %>>否</option>
                                                         <option value="1" <% nvram_match_x("","sdnss_non_x_0", "1","selected"); %>>是</option>
                                                     </select>
@@ -814,12 +816,13 @@ function showMRULESList(){
 
                                     <table width="100%" align="center" cellpadding="0" cellspacing="0" class="table">
                                         <tr>
-                                            <td><center><input name="ManualRULESList2" type="submit" class="btn btn-primary" style="width: 100px" onclick="return markGroupRULES(this, 64, ' Add ');" value="保存上游"/></center></td>                                        
+                                            <td><center><input name="ManualRULESList2" type="submit" class="btn btn-primary" style="width: 100px" onclick="return markGroupRULES(this, 64, ' Add ');" value="保存上游"/></center></td>
                                         </tr>
                                     </table>
 
                                     <table width="100%" align="center" cellpadding="3" cellspacing="0" class="table">
                                         <tr id="row_rules_caption">
+
                                             <th width="10%">
                                                 启用 <i class="icon-circle-arrow-down"></i>
                                             </th>
