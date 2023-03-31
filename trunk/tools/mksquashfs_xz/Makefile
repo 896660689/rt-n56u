@@ -1,5 +1,5 @@
-SRC_NAME1=squashfs-4.3
-SRC_NAME2=xz-5.2.4
+SRC_NAME1=squashfs-4.5.1
+SRC_NAME2=xz-5.2.10
 
 all: config_xz build_xz build_squashfs
 
@@ -37,4 +37,4 @@ clean:
 	fi
 	make -C $(SRC_NAME1) clean
 	rm -f config_xz_done
-	rm -f mksquashfs unsquashfs
+	rm -f mksquashfs
