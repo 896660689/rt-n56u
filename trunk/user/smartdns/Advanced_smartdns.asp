@@ -819,7 +819,7 @@ function showMRULESList(){
                                     </table>
 
                                     <table width="100%" align="center" cellpadding="3" cellspacing="0" class="table">
-                                        <tr id="row_rules_caption"
+                                        <tr id="row_rules_caption">
                                             <th width="10%">
                                                 启用 <i class="icon-circle-arrow-down"></i>
                                             </th>
