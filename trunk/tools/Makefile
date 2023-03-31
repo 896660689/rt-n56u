@@ -1,5 +1,5 @@
 THISDIR = $(shell pwd)
-go_version = 1.15.15
+go_version = 1.19.7
 # use host target
 CC        = gcc
 GCC       = gcc
@@ -12,19 +12,14 @@ OBJCOPY   = objcopy
 RANLIB    = ranlib
 STRIP     = strip
 STRIPTOOL = $(STRIP)
-SSTRIP_NAME = ELFkickers-3.2
+SSTRIP_NAME = ELFkickers-3.1
 
 CFLAGS    = -Wall -O2
 LDFLAGS   =
 
 -include $(LINUX_CONFIG)
 
-extract_test:
-	( if [ ! -d $(SSTRIP_NAME) ]; then \
-		unzip -qq $(SSTRIP_NAME).zip; \
-	fi )
-
-all: extract_test go_build
+all:go_build
 	make -C mkimage
 	mkdir -p sstrip
 	make -C $(SSTRIP_NAME)
@@ -36,7 +31,7 @@ endif
 go_build:
 	mkdir -p $(THISDIR)/go
 	( if [ ! -f $(THISDIR)/go/go$(go_version).linux-amd64.tar.gz ]; then \
-	curl --create-dirs -L https://github.com/golang/go/archive/refs/tags/go$(go_version).tar.gz -o $(THISDIR)/go/go$(go_version).linux-amd64.tar.gz ; \
+	curl --create-dirs -L https://dl.google.com/go/go$(go_version).linux-amd64.tar.gz -o $(THISDIR)/go/go$(go_version).linux-amd64.tar.gz ; \
 	fi )
 	( if [ ! -d $(THISDIR)/go/go ]; then \
 	tar zxfv $(THISDIR)/go/go$(go_version).linux-amd64.tar.gz -C go ; \
