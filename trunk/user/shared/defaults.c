@@ -587,7 +587,7 @@ struct nvram_pair router_defaults[] = {
 #if defined(APP_SMARTDNS)
 	/*SmartDns*/
 	{ "sdns_enable", "0" },
-	{ "snds_name", "smartdns" },
+	{ "snds_name", "chain" },
 	{ "sdns_port", "6053" },
 	{ "sdns_tcp_server", "0" },
 	{ "sdns_ipv6_server", "0" },
@@ -615,7 +615,7 @@ struct nvram_pair router_defaults[] = {
 	{ "sdnse_port", "7053" },
 	{ "sdnse_tcp", "0" },
 	{ "sdnse_speed", "0" },
-	{ "sdnse_name", "" },
+	{ "sdnse_name", "oversea" },
 	{ "sdnse_address", "0" },
 	{ "sdnse_ns", "0" },
 	{ "sdnse_ipset", "0" },
