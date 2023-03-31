@@ -758,28 +758,28 @@ function showMRULESList(){
                                                 </td>
                                             </tr>
 
-                                            <tr id="sdnss_name_option" style="display:none;">
+                                            <tr id="sdnss_name_option">
                                                 <th>上游名称:</th>
                                                 <td>
                                                     <input type="text" maxlength="255" class="span12" style="width: 200px" size="200" name="sdnss_name_x_0" value="<% nvram_get_x("", "sdnss_name_x_0"); %>" onKeyPress="return is_string(this,event);"/>
                                                 </td>
                                             </tr>
 
-                                            <tr id="sdnss_ip_option" style="display:none;">
+                                            <tr id="sdnss_ip_option">
                                                 <th>上游地址:</th>
                                                 <td>
                                                     <input type="text" maxlength="255" class="span12" style="width: 200px" size="200" name="sdnss_ip_x_0" value="<% nvram_get_x("", "sdnss_ip_x_0"); %>" onKeyPress="return is_string(this,event);"/>
                                                 </td>
                                             </tr>
 
-                                            <tr id="sdnss_port_option" style="display:none;">
+                                            <tr id="sdnss_port_option">
                                                 <th>上游服务器端口:</th>
                                                 <td>
                                                     <input type="text" maxlength="255" class="span12" style="width: 120px" size="200" name="sdnss_port_x_0" value="default" onKeyPress="return is_string(this,event);"/>
                                                 </td>
                                             </tr>
 
-                                            <tr id="sdnss_type_option" style="display:none;">
+                                            <tr id="sdnss_type_option">
                                                 <th>上游类型</th>
                                                 <td>
                                                     <select name="sdnss_type_x_0" class="input" style="width: 145px">
@@ -791,7 +791,7 @@ function showMRULESList(){
                                                 </td>
                                             </tr>
 
-                                            <tr id="sdnss_ipc_option" style="display:none;">
+                                            <tr id="sdnss_ipc_option">
                                                 <th>IP过滤</th>
                                                 <td>
                                                     <select name="sdnss_ipc_x_0" class="input" style="width: 120px">
