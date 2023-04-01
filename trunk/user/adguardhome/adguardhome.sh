@@ -154,8 +154,8 @@ EEE
 
 dl_adg(){
     logger -t "AdGuardHome" "下载AdGuardHome"
-    #wget -t 5 -T 10 -c --no-check-certificate -O- "https://github.com/AdguardTeam/AdGuardHome/releases/download/v0.108.0-b.31/AdGuardHome_linux_mips_softfloat.tar.gz" > /tmp/AdGuardHome.tar.gz
-    curl -k -s -o /tmp/AdGuardHome/AdGuardHome --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/chongshengB/rt-n56u/trunk/user/adguardhome/AdGuardHome
+    wget -t 5 -T 10 -c --no-check-certificate -O- "https://github.com/AdguardTeam/AdGuardHome/releases/download/v0.108.0-b.31/AdGuardHome_linux_mips_softfloat.tar.gz" > /tmp/AdGuardHome.tar.gz
+    #curl -k -s -o /tmp/AdGuardHome/AdGuardHome --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/chongshengB/rt-n56u/trunk/user/adguardhome/AdGuardHome
     sleep 2
     if [ ! -f "/tmp/AdGuardHome/AdGuardHome" ] ; then
         logger -t "AdGuardHome" "AdGuardHome下载失败，请检查是否能正常访问github!程序将退出。"
