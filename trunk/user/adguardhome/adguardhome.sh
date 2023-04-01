@@ -1,5 +1,8 @@
 #!/bin/sh
 
+AdHome=/tmp/AdGuardHome
+AdTar=/tmp/AdGuardHome.tar.gz
+
 change_dns() {
     if [ "$(nvram get adg_redirect)" = 1 ] ; then
         sed -i '/no-resolv/d' /etc/storage/dnsmasq/dnsmasq.conf
@@ -154,30 +157,33 @@ EEE
 
 dl_adg(){
     logger -t "AdGuardHome" "下载AdGuardHome"
-    wget -t 5 -T 10 -c --no-check-certificate -O- "https://github.com/AdguardTeam/AdGuardHome/releases/download/v0.108.0-b.31/AdGuardHome_linux_mips_softfloat.tar.gz" > /tmp/AdGuardHome.tar.gz
-    #curl -k -s -o /tmp/AdGuardHome/AdGuardHome --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/chongshengB/rt-n56u/trunk/user/adguardhome/AdGuardHome
-    sleep 2
-    if [ ! -f "/tmp/AdGuardHome/AdGuardHome" ] ; then
+    if [ ! -f $AdTar" ] ; then
+        wget -t 5 -T 10 -c --no-check-certificate -O- "https://github.com/AdguardTeam/AdGuardHome/releases/download/v0.107.26/AdGuardHome_linux_mipsle_softfloat.tar.gz" > $AdTar && \
+        tar -zxf $AdTar -C /tmp && \
+        rm -rf $AdTar
+    fi
+    #curl -k -s -o $AdHome/AdGuardHome --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/chongshengB/rt-n56u/trunk/user/adguardhome/AdGuardHome
+    if [ ! -f "$AdHome/AdGuardHome" ] ; then
         logger -t "AdGuardHome" "AdGuardHome下载失败，请检查是否能正常访问github!程序将退出。"
         nvram set adg_enable=0
         exit 0
     else
-        chmod 777 /tmp/AdGuardHome/AdGuardHome && \
+        chmod 777 $AdHome/AdGuardHome && \
         logger -t "AdGuardHome" "AdGuardHome下载成功。"
     fi
 }
 
 start_adg(){
-    mkdir -p /tmp/AdGuardHome
+    mkdir -p $AdHome
     mkdir -p /etc/storage/AdGuardHome
-    if [ ! -f "/tmp/AdGuardHome/AdGuardHome" ] ; then
+    if [ ! -f "$AdHome/AdGuardHome" ] ; then
         dl_adg
     fi
     getconfig && \
     change_dns && \
     set_iptable && \
     logger -t "AdGuardHome" "运行AdGuardHome"
-    eval "/tmp/AdGuardHome/AdGuardHome -c $adg_file -w /tmp/AdGuardHome -v" &
+    eval "$AdHome/AdGuardHome -c $adg_file -w $AdHome -v" &
 }
 stop_adg(){
     rm -rf /tmp/AdGuardHome
