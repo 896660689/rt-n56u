@@ -121,7 +121,7 @@ function done_validating(action){
                                         <li id="sdnslink" style="display:none">
                                             <a href="Advanced_smartdns.asp"><#menu5_24#></a>
                                         </li>
-                                         <li class="active">
+                                        <li class="active">
                                             <a href="Advanced_adguardhome.asp"><#menu5_25#></a>
                                         </li>
                                     </ul>
