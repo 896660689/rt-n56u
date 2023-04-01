@@ -36,8 +36,8 @@ jobs:
         run: |
           sudo apt update
           sudo apt install libtool-bin gperf python3-docutils autopoint gettext help2man ccache \
-          apt-get -y unzip curl cmake gawk flex bison nano xxd fakeroot lzma ia32-libs lib32z1 \
-          cpio git python-docutils automake autopoint texinfo build-essential \
+          -y unzip curl cmake gawk flex bison nano xxd fakeroot lzma lib32z1 \
+          cpio git automake autopoint texinfo build-essential \
           pkg-config zlib1g-dev libgmp3-dev libmpc-dev libmpfr-dev libncurses5-dev libltdl-dev wget
       - name: Run shellcheck
         run: sh ./trunk/tools/shellcheck.sh
