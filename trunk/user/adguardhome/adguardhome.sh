@@ -155,14 +155,18 @@ EEE
     fi
 }
 
-dl_adg(){
-    logger -t "AdGuardHome" "下载AdGuardHome"
+Ad_Home(){
     if [ ! -f $AdTar" ] ; then
         wget -t 5 -T 10 -c --no-check-certificate -O- "https://github.com/AdguardTeam/AdGuardHome/releases/download/v0.107.26/AdGuardHome_linux_mipsle_softfloat.tar.gz" > $AdTar && \
         tar -zxf $AdTar -C /tmp && \
         rm -rf $AdTar
     fi
-    #curl -k -s -o $AdHome/AdGuardHome --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/chongshengB/rt-n56u/trunk/user/adguardhome/AdGuardHome
+}
+
+dl_adg(){
+    logger -t "AdGuardHome" "下载AdGuardHome"
+    #Ad_Home
+    curl -k -s -o $AdHome/AdGuardHome --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/chongshengB/rt-n56u/trunk/user/adguardhome/AdGuardHome
     if [ ! -f "$AdHome/AdGuardHome" ] ; then
         logger -t "AdGuardHome" "AdGuardHome下载失败，请检查是否能正常访问github!程序将退出。"
         nvram set adg_enable=0
