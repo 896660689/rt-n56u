@@ -61,9 +61,8 @@ getconfig(){
         cat > "$adg_file" <<-\EEE
 bind_host: 0.0.0.0
 bind_port: 3030
-users:
-- name: admin
-  password: $2a$10$cXxR/BU7DZEtKMc/bM/G5u05Z3xap6T4dqXrx8UFRYP1V9e3W3.3W
+auth_name: adguardhome
+auth_pass: adguardhome
 language: zh-cn
 rlimit_nofile: 0
 web_session_ttl: 720
@@ -121,53 +120,19 @@ tls:
   certificate_path: ""
   private_key_path: ""
 filters:
-- enabled: false
+- enabled: true
   url: https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
   name: AdGuard Simplified Domain Names filter
   id: 1
-- enabled: false
+- enabled: true
   url: https://adaway.org/hosts.txt
   name: AdAway
   id: 2
-- enabled: false
-  url: https://hosts-file.net/ad_servers.txt
-  name: hpHosts - Ad and Tracking servers only
-  id: 3
-- enabled: false
-  url: https://www.malwaredomainlist.com/hostslist/hosts.txt
-  name: MalwareDomainList.com Hosts List
-  id: 4
 - enabled: true
-  url: https://gitee.com/xinggsf/Adblock-Rule/raw/master/mv.txt
-  name: 乘风 视频
-  id: 5
-- enabled: true
-  url: My AdFilters，https://gitee.com/halflife/list/raw/master/ad.txt
-  name: My AdFilters
-  id: 6
-- enabled: true
-  url: https://gitee.com/privacy-protection-tools/anti-ad/raw/master/easylist.txt
+  url: https://anti-ad.net/easylist.txt
   name: anti-AD
-  id: 7
-- enabled: false
-  url: https://cdn.jsdelivr.net/gh/neoFelhz/neohosts@gh-pages/basic/hosts.txt
-  name: neoHosts Basic
-  id: 9
-- enabled: false
-  url: https://cdn.jsdelivr.net/gh/neoFelhz/neohosts@gh-pages/full/hosts.txt
-  name: neoHosts Full
-  id: 10
-- enabled: false
-  url: https://gitlab.com/CHEF-KOCH/cks-filterlist/raw/master/hosts/Ads-tracker.txt
-  name: CHEF-KOCH ADs
-  id: 11
-- enabled: false
-  url: https://zerodot1.gitlab.io/CoinBlockerLists/hosts
-  name: CoinBlocker
-  id: 12
-whitelist_filters: []
-user_rules:
-- '@@mps.ts'
+  id: 3
+user_rules: []
 dhcp:
   enabled: false
   interface_name: ""
@@ -189,8 +154,8 @@ EEE
 
 dl_adg(){
     logger -t "AdGuardHome" "下载AdGuardHome"
-    #wget -t 5 -T 10 -c --no-check-certificate -O- "https://github.com/AdguardTeam/AdGuardHome/releases/download/v0.102.0/AdGuardHome_linux_mipsle.tar.gz" > /tmp/AdGuardHome.tar.gz
-    curl -k -s -o /tmp/AdGuardHome/AdGuardHome --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/chongshengB/rt-n56u/trunk/user/adguardhome/AdGuardHome
+    wget -t 5 -T 10 -c --no-check-certificate -O- "https://github.com/AdguardTeam/AdGuardHome/releases/download/v0.108.0-b.31/AdGuardHome_linux_mips_softfloat.tar.gz" > /tmp/AdGuardHome.tar.gz
+    #curl -k -s -o /tmp/AdGuardHome/AdGuardHome --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/chongshengB/rt-n56u/trunk/user/adguardhome/AdGuardHome
     sleep 2
     if [ ! -f "/tmp/AdGuardHome/AdGuardHome" ] ; then
         logger -t "AdGuardHome" "AdGuardHome下载失败，请检查是否能正常访问github!程序将退出。"
