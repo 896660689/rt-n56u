@@ -44,6 +44,11 @@ config TPC_SUPPORT
 	depends on WIFI_DRIVER
 	default y
 
+config TXRX_STAT_SUPPORT
+	bool "TxRx Stats Support"
+	depends on WIFI_DRIVER
+	default n
+
 config ICAP_SUPPORT
 	bool "ICAP Support"
 	depends on WIFI_DRIVER
@@ -70,14 +75,11 @@ config MT_DFS_SUPPORT
         bool "Dynamic Frequency Selection Support"	
         depends on WIFI_DRIVER
         default y
-
-config DPP_SUPPORT
-	bool "DPP Support"
-	depends on WIFI_DRIVER
-	depends on MT_AP_SUPPORT
-	select DOT11W_PMF_SUPPORT
+config MTK_OFFCHANNEL_SCAN_FEATURE
+	bool "Channel Quality Monitor"
+	depends on MTK_WIFI_DRIVER
+	depends on MTK_MT_AP_SUPPORT
 	default n
-
 #config WFA_VHT_R2_PF
 #    bool "WFA VHT R2 Plugfest"
 #    depends on DOT11_VHT_AC
@@ -270,6 +272,11 @@ config LINK_TEST_SUPPORT
 	bool "Link Test Support"
 	depends on WIFI_DRIVER
 	default y
+	
+config WIFI_EAP_FEATURE
+	bool "EAP Feature Support"
+	depends on WIFI_DRIVER
+	default y
 
 #config LED_CONTROL_SUPPORT
 #	bool "LED Support"
@@ -323,6 +330,47 @@ config FDB_SUPPORT
        depends on WIFI_DRIVER
        default n
 
+choice
+        prompt "PA LNA Type of 1st Card"
+		depends on ! RT_FIRST_IF_NONE
+		
+		config FIRST_IF_EPAELNA
+		bool "ePAeLNA"
+		config FIRST_IF_IPAILNA
+		bool "iPAiLNA"		
+		config FIRST_IF_IPAELNA
+		bool "iPAeLNA"
+#		config FIRST_IF_EPAILNA
+#		bool "ePAiLNA"
+endchoice
+choice
+        prompt "PA LNA Type of 2nd Card"
+		depends on ! RT_SECOND_IF_NONE
+		
+		config SECOND_IF_EPAELNA
+		bool "ePAeLNA"
+		config SECOND_IF_IPAILNA
+		bool "iPAiLNA"		
+		config SECOND_IF_IPAELNA
+		bool "iPAeLNA"
+#		config SECOND_IF_EPAILNA
+#		bool "ePAiLNA"
+endchoice
+choice
+        prompt "PA LNA Type of 3rd Card"
+		depends on ! RT_THIRD_IF_NONE
+		
+		config THIRD_IF_EPAELNA
+		bool "ePAeLNA"
+		config THIRD_IF_IPAILNA
+		bool "iPAiLNA"		
+		config THIRD_IF_IPAELNA
+		bool "iPAeLNA"
+#		config THIRD_IF_EPAILNA
+#		bool "ePAiLNA"
+endchoice
+#### PA_LNA_Type choice END 
+
 #
 # Section for chip architectures
 #
@@ -365,9 +413,28 @@ config RTMP_RBUS_SUPPORT
 endmenu
 
 menu "WiFi Operation Modes"
+	choice
+		prompt "Main Mode"
+		default WIFI_MODE_AP
+
+		config WIFI_MODE_AP
+				tristate "AP"
+				select MT_AP_SUPPORT
+
+		config WIFI_MODE_STA
+				tristate "STA"
+				select MT_STA_SUPPORT
+
+		config WIFI_MODE_BOTH
+				tristate "APSTA"
+				select MT_AP_SUPPORT
+				select MT_STA_SUPPORT
+    endchoice
+
     if WIFI_MODE_AP || WIFI_MODE_BOTH
 		source "drivers/net/wireless/ralink/mt7615_ap/Kconfig"
     endif
+
 endmenu	
 
 endif
