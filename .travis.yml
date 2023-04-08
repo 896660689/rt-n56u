@@ -8,7 +8,7 @@ compiler:
 - gcc
 branches:
   only:
-  - ad
+  - zerotier
   - "/^v.*$/"
 addons:
   apt:
