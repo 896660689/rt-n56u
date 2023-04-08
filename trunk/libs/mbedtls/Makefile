@@ -1,11 +1,11 @@
-SRC_NAME=mbedtls-2.28.1
-SRC_URL=https://tls.mbed.org/download/mbedtls-2.28.1.tar.gz
+SRC_NAME=mbedtls-2.28.2
+SRC_URL=https://github.com/Mbed-TLS/mbedtls/archive/v2.28.2.tar.gz
 
 all: download_test extract_test config_test
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)/build
 
 download_test:
-	( if [ ! -f $(SRC_NAME).tar.gz ]; then \
+	( if [ ! -f $(SRC_NAME).tgz ]; then \
 		wget -t5 --timeout=20 --no-check-certificate -O $(SRC_NAME).tar.gz $(SRC_URL); \
 	fi )
 
@@ -23,7 +23,7 @@ config_test:
 
 configure:
 	( mkdir -p $(SRC_NAME)/build && cd $(SRC_NAME)/build ; \
-	cmake \
+	cmake -DCMAKE_BUILD_TYPE=Release \
 	-DCMAKE_INSTALL_PREFIX=$(STAGEDIR) \
 	-DCMAKE_TOOLCHAIN_FILE=../../cross-mipsel-linux.cmake \
 	-DUSE_SHARED_MBEDTLS_LIBRARY=ON \
