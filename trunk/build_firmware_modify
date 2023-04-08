@@ -12,6 +12,7 @@ if [ ! -f configs/templates/$1.config ] ; then
 fi
 
 cp -f configs/templates/$1.config .config
+fi
 
 ROOTDIR=`pwd`
 export ROOTDIR=$ROOTDIR
@@ -19,7 +20,7 @@ export ROOTDIR=$ROOTDIR
 kernel_id="3.4.x"
 kernel_cf=""
 kernel_tf=""
-busybox_id="1.24.x"
+busybox_id="1.3X.X"
 busybox_cf="$ROOTDIR/configs/boards/busybox.config"
 busybox_tf="$ROOTDIR/user/busybox/busybox-${busybox_id}/.config"
 board_h=""
