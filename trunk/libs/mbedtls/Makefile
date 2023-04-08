@@ -1,11 +1,11 @@
-SRC_NAME=mbedtls-2.28.2
-SRC_URL=https://github.com/Mbed-TLS/mbedtls/archive/v2.28.2.tar.gz
+SRC_NAME=mbedtls-2.28.3
+SRC_URL=https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v2.28.3.tar.gz
 
 all: download_test extract_test config_test
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)/build
 
 download_test:
-	( if [ ! -f $(SRC_NAME).tgz ]; then \
+	( if [ ! -f $(SRC_NAME).tar.gz ]; then \
 		wget -t5 --timeout=20 --no-check-certificate -O $(SRC_NAME).tar.gz $(SRC_URL); \
 	fi )
 
