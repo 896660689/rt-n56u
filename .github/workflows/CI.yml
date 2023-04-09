@@ -17,7 +17,7 @@ on:
 jobs:
   build:
     name: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     if: ${{ !(github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) }}
     env:
       build_variant: ${{ matrix.build_variant }}
@@ -34,8 +34,9 @@ jobs:
       - uses: actions/checkout@v2
       - name: Prepare environment
         run: |
-          sudo apt update
-          sudo apt install libtool-bin gperf python3-docutils autopoint gettext help2man ccache \
+          sudo apt-get clean
+          sudo apt-get update
+          sudo apt-get install libtool-bin gperf python3-docutils autopoint gettext help2man ccache \
           -y unzip curl cmake gawk flex bison nano xxd fakeroot lzma lib32z1 \
           cpio git automake autopoint texinfo build-essential \
           pkg-config zlib1g-dev libgmp3-dev libmpc-dev libmpfr-dev libncurses5-dev libltdl-dev wget
