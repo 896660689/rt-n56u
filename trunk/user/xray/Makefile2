@@ -42,4 +42,7 @@ clean:
 	rm -rf $(THISDIR)/xray
 	
 romfs:
+ifeq ($(GITHUB_ACTION),n)
 	$(ROMFSINST) -p +x $(THISDIR)/bin/xray /usr/bin/xray
+endif
+
