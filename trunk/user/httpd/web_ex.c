@@ -1616,7 +1616,7 @@ wanlink_hook(int eid, webs_t wp, int argc, char **argv)
 				man_ifstate = get_if_state(man_ifname, addr4_man);
 
 				/* skip PPPoE traffic collect with HW_NAT enabled */
-				if (wan_ifstate > 0 && (wisp || wan_proto != IPV4_WAN_PROTO_PPPOE || nvram_get_int("hw_nat_mode") == 2)) {
+				if (wan_ifstate > 0 && (wisp || wan_proto != IPV4_WAN_PROTO_PPPOE || nvram_get_int("hw_nat_mode") == 0)) {
 					wan_bytes_rx = get_ifstats_bytes_rx(wan_ifname);
 					wan_bytes_tx = get_ifstats_bytes_tx(wan_ifname);
 				}
@@ -1629,7 +1629,7 @@ wanlink_hook(int eid, webs_t wp, int argc, char **argv)
 #if !defined (USE_SINGLE_MAC)
 								strcmp(man_ifname, IFNAME_MAC2) == 0 ||
 #endif
-								nvram_get_int("hw_nat_mode") == 2
+								nvram_get_int("hw_nat_mode") == 0
 							)
 				    ) {
 					wan_bytes_rx = get_ifstats_bytes_rx(man_ifname);
