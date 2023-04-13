@@ -1,11 +1,11 @@
-SRC_NAME=iptables-1.8.7
+SRC_NAME=iptables-1.4.21
 
 CFLAGS  += -ffunction-sections -fdata-sections
 LDFLAGS += -Wl,--gc-sections
 
 THISDIR = $(shell pwd)
 
-all: config_test
+all:	config_test
 	$(MAKE) -C $(SRC_NAME)
 
 config_test:
@@ -22,11 +22,8 @@ configure:
 		--prefix= \
 		--enable-static \
 		--disable-shared \
-		--disable-nftables \
-		--disable-connlabel \
 		--with-xtlibdir=/usr/lib/xtables \
 		--with-kernel=$(ROOTDIR)/$(LINUXDIR) \
-		--with-xt-lock-name="/var/lock/xtables.lock" \
 		$(if $(CONFIG_IPV6),--enable-ipv6,--disable-ipv6) \
 		--host=$(HOST_TARGET) \
 		--build=$(HOST_BUILD) ; \
@@ -40,7 +37,7 @@ clean:
 
 romfs:
 	mkdir -p $(ROMFSDIR)/usr/lib/xtables
-	$(ROMFSINST) $(THISDIR)/$(SRC_NAME)/iptables/xtables-legacy-multi /bin/xtables-multi
+	$(ROMFSINST) $(THISDIR)/$(SRC_NAME)/iptables/xtables-multi /bin/xtables-multi
 	$(ROMFSINST) -s xtables-multi /bin/iptables
 	$(ROMFSINST) -s xtables-multi /bin/iptables-restore
 	$(ROMFSINST) -s xtables-multi /bin/iptables-save
