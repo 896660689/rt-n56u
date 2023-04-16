@@ -587,12 +587,12 @@
 #if BOARD_NUM_ETH_EPHY > 5
 			{"ether_link_lan5", "", NULL, EVM_RESTART_SWITCH_CFG},
 			{"ether_flow_lan5", "", NULL, EVM_RESTART_SWITCH_CFG},
+#endif
 #if BOARD_NUM_ETH_EPHY > 6
 			{"ether_link_lan6", "", NULL, EVM_RESTART_SWITCH_CFG},
 			{"ether_flow_lan6", "", NULL, EVM_RESTART_SWITCH_CFG},
 			{"ether_link_lan7", "", NULL, EVM_RESTART_SWITCH_CFG},
 			{"ether_flow_lan7", "", NULL, EVM_RESTART_SWITCH_CFG},
-#endif
 #endif
 			{"controlrate_unknown_unicast", "", NULL, EVM_RESTART_SWITCH_CFG},
 			{"controlrate_unknown_multicast", "", NULL, EVM_RESTART_SWITCH_CFG},
@@ -868,6 +868,29 @@
 			{0,0,0,0}
 	};
 #endif
+
+#if defined(APP_ZEROTIER)
+    struct variable variables_ZeroConf[] = {
+			{"zerotier_enable", "", NULL, EVM_RESTART_ZEROTIER},
+			{"zerotier_id", "", NULL, EVM_RESTART_ZEROTIER},
+		        {"zerotier_moonid", "", NULL, EVM_RESTART_ZEROTIER},
+			{"zerotiermoon_enable", "", NULL, EVM_RESTART_ZEROTIER},
+			{"zerotiermoon_ip", "", NULL, EVM_RESTART_ZEROTIER},
+			{"zerotier_nat", "", NULL, EVM_RESTART_ZEROTIER},
+			{"zero_staticnum_x", "", NULL, EVM_RESTART_ZEROTIER},
+			{"ZeroList", "Group", ARGV((char*)variables_ZeroConf_ZeroList, "8", "55", "zero_staticnum_x"), EVM_RESTART_ZEROTIER},
+			{0,0,0,0}
+	};
+#endif
+
+#if defined(APP_ADGUARDHOME)
+    struct variable variables_AdguardHomeConf[] = {
+			{"adg_enable", "", NULL, EVM_RESTART_ADGUARDHOME},
+			{"adg_redirect", "", NULL, EVM_RESTART_ADGUARDHOME},
+			{0,0,0,0}
+	};
+#endif
+
 #if defined(APP_ADBYBY)
     struct variable variables_AdbybyConf[] = {
 			{"adbyby_enable", "", NULL, EVM_RESTART_ADBYBY},
@@ -901,20 +924,6 @@
 			{"wyy_flac", "", NULL, EVM_RESTART_WYY},
 			{"wyy_staticnum_x", "", NULL, EVM_RESTART_WYY},
 			{"WIPList", "Group", ARGV((char*)variables_WyyConf_WIPList, "8", "55", "wyy_staticnum_x"), EVM_RESTART_WYY},
-			{0,0,0,0}
-	};
-#endif
-
-#if defined(APP_ZEROTIER)
-	struct variable variables_ZeroConf[] = {
-			{"zerotier_enable", "", NULL, EVM_RESTART_ZEROTIER},
-			{"zerotier_id", "", NULL, EVM_RESTART_ZEROTIER},
-			{"zerotier_moonid", "", NULL, EVM_RESTART_ZEROTIER},
-			{"zerotiermoon_enable", "", NULL, EVM_RESTART_ZEROTIER},
-			{"zerotiermoon_ip", "", NULL, EVM_RESTART_ZEROTIER},
-			{"zerotier_nat", "", NULL, EVM_RESTART_ZEROTIER},
-			{"zero_staticnum_x", "", NULL, EVM_RESTART_ZEROTIER},
-			{"ZeroList", "Group", ARGV((char*)variables_ZeroConf_ZeroList, "8", "55", "zero_staticnum_x"), EVM_RESTART_ZEROTIER},
 			{0,0,0,0}
 	};
 #endif
@@ -964,14 +973,6 @@
 			{"scripts.smartdns_whitelist-ip.conf", "File", NULL, EVM_RESTART_SMARTDNS},
 			{"scripts.smartdns_custom.conf", "File", NULL, EVM_RESTART_SMARTDNS},
 			{"SdnsList", "Group", ARGV((char*)variables_SmartdnsConf_SdnsList, "8", "55", "sdnss_staticnum_x"), EVM_RESTART_SMARTDNS},
-			{0,0,0,0}
-	};
-#endif
-
-#if defined(APP_ADGUARDHOME)
-    struct variable variables_AdguardHomeConf[] = {
-			{"adg_enable", "", NULL, EVM_RESTART_ADGUARDHOME},
-			{"adg_redirect", "", NULL, EVM_RESTART_ADGUARDHOME},
 			{0,0,0,0}
 	};
 #endif
@@ -1147,6 +1148,7 @@
 #if defined(USE_USB_SUPPORT)
 		{EVM_RESTART_SPOOLER,		EVT_RESTART_SPOOLER,		RCN_RESTART_SPOOLER,	0},
 		{EVM_RESTART_HDDTUNE,		EVT_RESTART_HDDTUNE,		RCN_RESTART_HDDTUNE,	0},
+#endif
 #if defined(APP_FTPD)
 		{EVM_RESTART_FTPD,		EVT_RESTART_FTPD,		RCN_RESTART_FTPD,	EVM_RESTART_FIREWALL},
 #endif
@@ -1167,7 +1169,6 @@
 #endif
 #if defined(APP_ARIA)
 		{EVM_RESTART_ARIA,		EVT_RESTART_ARIA,		RCN_RESTART_ARIA,	EVM_RESTART_FIREWALL},
-#endif
 #endif
 #if defined(APP_TTYD)
 		{EVM_RESTART_TTYD,		EVT_RESTART_TTYD,		RCN_RESTART_TTYD,	0},
