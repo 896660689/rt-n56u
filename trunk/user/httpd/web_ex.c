@@ -1991,18 +1991,27 @@ static int dnsforwarder_status_hook(int eid, webs_t wp, int argc, char **argv)
 	websWrite(wp, "function dnsforwarder_status() { return %d;}\n", status_code);
 	return 0;
 }
+#endif
+
+#if defined(APP_SHADOWSOCKS)
 static int pdnsd_status_hook(int eid, webs_t wp, int argc, char **argv)
 {
 	int status_code = pids("pdnsd");
 	websWrite(wp, "function pdnsd_status() { return %d;}\n", status_code);
 	return 0;
 }
+#endif
+
+#if defined(APP_SHADOWSOCKS)
 static int dnsproxy_status_hook(int eid, webs_t wp, int argc, char **argv)
 {
 	int status_code = pids("dnsproxy");
 	websWrite(wp, "function dnsproxy_status() { return %d;}\n", status_code);
 	return 0;
 }
+#endif
+
+#if defined(APP_SHADOWSOCKS)
 static int dns2tcp_status_hook(int eid, webs_t wp, int argc, char **argv)
 {
 	int status_code = pids("dns2tcp");
@@ -2023,7 +2032,9 @@ static int adbyby_action_hook(int eid, webs_t wp, int argc, char **argv)
 	websWrite(wp, "<script>restart_needed_time(%d);</script>\n", needed_seconds);
 	return 0;
 }
+#endif
 
+#if defined (APP_ADBYBY)
 static int adbyby_status_hook(int eid, webs_t wp, int argc, char **argv)
 {
 	int ad_status_code = pids("adbyby");
@@ -2049,6 +2060,7 @@ static int smartdns_status_hook(int eid, webs_t wp, int argc, char **argv)
 	return 0;
 }
 #endif
+
 #if defined (APP_ZEROTIER)
 static int zerotier_status_hook(int eid, webs_t wp, int argc, char **argv)
 {
