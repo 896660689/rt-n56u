@@ -1,5 +1,5 @@
-SRC_NAME=nfs-utils-2.6.1
-SRC_URL=https://www.kernel.org/pub/linux/utils/nfs-utils/2.6.1/$(SRC_NAME).tar.xz
+SRC_NAME=nfs-nfs-utils-2.6.3.tar.xz
+SRC_URL=https://mirrors.edge.kernel.org/pub/linux/utils/nfs-utils/2.6.3/nfs-utils-2.6.3.tar.xz
 
 CFLAGS +=$(COPT) -ffunction-sections -fdata-sections -fvisibility=hidden #`pkg-config --cflags uuid`
 LDFLAGS += -Wl,--gc-sections #`pkg-config --libs uuid`
