@@ -138,7 +138,7 @@ kill_z() {
 }
 stop_zero() {
 	del_rules &
-	zero_route "del"
+	zero_route "del" >/dev/null 2>&1 && sleep 2
 	kill_z
 	rm -rf $config_path
 }
