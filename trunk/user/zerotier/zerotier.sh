@@ -42,7 +42,7 @@ start_instance() {
         #rm -f $config_path/identity.public
     fi
 
-    if [ -n "$planet"]; then
+    if [ -n "$planet" ]; then
         logger -t "zerotier" "找到planet,正在写入文件,请稍后..."
         echo "$planet" >$config_path/planet.tmp
         base64 -d $config_path/planet.tmp >$config_path/planet
@@ -67,12 +67,12 @@ start_instance() {
 
     add_join $(nvram get zerotier_id)
 
-    $PROG $args $config_path >/dev/null 2>&1 &
+    $PROG "$args" $config_path >/dev/null 2>&1 &
 
     rules
 
     if [ -n "$moonid" ]; then
-        $PROGCLI -D $config_path orbit $moonid $moonid
+        $PROGCLI -D $config_path orbit "$moonid" "$moonid"
         logger -t "zerotier" "orbit moonid $moonid ok!"
     fi
 
@@ -89,13 +89,13 @@ start_instance() {
 }
 
 add_join() {
-        touch $config_path/networks.d/$1.conf
+    touch $config_path/networks.d/"$1".conf
 }
 
 
 rules() {
     while [ "$(ifconfig | grep zt | awk '{print $1}')" = "" ]; do
-        sleep 1
+        sleep 2
     done
     nat_enable=$(nvram get zerotier_nat)
     zt0=$(ifconfig | grep zt | awk '{print $1}')
@@ -158,6 +158,7 @@ kill_z() {
         kill -9 "$zerotier_process" >/dev/null 2>&1
     fi
 }
+
 stop_zero() {
     del_rules
     zero_route "del"
@@ -214,14 +215,14 @@ creat_moon(){
         nvram set zerotiermoon_id="$zmoonid"
         nvram commit
     else
-        logger -t "zerotier" "identity.public不存在"
+        logger -t "zerotier" "identity.public 不存在"
     fi
 }
 
 remove_moon(){
     zmoonid="$(nvram get zerotiermoon_id)"
 
-    if [ ! -n "$zmoonid"]; then
+    if [ ! -n "$zmoonid" ]; then
         rm -f $config_path/moons.d/000000$zmoonid.moon
         rm -f $config_path/moon.json
         nvram set zerotiermoon_id=""
@@ -229,8 +230,8 @@ remove_moon(){
     fi
 }
 
-case $1 in
-start)
+case "$1" in
+  start)
     start_zero
     ;;
 stop)
