@@ -105,6 +105,9 @@ function fill_ss_tunnel_status(status_code){
 	else if (status_code == 1)
 		stext = "<#Running#>";
 	$("ss_tunnel_status").innerHTML = '<span class="label label-' + (status_code != 0 ? 'success' : 'warning') + '">' + stext + '</span>';
+	$("domestic_ip").innerHTML = '<iframe src="http://ip.3322.net" height="30" scrolling="no" frameborder="0" marginheight="0" marginwidth="0"></iframe>';
+	$("foreign_ip").innerHTML = '<iframe src="https://ifconfig.me/ip" height="30" scrolling="no" frameborder="0" marginheight="0" marginwidth="0"></iframe>';
+	$("gg_status").innerHTML = '<span><img alt="无法访问" src="https://www.google.com/favicon.ico?' + new Date().getTime() + '" /></span>';
 }
 
 function applyRule(){
@@ -256,6 +259,22 @@ function getHash(){
                                             <th width="50%" style="border-top: 0 none;"><#running_status#></th>
                                             <td id="ss_status" style="border-top: 0 none;" colspan="2"></td>
                                         </tr>
+
+                                        <tr>
+                                            <th width="50%">国内IP
+					</th>
+					    <td id="domestic_ip"></td>
+					</tr>
+					<tr>
+					<th width="50%">国外IP
+					</th>
+					    <td id="foreign_ip"></td>
+					</tr>
+					<tr>
+					<th width="50%">谷歌访问
+					</th>
+					    <td id="gg_status"></td>
+					</tr>
 
                                         <tr>
                                             <th width="50%" style="border-top: 0 none;" ><#InetControl#></th>
