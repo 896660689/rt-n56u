@@ -445,7 +445,7 @@ function show_banner(L3){
 	show_top_status();
 }
 
-var tabtitle = new Array(13);
+var tabtitle = new Array(12);
 tabtitle[0] = new Array("", "<#menu5_1_1#>", "<#menu5_1_2#>", "<#menu5_1_3#>", "<#menu5_1_4#>", "<#menu5_1_5#>", "<#menu5_1_6#>");
 tabtitle[1] = new Array("", "<#menu5_1_1#>", "<#menu5_1_2#>", "<#menu5_1_3#>", "<#menu5_1_4#>", "<#menu5_1_5#>", "<#menu5_1_6#>");
 tabtitle[2] = new Array("", "<#menu5_2_1#>", "<#menu5_2_2#>", "<#menu5_2_3#>", "<#menu5_2_4#>", "<#menu5_2_5#>", "<#menu5_2_6#>");
@@ -458,7 +458,6 @@ tabtitle[8] = new Array("", "<#menu5_11#>", "<#menu5_12#>", "WAN", "", "", "", "
 tabtitle[9] = new Array("", "<#menu5_7_2#>", "<#menu5_7_3#>", "<#menu5_7_5#>", "<#menu5_7_6#>", "<#menu5_7_8#>");
 tabtitle[10] = new Array("", "<#menu5_16#>");
 tabtitle[11] = new Array("", "<#menu5_24#>");
-tabtitle[12] = new Array("", "<#menu5_32#>");
 
 if (found_app_shadowsocks()){
 	tabtitle[10] = new Array("", "<#menu5_16#>");
@@ -474,12 +473,9 @@ if (found_app_smartdns()){
 		tabtitle[11] = new Array("", "<#menu5_25#>");
 	}
 }
-if (found_app_zerotier()){
-	tabtitle[12] = new Array("", "<#menu5_32#>");
-}
 
 //Level 3 Tab title
-var tablink = new Array(13);
+var tablink = new Array(12);
 tablink[0] = new Array("", "Advanced_Wireless2g_Content.asp", "Advanced_WGuest2g_Content.asp", "Advanced_WMode2g_Content.asp", "Advanced_ACL2g_Content.asp", "Advanced_WSecurity2g_Content.asp", "Advanced_WAdvanced2g_Content.asp");
 tablink[1] = new Array("", "Advanced_Wireless_Content.asp", "Advanced_WGuest_Content.asp", "Advanced_WMode_Content.asp", "Advanced_ACL_Content.asp", "Advanced_WSecurity_Content.asp", "Advanced_WAdvanced_Content.asp");
 tablink[2] = new Array("", "Advanced_LAN_Content.asp", "Advanced_DHCP_Content.asp", "Advanced_GWStaticRoute_Content.asp", "Advanced_IPTV_Content.asp", "Advanced_Switch_Content.asp", "Advanced_WOL_Content.asp");
@@ -492,7 +488,6 @@ tablink[8] = new Array("", "Main_WStatus2g_Content.asp", "Main_WStatus_Content.a
 tablink[9] = new Array("", "Main_LogStatus_Content.asp", "Main_DHCPStatus_Content.asp", "Main_IPTStatus_Content.asp", "Main_RouteStatus_Content.asp", "Main_CTStatus_Content.asp");
 tablink[10] = new Array("", "Shadowsocks.asp");
 tablink[11] = new Array("", "Advanced_smartdns.asp");
-tablink[12] = new Array("", "Advanced_zerotier.asp");
 
 if (found_app_shadowsocks()){
 	shadowsocks_array = new Array("", "Shadowsocks.asp");
@@ -510,14 +505,10 @@ if (found_app_smartdns()){
 	tablink[11] = (adg_array);
 }
 
-if (found_app_zerotier()){
-	zerotier_array = new Array("","Advanced_zerotier.asp");
-	tablink[12] = (zerotier_array);
-}
 //Level 2 Menu
-menuL2_title = new Array("", "<#menu5_11#>", "<#menu5_12#>", "<#menu5_2#>", "<#menu5_3#>", "<#menu5_5#>", "<#menu5_4#>", "<#menu5_6#>", "<#menu5_10#>", "<#menu5_9#>", "<#menu5_7#>", "<#menu5_16#>", "<#menu5_24#>", "<#menu5_32#>");
+menuL2_title = new Array("", "<#menu5_11#>", "<#menu5_12#>", "<#menu5_2#>", "<#menu5_3#>", "<#menu5_5#>", "<#menu5_4#>", "<#menu5_6#>", "<#menu5_10#>", "<#menu5_9#>", "<#menu5_7#>", "<#menu5_16#>", "<#menu5_24#>");
 
-menuL2_link  = new Array("", tablink[0][1], tablink[1][1], tablink[2][1], tablink[3][1], tablink[4][1], tablink[5][1], tablink[6][1], tablink[7][1], support_2g_radio() ? tablink[8][1] : "Main_EStatus_Content.asp", tablink[9][1], tablink[10][1], tablink[11][1], tablink[12][1]);
+menuL2_link  = new Array("", tablink[0][1], tablink[1][1], tablink[2][1], tablink[3][1], tablink[4][1], tablink[5][1], tablink[6][1], tablink[7][1], support_2g_radio() ? tablink[8][1] : "Main_EStatus_Content.asp", tablink[9][1], tablink[10][1], tablink[11][1]);
 
 if (found_app_shadowsocks()){
 	menuL2_link.push(tablink[10][1]);
@@ -529,9 +520,7 @@ if (found_app_smartdns()){
 } else if (found_app_adguardhome()){
 	menuL2_title.push("adg_array[1]");
 } else menuL2_link.push("");
-if (found_app_zerotier()){
-	menuL2_link.push(tablink[12][1]);
-} else menuL2_link.push("");
+
 //Level 1 Menu in Gateway, Router mode
 menuL1_title = new Array("", "<#menu1#>", "", "<#menu2#>", "<#menu6#>", "<#menu4#>", "<#menu5_8#>", "<#menu5#>");
 menuL1_link = new Array("", "index.asp", "", "vpnsrv.asp", "vpncli.asp", "Main_TrafficMonitor_realtime.asp", "Advanced_System_Info.asp", "as.asp");
