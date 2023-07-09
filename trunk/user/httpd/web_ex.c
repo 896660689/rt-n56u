@@ -2970,6 +2970,8 @@ void get_memdata(struct mem_stats *st)
 			fgets(line_buf, sizeof(line_buf), fp);
 			sscanf(line_buf, "MemFree: %lu %*s", &st->free);
 
+			fgets(line_buf, sizeof(line_buf), fp);	/* skip MemAvailable */
+			
 			fgets(line_buf, sizeof(line_buf), fp);
 			sscanf(line_buf, "Buffers: %lu %*s", &st->buffers);
 
@@ -3223,16 +3225,13 @@ apply_cgi(const char *url, webs_t wp)
 	}
 	else if (!strcmp(value, " Reboot "))
 	{
-		int reboot_mode = nvram_get_int("reboot_mode");
-		if ( reboot_mode == 0)
-		{
-			sys_reboot();
-		}
-		else if ( reboot_mode == 1)
-		{
-			doSystem("/sbin/mtd_storage.sh %s", "save");
-			system("mtd_write -r unlock mtd1");
-		}
+		sys_reboot();
+		return 0;
+	}
+	else if (!strcmp(value, " FreeMemory "))
+	{
+		doSystem("sync");
+		doSystem("echo 3 > /proc/sys/vm/drop_caches");
 		return 0;
 	}
 	else if (!strcmp(value, " RestoreNVRAM "))
@@ -4147,4 +4146,3 @@ struct ej_handler ej_handlers[] =
 	{ "openvpn_cli_cert_hook", openvpn_cli_cert_hook},
 	{ NULL, NULL }
 };
-
