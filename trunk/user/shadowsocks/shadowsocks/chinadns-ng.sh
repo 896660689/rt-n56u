@@ -38,13 +38,24 @@ func_del_ipt(){
         sleep 2 && flush_iptables net
     fi
     ipt="iptables -t nat"
-    $ipt -D CNNG_PRE -d $v2_address -j RETURN
+    $ipt -D CNNG_PRE -d $v2_address -p tcp -m tcp ! --dport 53 -j RETURN
     $ipt -D CNNG_PRE -m set --match-set gateway dst -j RETURN
     $ipt -D CNNG_PRE -m set --match-set chnroute dst -j RETURN
     $ipt -D CNNG_OUT -m set --match-set chnroute dst -j RETURN
     $ipt -D CNNG_OUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-ports 65353
     $ipt -D CNNG_OUT -p tcp -j CNNG_PRE
     $ipt -D CNNG_PRE -p tcp -j REDIRECT --to-ports 12345
+$ipt -D CNNG_OUT -d 0.0.0.0/8 -j RETURN
+$ipt -D CNNG_OUT -d 10.0.0.0/8 -j RETURN
+$ipt -D CNNG_OUT -d 127.0.0.0/8 -j RETURN
+$ipt -D CNNG_OUT -d 169.254.0.0/16 -j RETURN
+$ipt -D CNNG_OUT -d 172.16.0.0/12 -j RETURN
+$ipt -D CNNG_OUT -d 192.168.0.0/16 -j RETURN
+$ipt -D CNNG_OUT -d 224.0.0.0/4 -j RETURN
+$ipt -D CNNG_OUT -d 240.0.0.0/4 -j RETURN
+#$ipt -D CNNG_PRE -m set --match-set gfwlist dst -j CNNG_OUT
+$ipt -D CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports 1080
+
     iptables-save -c | grep -v gateway | iptables-restore -c
     for setname in $(ipset -n list | grep "gateway"); do
         ipset destroy "$setname" 2>/dev/null
@@ -54,6 +65,15 @@ func_del_ipt(){
 }
 
 func_conf(){
+      if grep -q "min-cache-ttl" "$DNSMASQ_RURE"
+        then
+            echo ''
+        else
+            cat >> $DNSMASQ_RURE << EOF
+min-cache-ttl=1800
+dns-forward-max=1000
+EOF
+        fi
     /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute -M -m $local_chnlist_file>/dev/null 2>&1 &
     #/usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
     #/usr/bin/chinadns-ng -c $wan_dns#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
@@ -123,7 +143,7 @@ $ipt -N CNNG_PRE
 
 $ipt -A PREROUTING -j CNNG_OUT
 $ipt -A OUTPUT -j CNNG_PRE
-$ipt -A CNNG_PRE -d $v2_address -j RETURN
+$ipt -A CNNG_PRE -d $v2_address -p tcp -m tcp ! --dport 53 -j RETURN
 $ipt -A CNNG_PRE -m set --match-set gateway dst -j RETURN
 $ipt -A CNNG_PRE -m set --match-set chnroute dst -j RETURN
 $ipt -A CNNG_OUT -m set --match-set chnroute dst -j RETURN
@@ -131,6 +151,17 @@ $ipt -A CNNG_OUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-ports 65353
 
 $ipt -A CNNG_OUT -p tcp -j CNNG_PRE
 $ipt -A CNNG_PRE -p tcp -j REDIRECT --to-ports 12345
+
+$ipt -A CNNG_OUT -d 0.0.0.0/8 -j RETURN
+$ipt -A CNNG_OUT -d 10.0.0.0/8 -j RETURN
+$ipt -A CNNG_OUT -d 127.0.0.0/8 -j RETURN
+$ipt -A CNNG_OUT -d 169.254.0.0/16 -j RETURN
+$ipt -A CNNG_OUT -d 172.16.0.0/12 -j RETURN
+$ipt -A CNNG_OUT -d 192.168.0.0/16 -j RETURN
+$ipt -A CNNG_OUT -d 224.0.0.0/4 -j RETURN
+$ipt -A CNNG_OUT -d 240.0.0.0/4 -j RETURN
+#$ipt -A CNNG_PRE -m set --match-set gfwlist dst -j CNNG_OUT
+$ipt -A CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports 1080
 
 cat <<-CAT >>$FWI
 iptables-save -c | grep -v CNNG_ | iptables-restore -c
@@ -175,4 +206,5 @@ stop)
     exit 1
     ;;
 esac
+
 
