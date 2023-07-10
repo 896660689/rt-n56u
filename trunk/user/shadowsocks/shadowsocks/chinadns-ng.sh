@@ -65,18 +65,21 @@ $ipt -D CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-
 }
 
 func_conf(){
-      if grep -q "min-cache-ttl" "$DNSMASQ_RURE"
-        then
-            echo ''
-        else
-            cat >> $DNSMASQ_RURE << EOF
+    if grep -q "min-cache-ttl" "$DNSMASQ_RURE"
+    then
+        echo ''
+    else
+        cat >> $DNSMASQ_RURE << EOF
 min-cache-ttl=1800
 dns-forward-max=1000
 EOF
-        fi
-    /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute -M -m $local_chnlist_file>/dev/null 2>&1 &
-    #/usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
-    #/usr/bin/chinadns-ng -c $wan_dns#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
+    fi
+    if [ -f "$local_chnlist_file" ] || [ -s "$local_chnlist_file" ]
+    then
+        /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute -M -m $local_chnlist_file>/dev/null 2>&1 &
+    else
+        /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute>/dev/null 2>&1 &
+    fi
     if [ $(nvram get sdns_enable) = "1" ]; then
         if grep -q "no-resolv" "$DNSMASQ_RURE"
         then
