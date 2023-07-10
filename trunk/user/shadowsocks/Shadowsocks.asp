@@ -236,10 +236,9 @@ function getHash(){
                                     <div id="tabMenu" class="submenuBlock"></div>
                                     <div class="alert alert-info" style="margin: 10px;">---V2RAY---Shadowsocks-----科学上网</br>
                                         支持-SS-SSR-主副双账号切换.支持-V2ray-URL-自动解析或手动账号
+                                        <br />&nbsp;<span style="color:#E53333;">注意:</span>
+                                        <br />&nbsp;<span style="color:#E53333;">运行状态需要启动节点后<input type="button" id="btn_reconnect" class="btn btn-info" value="刷新页面" onclick="window.location.reload();" tabindex="1"> 获取运行状态</span>
                                     </div>
-                                    <div><span style="color:#E53333;">注意:</span></div>
-                                    <div><span style="color:#E53333;">运行状态不会实时更新，启动节点后需等待一段时间手动 <input type="button" id="btn_reconnect" class="btn btn-info" value="刷新页面" onclick="window.location.reload();" tabindex="1"> 获取运行状态</span></div>
-                                </div>
                                 <div id="wnd_ss_add">
                                     <table width="100%" cellpadding="4" cellspacing="0" class="table">
                                         <tr>
@@ -728,4 +727,6 @@ function getHash(){
 
 </body>
 </html>
+
+
 
