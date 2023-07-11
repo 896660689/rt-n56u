@@ -80,11 +80,13 @@ func_conf(){
         echo ''
     else
         cat >> $DNSMASQ_RURE << EOF
-min-cache-ttl=2560
+min-cache-ttl=1800
 EOF
     fi
-    cdn_file_d && \
-    if [ -f "$local_chnlist_file" ] || [ -s "$local_chnlist_file" ]
+    cdn_file_d &
+    wait
+    echo "cdn"
+    if [ -f "$local_chnlist_file" ]
     then
         /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute -M -m $local_chnlist_file >/dev/null 2>&1 &
     else
@@ -99,6 +101,7 @@ EOF
 no-resolv
 server=127.0.0.1#65353
 EOF
+        restart_dhcpd
         fi
     else
         if grep -q "65353" "$DNSMASQ_RURE"
@@ -109,6 +112,7 @@ EOF
 no-resolv
 server=127.0.0.1#65353
 EOF
+    restart_dhcpd
     fi
 }
 
@@ -220,4 +224,5 @@ stop)
     exit 1
     ;;
 esac
+
 
