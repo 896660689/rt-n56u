@@ -1,5 +1,4 @@
 #!/bin/sh
-# github:http://github.com/SuzukiHonoka
 # Compile:by-lanse	2023-03-06
 
 modprobe xt_set
@@ -17,6 +16,7 @@ CHAIN_NAME="REDSOCKS"
 SET_NAME="chnroute"
 SOCKS_LOG="/tmp/ss-watchcat.log"
 ss_router_proxy=$(nvram get ss_router_proxy)
+v2_port=$(cat /tmp/V2mi.txt | grep "port:" | awk -F '[:/]' '{print $2}') 
 SOCKS5_IP=$(nvram get lan_ipaddr)
 SOCKS5_PORT=$(nvram get ss_local_port)
 REMOTE_IP="127.0.0.1"
@@ -27,7 +27,6 @@ ARG3=$3
 
 func_redsocks(){
 if [ "$ss_router_proxy" = "5" ] ; then
-    #IPT2SOCKS_CMD="ipt2socks -s 127.0.0.1 -p $SOCKS5_PORT -b 0.0.0.0 -l 12345 -j `cat /proc/cpuinfo|grep processor|wc -l` -T -4 -R"
     IPT2SOCKS_CMD="ipt2socks -s 127.0.0.1 -p $SOCKS5_PORT -l 12345 -r -4 -R"
     $IPT2SOCKS_CMD >/dev/null 2>&1 &
 else
@@ -74,8 +73,6 @@ ip = $SOCKS5_IP;
 port = $SOCKS5_PORT;
 type = socks5;
 }
-
-//Keep this line
 EOF
 chmod 644 $REDSOCKS_CONF
 logger -t $BINARY_NAME "CONFIG FILE SAVED."
