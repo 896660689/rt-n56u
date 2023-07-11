@@ -1616,7 +1616,7 @@ wanlink_hook(int eid, webs_t wp, int argc, char **argv)
 				man_ifstate = get_if_state(man_ifname, addr4_man);
 
 				/* skip PPPoE traffic collect with HW_NAT enabled */
-				if (wan_ifstate > 0 && (wisp || wan_proto != IPV4_WAN_PROTO_PPPOE || nvram_get_int("hw_nat_mode") == 2)) {
+				if (wan_ifstate > 0 && (wisp || wan_proto != IPV4_WAN_PROTO_PPPOE || nvram_get_int("hw_nat_mode") == 0)) {
 					wan_bytes_rx = get_ifstats_bytes_rx(wan_ifname);
 					wan_bytes_tx = get_ifstats_bytes_tx(wan_ifname);
 				}
@@ -1629,7 +1629,7 @@ wanlink_hook(int eid, webs_t wp, int argc, char **argv)
 #if !defined (USE_SINGLE_MAC)
 								strcmp(man_ifname, IFNAME_MAC2) == 0 ||
 #endif
-								nvram_get_int("hw_nat_mode") == 2
+								nvram_get_int("hw_nat_mode") == 0
 							)
 				    ) {
 					wan_bytes_rx = get_ifstats_bytes_rx(man_ifname);
@@ -1991,18 +1991,27 @@ static int dnsforwarder_status_hook(int eid, webs_t wp, int argc, char **argv)
 	websWrite(wp, "function dnsforwarder_status() { return %d;}\n", status_code);
 	return 0;
 }
+#endif
+
+#if defined(APP_SHADOWSOCKS)
 static int pdnsd_status_hook(int eid, webs_t wp, int argc, char **argv)
 {
 	int status_code = pids("pdnsd");
 	websWrite(wp, "function pdnsd_status() { return %d;}\n", status_code);
 	return 0;
 }
+#endif
+
+#if defined(APP_SHADOWSOCKS)
 static int dnsproxy_status_hook(int eid, webs_t wp, int argc, char **argv)
 {
 	int status_code = pids("dnsproxy");
 	websWrite(wp, "function dnsproxy_status() { return %d;}\n", status_code);
 	return 0;
 }
+#endif
+
+#if defined(APP_SHADOWSOCKS)
 static int dns2tcp_status_hook(int eid, webs_t wp, int argc, char **argv)
 {
 	int status_code = pids("dns2tcp");
@@ -2023,7 +2032,9 @@ static int adbyby_action_hook(int eid, webs_t wp, int argc, char **argv)
 	websWrite(wp, "<script>restart_needed_time(%d);</script>\n", needed_seconds);
 	return 0;
 }
+#endif
 
+#if defined (APP_ADBYBY)
 static int adbyby_status_hook(int eid, webs_t wp, int argc, char **argv)
 {
 	int ad_status_code = pids("adbyby");
@@ -2049,6 +2060,25 @@ static int smartdns_status_hook(int eid, webs_t wp, int argc, char **argv)
 	return 0;
 }
 #endif
+
+#if defined (APP_ZEROTIER)
+static int zerotier_status_hook(int eid, webs_t wp, int argc, char **argv)
+{
+	int zerotier_status_code = pids("zerotier-one");
+	websWrite(wp, "function zerotier_status() { return %d;}\n", zerotier_status_code);
+	return 0;
+}
+#endif
+
+static int update_action_hook(int eid, webs_t wp, int argc, char **argv)
+{
+	char *up_action = websGetVar(wp, "connect_action", "");
+
+	if (!strcmp(up_action, "bigtmp")) {
+		system("mount -t tmpfs -o remount,rw,size=50M tmpfs /tmp");
+	}
+	return 0;
+}
 
 static int
 ej_detect_internet_hook(int eid, webs_t wp, int argc, char **argv)
@@ -2228,6 +2258,11 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 	int found_app_wyy = 1;
 #else
 	int found_app_wyy = 0;
+#endif
+#if defined(APP_ZEROTIER)
+	int found_app_zerotier = 1;
+#else
+	int found_app_zerotier = 0;
 #endif
 #if defined(APP_SMARTDNS)
 	int found_app_smartdns = 1;
@@ -2413,6 +2448,7 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		"function found_app_shadowsocks() { return %d;}\n"
 		"function found_app_adbyby() { return %d;}\n"
 		"function found_app_wyy() { return %d;}\n"
+		"function found_app_zerotier() { return %d;}\n"
 		"function found_app_smartdns() { return %d;}\n"
 		"function found_app_adguardhome() { return %d;}\n"
 		"function found_app_xupnpd() { return %d;}\n",
@@ -2435,6 +2471,7 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		found_app_shadowsocks,
 		found_app_adbyby,
 		found_app_wyy,
+		found_app_zerotier,
 		found_app_smartdns,
 		found_app_adguardhome,
 		found_app_xupnpd
@@ -2943,6 +2980,8 @@ void get_memdata(struct mem_stats *st)
 			fgets(line_buf, sizeof(line_buf), fp);
 			sscanf(line_buf, "MemFree: %lu %*s", &st->free);
 
+			fgets(line_buf, sizeof(line_buf), fp);	/* skip MemAvailable */
+			
 			fgets(line_buf, sizeof(line_buf), fp);
 			sscanf(line_buf, "Buffers: %lu %*s", &st->buffers);
 
@@ -3196,16 +3235,13 @@ apply_cgi(const char *url, webs_t wp)
 	}
 	else if (!strcmp(value, " Reboot "))
 	{
-		int reboot_mode = nvram_get_int("reboot_mode");
-		if ( reboot_mode == 0)
-		{
-			sys_reboot();
-		}
-		else if ( reboot_mode == 1)
-		{
-			doSystem("/sbin/mtd_storage.sh %s", "save");
-			system("mtd_write -r unlock mtd1");
-		}
+		sys_reboot();
+		return 0;
+	}
+	else if (!strcmp(value, " FreeMemory "))
+	{
+		doSystem("sync");
+		doSystem("echo 3 > /proc/sys/vm/drop_caches");
 		return 0;
 	}
 	else if (!strcmp(value, " RestoreNVRAM "))
@@ -4111,6 +4147,9 @@ struct ej_handler ej_handlers[] =
 #endif
 #if defined (APP_SMARTDNS)
 	{ "smartdns_status", smartdns_status_hook},
+#endif
+#if defined (APP_ZEROTIER)
+	{ "zerotier_status", zerotier_status_hook},
 #endif
 	{ "openssl_util_hook", openssl_util_hook},
 	{ "openvpn_srv_cert_hook", openvpn_srv_cert_hook},
