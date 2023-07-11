@@ -11,7 +11,8 @@ DNSMASQ_RURE="$STORAGE/dnsmasq/dnsmasq.conf"
 STORAGE_V2SH="$STORAGE/storage_v2ray.sh"
 ss_tunnel_local_port=$(nvram get ss-tunnel_local_port)
 wan_dns=$(nvram get wan_dns1_x)
-local_chnlist_file=$STORAGE/ss_dom.sh
+local_chnlist_file=/tmp/chnlist.txt
+cdn_url=https://cdn.jsdelivr.net/gh/896660689/OS/chnlist.txt
 
 func_del_rule(){
     if [ -n "$(pidof chinadns-ng)" ] ; then
@@ -64,6 +65,16 @@ $ipt -D CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-
     $ipt -D OUTPUT -j CNNG_PRE
 }
 
+cdn_file_d(){
+    if [ ! -f "local_chnlist_file" ]
+    then
+        curl -k -s -o $local_chnlist_file --connect-timeout 10 --retry 3 $cdn_url && \
+        #wget -t 5 -T 10 -c --no-check-certificate -O- $cdn_url \
+        |awk '!a[$0]++' |sed -e '/^#/d' > $local_chnlist_file && \
+        chmod 644 "$local_chnlist_file"
+    fi
+}
+
 func_conf(){
     if grep -q "min-cache-ttl" "$DNSMASQ_RURE"
     then
@@ -74,6 +85,7 @@ min-cache-ttl=1800
 dns-forward-max=1000
 EOF
     fi
+    cdn_file_d && \
     if [ -f "$local_chnlist_file" ] || [ -s "$local_chnlist_file" ]
     then
         /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute -M -m $local_chnlist_file >/dev/null 2>&1 &
