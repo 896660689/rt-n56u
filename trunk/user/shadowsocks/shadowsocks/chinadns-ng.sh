@@ -69,8 +69,7 @@ cdn_file_d(){
     if [ ! -f "local_chnlist_file" ]
     then
         curl -k -s -o $local_chnlist_file --connect-timeout 10 --retry 3 $cdn_url && \
-        #wget -t 5 -T 10 -c --no-check-certificate -O- $cdn_url \
-        |awk '!a[$0]++' |sed -e '/^#/d' > $local_chnlist_file && \
+        #wget -t 5 -T 10 -c --no-check-certificate -O- $cdn_url > $local_chnlist_file && \
         chmod 644 "$local_chnlist_file"
     fi
 }
@@ -203,6 +202,7 @@ func_stop(){
     func_del_rule && \
     func_del_ipt && \
     logger -t "[CHINADNS-NG]" "已停止运行 !"
+    [ -f $local_chnlist_file ] && rm -rf $local_chnlist_file
     if [ $(nvram get ss_mode) = "3" ]
     then
         echo "V2RAY Not closed "
@@ -221,5 +221,4 @@ stop)
     exit 1
     ;;
 esac
-
 
