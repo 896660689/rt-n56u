@@ -80,8 +80,7 @@ func_conf(){
         echo ''
     else
         cat >> $DNSMASQ_RURE << EOF
-min-cache-ttl=1800
-dns-forward-max=1000
+min-cache-ttl=2560
 EOF
     fi
     cdn_file_d && \
