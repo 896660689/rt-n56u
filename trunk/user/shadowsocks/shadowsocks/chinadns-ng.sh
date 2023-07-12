@@ -21,7 +21,8 @@ func_del_rule(){
     fi
     if grep -q "65353" "$DNSMASQ_RURE"
     then
-        sed -i '/no-resolv/d; /server=127.0.0.1/d' $DNSMASQ_RURE
+        sed -i '/no-resolv/d; /server=127.0.0.1/d; /min-cache-ttl/d' $DNSMASQ_RURE
+        restart_dhcpd
     fi
 }
 
@@ -46,16 +47,16 @@ func_del_ipt(){
     $ipt -D CNNG_OUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-ports 65353
     $ipt -D CNNG_OUT -p tcp -j CNNG_PRE
     $ipt -D CNNG_PRE -p tcp -j REDIRECT --to-ports 12345
-$ipt -D CNNG_OUT -d 0.0.0.0/8 -j RETURN
-$ipt -D CNNG_OUT -d 10.0.0.0/8 -j RETURN
-$ipt -D CNNG_OUT -d 127.0.0.0/8 -j RETURN
-$ipt -D CNNG_OUT -d 169.254.0.0/16 -j RETURN
-$ipt -D CNNG_OUT -d 172.16.0.0/12 -j RETURN
-$ipt -D CNNG_OUT -d 192.168.0.0/16 -j RETURN
-$ipt -D CNNG_OUT -d 224.0.0.0/4 -j RETURN
-$ipt -D CNNG_OUT -d 240.0.0.0/4 -j RETURN
-#$ipt -D CNNG_PRE -m set --match-set gfwlist dst -j CNNG_OUT
-$ipt -D CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports 1080
+    $ipt -D CNNG_OUT -d 0.0.0.0/8 -j RETURN
+    $ipt -D CNNG_OUT -d 10.0.0.0/8 -j RETURN
+    $ipt -D CNNG_OUT -d 127.0.0.0/8 -j RETURN
+    $ipt -D CNNG_OUT -d 169.254.0.0/16 -j RETURN
+    $ipt -D CNNG_OUT -d 172.16.0.0/12 -j RETURN
+    $ipt -D CNNG_OUT -d 192.168.0.0/16 -j RETURN
+    $ipt -D CNNG_OUT -d 224.0.0.0/4 -j RETURN
+    $ipt -D CNNG_OUT -d 240.0.0.0/4 -j RETURN
+    #$ipt -D CNNG_PRE -m set --match-set gfwlist dst -j CNNG_OUT
+    $ipt -D CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports 1080
 
     iptables-save -c | grep -v gateway | iptables-restore -c
     for setname in $(ipset -n list | grep "gateway"); do
@@ -224,5 +225,4 @@ stop)
     exit 1
     ;;
 esac
-
 
