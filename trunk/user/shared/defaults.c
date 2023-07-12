@@ -756,7 +756,7 @@ struct nvram_pair router_defaults[] = {
 	{ "wol_mac_last", "" },
 	{ "gw_arp_ping", "0" },
 	{ "ez_action_short", "0" },
-#if !defined(BOARD_GPIO_BTN_RESET)
+#if defined(BOARD_GPIO_BTN_RESET)
 	{ "ez_action_long", "15" },		/* Reset */
 #else
 	{ "ez_action_long", "0" },
