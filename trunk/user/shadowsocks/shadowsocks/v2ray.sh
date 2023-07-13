@@ -12,6 +12,8 @@ STORAGE_V2SH="$STORAGE/storage_v2ray.sh"
 SS_LOCAL_PORT_LINK=$(nvram get ss_local_port)
 ss_tunnel_local_port=$(nvram get ss-tunnel_local_port)
 SS_LAN_IP=$(nvram get lan_ipaddr)
+local_chnlist_file=/tmp/chnlist.txt
+cdn_url=https://cdn.jsdelivr.net/gh/896660689/OS/chnlist.txt
 
 V2RUL=/tmp/V2mi.txt
 
@@ -188,6 +190,16 @@ func_china_file(){
         ipset -N chnroute hash:net
         sleep 3 && \
         awk '!/^$/&&!/^#/{printf("add chnroute %s'" "'\n",$0)}' $dir_chnroute_file | ipset restore &
+    fi
+    cdn_file_d &
+}
+
+cdn_file_d(){
+    if [ ! -f "local_chnlist_file" ]
+    then
+        curl -k -s -o $local_chnlist_file --connect-timeout 10 --retry 3 $cdn_url && \
+        #wget -t 5 -T 10 -c --no-check-certificate -O- $cdn_url > $local_chnlist_file && \
+        chmod 644 "$local_chnlist_file"
     fi
 }
 
