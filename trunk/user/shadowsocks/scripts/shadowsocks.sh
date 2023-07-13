@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2023-03-06
+# Compile:by-lanse	2023-07-13
 
 export PATH=$PATH:/etc/storage/shadowsocks
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etc/storage/shadowsocks
@@ -166,7 +166,6 @@ youtube.com
 youneed.win
 livestream.com
 githubusercontent.com
-gtv.org
 
 EOF
         chmod 644 $STORAGE/ss_dom.sh
