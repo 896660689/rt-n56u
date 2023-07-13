@@ -86,7 +86,7 @@ func_conf(){
 min-cache-ttl=1800
 EOF
     fi
-    #cdn_file_d &
+    cdn_file_d &
     wait
     echo "cdn"
     if [ -f "$local_chnlist_file" ]
