@@ -10,6 +10,7 @@ SSR_HOME="$STORAGE/shadowsocks"
 DNSMASQ_RURE="$STORAGE/dnsmasq/dnsmasq.conf"
 STORAGE_V2SH="$STORAGE/storage_v2ray.sh"
 ss_tunnel_local_port=$(nvram get ss-tunnel_local_port)
+ss_local_port=$(nvram get ss_local_port)
 wan_dns=$(nvram get wan_dns1_x)
 local_chnlist_file=/tmp/chnlist.txt
 cdn_url=https://cdn.jsdelivr.net/gh/896660689/OS/chnlist.txt
@@ -57,7 +58,7 @@ func_del_ipt(){
     $ipt -D CNNG_OUT -d 240.0.0.0/4 -j RETURN
     #$ipt -D CNNG_PRE -m set --match-set gfwlist dst -j CNNG_OUT
     #$ipt -D CNNG_PRE -j CNNG_OUT
-    $ipt -D CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports 1080
+    $ipt -D CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports $ss_local_port
 
     iptables-save -c | grep -v gateway | iptables-restore -c
     for setname in $(ipset -n list | grep "gateway"); do
@@ -85,7 +86,7 @@ func_conf(){
 min-cache-ttl=1800
 EOF
     fi
-    cdn_file_d &
+    #cdn_file_d &
     wait
     echo "cdn"
     if [ -f "$local_chnlist_file" ]
@@ -181,7 +182,7 @@ $ipt -A CNNG_OUT -d 224.0.0.0/4 -j RETURN
 $ipt -A CNNG_OUT -d 240.0.0.0/4 -j RETURN
 #$ipt -A CNNG_PRE -j CNNG_OUT
 #$ipt -A CNNG_PRE -m set --match-set gfwlist dst -j CNNG_OUT
-$ipt -A CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports 1080
+$ipt -A CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports $ss_local_port
 
 cat <<-CAT >>$FWI
 iptables-save -c | grep -v CNNG_ | iptables-restore -c
