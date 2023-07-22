@@ -523,7 +523,7 @@ struct nvram_pair router_defaults[] = {
 	/* shadowsocks */
 	{ "ss_type", "1" },			//0=ss;1=ssr
 	{ "ss_enable", "0" },
-	{ "ss_mode", "1" },			//0:Agente-Global;1:chnroute;2:gfwlist;3:v2ray;4:trojan
+	{ "ss_mode", "3" },			//0:Agente-Global;1:chnroute;2:gfwlist;3:v2ray;4:trojan
 	{ "ss_server", "127.0.0.1" },
 	{ "ss_server_port", "8989" },
 	{ "ss_key", "Secret" },
@@ -531,7 +531,7 @@ struct nvram_pair router_defaults[] = {
 	{ "ss_udp", "0" },
 	{ "ss_local_port", "1080" },
 	{ "ss_mtu", "1492" },
-	{ "ss_router_proxy", "2" },		//0:Kong;1:Self agency;2:dns-forwarder;3:dnsproxy;4:pdnsd;5:dns2tcp
+	{ "ss_router_proxy", "5" },		//0:Kong;1:Self agency;2:dns-forwarder;3:dnsproxy;4:pdnsd;5:dns2tcp
 	{ "ss_lower_port_only", "1" },		//1:22-1023;2:53,80,443
 	{ "ss_timeout", "60"},
 	{ "ss_protocol", "origin"},
