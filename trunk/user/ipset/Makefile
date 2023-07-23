@@ -1,11 +1,11 @@
-SRC_NAME=ipset-7.1
-SRC_URL=http://ipset.netfilter.org/$(SRC_NAME).tar.bz2
+SRC_NAME=ipset-7.15
+SRC_URL=https://ipset.netfilter.org/$(SRC_NAME).tar.bz2
 
 THISDIR = $(shell pwd)
 
 all: download_test extract_test config_test
-	$(MAKE) -C $(SRC_NAME)
-	$(MAKE) modules -C $(SRC_NAME)
+	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
+	$(MAKE) modules -j$(HOST_NCPU) -C $(SRC_NAME)
 
 download_test:
 	( if [ ! -f $(SRC_NAME).tar.bz2 ]; then \
@@ -14,10 +14,8 @@ download_test:
 
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
-		tar xf $(SRC_NAME).tar.bz2; \
-		find $(THISDIR)/patches -type f -name '*.patch' -print0 \
-		  | sort -z \
-		  | xargs -t -0 -n 1 patch -d $(SRC_NAME)  -p1 -i; \
+		tar xjf $(SRC_NAME).tar.bz2; \
+		patch -d $(SRC_NAME) -p1 -i ../ipset-compat.patch; \
 	fi )
 
 config_test:
@@ -51,7 +49,5 @@ clean:
 	rm -f config_done
 
 romfs:
-	cp $(THISDIR)/$(SRC_NAME)/src/ipset .
-	$(STRIP) ipset
-	$(ROMFSINST) /sbin/ipset
+	$(ROMFSINST) $(THISDIR)/$(SRC_NAME)/src/ipset /sbin/ipset
 
