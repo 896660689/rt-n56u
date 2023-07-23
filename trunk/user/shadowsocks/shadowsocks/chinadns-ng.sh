@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2023-03-06
+# Compile:by-lanse	2023-07-24
 
 modprobe xt_set
 modprobe ip_set_hash_ip
@@ -13,7 +13,7 @@ ss_tunnel_local_port=$(nvram get ss-tunnel_local_port)
 ss_local_port=$(nvram get ss_local_port)
 wan_dns=$(nvram get wan_dns1_x)
 local_chnlist_file=/tmp/chnlist.txt
-cdn_url=https://cdn.jsdelivr.net/gh/896660689/OS/chnlist.txt
+cdn_url=https://cdn.jsdelivr.net/gh/Loyalsoldier/v2ray-rules-dat@release/direct-list.txt
 
 func_del_rule(){
     if [ -n "$(pidof chinadns-ng)" ] ; then
