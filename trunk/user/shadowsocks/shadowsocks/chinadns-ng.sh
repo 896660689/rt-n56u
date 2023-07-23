@@ -133,7 +133,7 @@ EOF
     fi
     ipset_init && \
     gfw_dns && \
-    cdn_file_d &
+    cdn_file_d && sleep 5
     if [ -f "$local_chnlist_file" ]
     then
         /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute -M -m $local_chnlist_file >/dev/null 2>&1 &
@@ -273,4 +273,5 @@ stop)
     exit 1
     ;;
 esac
+
 
