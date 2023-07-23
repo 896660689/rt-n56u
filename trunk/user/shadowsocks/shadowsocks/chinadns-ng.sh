@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2023-03-06
+# Compile:by-lanse	2023-07-24
 
 modprobe xt_set
 modprobe ip_set_hash_ip
@@ -10,9 +10,10 @@ SSR_HOME="$STORAGE/shadowsocks"
 DNSMASQ_RURE="$STORAGE/dnsmasq/dnsmasq.conf"
 STORAGE_V2SH="$STORAGE/storage_v2ray.sh"
 ss_tunnel_local_port=$(nvram get ss-tunnel_local_port)
+ss_local_port=$(nvram get ss_local_port)
 wan_dns=$(nvram get wan_dns1_x)
 local_chnlist_file=/tmp/chnlist.txt
-cdn_url=https://cdn.jsdelivr.net/gh/896660689/OS/chnlist.txt
+cdn_url=https://cdn.jsdelivr.net/gh/Loyalsoldier/v2ray-rules-dat@release/direct-list.txt
 
 func_del_rule(){
     if [ -n "$(pidof chinadns-ng)" ] ; then
@@ -56,7 +57,8 @@ func_del_ipt(){
     $ipt -D CNNG_OUT -d 224.0.0.0/4 -j RETURN
     $ipt -D CNNG_OUT -d 240.0.0.0/4 -j RETURN
     #$ipt -D CNNG_PRE -m set --match-set gfwlist dst -j CNNG_OUT
-    $ipt -D CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports 1080
+    #$ipt -D CNNG_PRE -j CNNG_OUT
+    $ipt -D CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports $ss_local_port
 
     iptables-save -c | grep -v gateway | iptables-restore -c
     for setname in $(ipset -n list | grep "gateway"); do
@@ -75,6 +77,51 @@ cdn_file_d(){
     fi
 }
 
+ipset_init() {
+    ipset -! restore <<-EOF || return 1
+        create gfwlist hash:net hashsize 64
+        $(gen_wa_fw_ip | sed -e "s/^/add gfwlist /")
+EOF
+    return 0
+}
+
+gen_wa_fw_ip() {
+	cat <<-EOF | grep -E "^([0-9]{1,3}\.){3}[0-9]{1,3}"
+		216.58.200.238
+		217.160.0.201
+		172.217.160.78
+		172.217.24.3
+		172.217.160.110
+		104.244.42.129
+		104.18.9.230
+		104.18.27.103
+		67.228.126.62
+		176.9.146.200
+		46.4.7.165
+		195.201.59.244
+		136.243.22.80
+		78.46.27.186
+		85.10.210.166
+		91.108.12.0/22
+		91.108.4.0/22
+		91.108.8.0/22
+		91.108.16.0/22
+		91.108.20.0/22
+		91.108.36.0/23
+		91.108.38.0/23
+		91.108.56.0/22
+		149.154.160.0/20
+		149.154.164.0/22
+		204.246.176.0/20
+		149.154.172.0/22
+EOF
+}
+
+gfw_dns(){
+    dns2_ip=$(nvram get ss-tunnel_remote | awk -F '[:/]' '{print $1}')
+    ipset add gfwlist $dns2_ip 2>/dev/null
+}
+
 func_conf(){
     if grep -q "min-cache-ttl" "$DNSMASQ_RURE"
     then
@@ -84,9 +131,9 @@ func_conf(){
 min-cache-ttl=1800
 EOF
     fi
-    cdn_file_d &
-    wait
-    echo "cdn"
+    ipset_init && \
+    gfw_dns && \
+    cdn_file_d && sleep 5
     if [ -f "$local_chnlist_file" ]
     then
         /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute -M -m $local_chnlist_file >/dev/null 2>&1 &
@@ -163,7 +210,7 @@ $ipt -A PREROUTING -j CNNG_OUT
 $ipt -A OUTPUT -j CNNG_PRE
 $ipt -A CNNG_PRE -d $v2_address -p tcp -m tcp ! --dport 53 -j RETURN
 $ipt -A CNNG_PRE -m set --match-set gateway dst -j RETURN
-$ipt -A CNNG_PRE -m set --match-set chnroute dst -j RETURN
+#$ipt -A CNNG_PRE -m set --match-set chnroute dst -j RETURN
 $ipt -A CNNG_OUT -m set --match-set chnroute dst -j RETURN
 $ipt -A CNNG_OUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-ports 65353
 
@@ -178,8 +225,9 @@ $ipt -A CNNG_OUT -d 172.16.0.0/12 -j RETURN
 $ipt -A CNNG_OUT -d 192.168.0.0/16 -j RETURN
 $ipt -A CNNG_OUT -d 224.0.0.0/4 -j RETURN
 $ipt -A CNNG_OUT -d 240.0.0.0/4 -j RETURN
+#$ipt -A CNNG_PRE -j CNNG_OUT
 #$ipt -A CNNG_PRE -m set --match-set gfwlist dst -j CNNG_OUT
-$ipt -A CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports 1080
+$ipt -A CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports $ss_local_port
 
 cat <<-CAT >>$FWI
 iptables-save -c | grep -v CNNG_ | iptables-restore -c
