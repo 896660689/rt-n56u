@@ -1,22 +1,16 @@
-SRC_NAME=iptables-1.8.9
-SRC_URL=https://www.netfilter.org/projects/iptables/files/$(SRC_NAME).tar.xz
+SRC_NAME=iptables-1.8.7
 
 CFLAGS  += -ffunction-sections -fdata-sections
 LDFLAGS += -Wl,--gc-sections
 
 THISDIR = $(shell pwd)
 
-download_test:
-	( if [ ! -f $(SRC_NAME).tar.xz ]; then \
-		wget -t5 --timeout=20 --no-check-certificate -O $(SRC_NAME).tar.xz $(SRC_URL); \
-	fi )
-
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
-		tar -xvJf $(SRC_NAME).tar.xz; \
+		tar zxf $(SRC_NAME).tar.gz ; \
 	fi )
 
-all: download_test extract_test config_test
+all: extract_test config_test
 	$(MAKE) -C $(SRC_NAME)
 
 config_test:
@@ -34,21 +28,17 @@ configure:
 		--enable-static \
 		--disable-shared \
 		--disable-nftables \
-		--disable-connlabel \
 		--with-xtlibdir=/usr/lib/xtables \
+		--with-xt-lock-name=/var/run/xtables.lock \
 		--with-kernel=$(ROOTDIR)/$(LINUXDIR) \
-		--with-xt-lock-name="/var/lock/xtables.lock" \
 		$(if $(CONFIG_IPV6),--enable-ipv6,--disable-ipv6) \
 		--host=$(HOST_TARGET) \
 		--build=$(HOST_BUILD) ; \
 	)
 
 clean:
-	if [ -f $(SRC_NAME)/Makefile ] ; then \
-		$(MAKE) -C $(SRC_NAME) distclean ; \
-	fi ; \
+	rm -rf $(SRC_NAME)
 	rm -f config_done
-
 romfs:
 	mkdir -p $(ROMFSDIR)/usr/lib/xtables
 	$(ROMFSINST) $(THISDIR)/$(SRC_NAME)/iptables/xtables-legacy-multi /bin/xtables-legacy-multi
