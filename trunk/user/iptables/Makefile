@@ -1,17 +1,17 @@
-SRC_NAME=iptables-1.8.4
+SRC_NAME=iptables-1.8.7
 
 CFLAGS  += -ffunction-sections -fdata-sections
 LDFLAGS += -Wl,--gc-sections
 
 THISDIR = $(shell pwd)
 
-all: extract_test config_test
-	$(MAKE) -C $(SRC_NAME)
-
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
-		tar xvf $(SRC_NAME).tar.bz2 ; \
+		tar zxf $(SRC_NAME).tar.gz ; \
 	fi )
+
+all: extract_test config_test
+	$(MAKE) -C $(SRC_NAME)
 
 config_test:
 	( if [ -f ./config_done ]; then \
