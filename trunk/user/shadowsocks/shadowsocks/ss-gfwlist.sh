@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2020-06-28
+# Compile:by-lanse	2023-07-25
 
 modprobe xt_set
 modprobe ip_set_hash_ip
@@ -115,8 +115,15 @@ include_ac_rules() {
 	*$1
 	:gfwlist - [0:0]
 	-A gfwlist -d $SS_SERVER_LINK -j RETURN
-	-A gfwlist -d 127.0.0.0/8 -j RETURN
-	-A gfwlist -d 192.168.0.0/16 -j RETURN
+ -A gfwlist -d 0.0.0.0/8 -j RETURN
+ -A gfwlist -d 10.0.0.0/8 -j RETURN
+ -A gfwlist -d 127.0.0.0/8 -j RETURN
+ -A gfwlist -d 169.254.0.0/16 -j RETURN
+ -A gfwlist -d 172.16.0.0/12 -j RETURN
+ -A gfwlist -d 192.168.0.0/16 -j RETURN
+ -A gfwlist -d 224.0.0.0/4 -j RETURN
+ -A gfwlist -d 240.0.0.0/4 -j RETURN
+	-A gfwlist -m set --match-set chnroute dst -j RETURN
 	COMMIT
 EOF
 }
@@ -157,4 +164,3 @@ done
 flush_path && flush_rules && ipset_init && ipt_nat && export_ipt_rules
 [ "$?" = 0 ] || loger 3 "Start failed!"
 exit $?
-
