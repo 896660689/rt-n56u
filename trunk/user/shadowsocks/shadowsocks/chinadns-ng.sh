@@ -131,8 +131,8 @@ func_conf(){
 min-cache-ttl=1800
 EOF
     fi
-    ipset_init && \
-    gfw_dns && \
+    #ipset_init && \
+    #gfw_dns && \
     cdn_file_d && sleep 5
     if [ -f "$local_chnlist_file" ]
     then
@@ -273,4 +273,3 @@ stop)
     exit 1
     ;;
 esac
-
