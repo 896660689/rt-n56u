@@ -5,13 +5,13 @@ LDFLAGS += -Wl,--gc-sections
 
 THISDIR = $(shell pwd)
 
-extract_test:
-	( if [ ! -d $(SRC_NAME) ]; then \
-		tar zxf $(SRC_NAME).tar.gz ; \
-	fi )
-
 all: extract_test config_test
 	$(MAKE) -C $(SRC_NAME)
+
+extract_test:
+	( if [ ! -d $(SRC_NAME) ]; then \
+		tar xvf $(SRC_NAME).tar.bz2 ; \
+	fi )
 
 config_test:
 	( if [ -f ./config_done ]; then \
