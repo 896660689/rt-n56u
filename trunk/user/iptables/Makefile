@@ -28,9 +28,10 @@ configure:
 		--enable-static \
 		--disable-shared \
 		--disable-nftables \
+		--disable-connlabel \
 		--with-xtlibdir=/usr/lib/xtables \
-		--with-xt-lock-name=/var/run/xtables.lock \
 		--with-kernel=$(ROOTDIR)/$(LINUXDIR) \
+		--with-xt-lock-name=/var/run/xtables.lock \
 		$(if $(CONFIG_IPV6),--enable-ipv6,--disable-ipv6) \
 		--host=$(HOST_TARGET) \
 		--build=$(HOST_BUILD) ; \
