@@ -14,6 +14,9 @@ ss_local_port=$(nvram get ss_local_port)
 wan_dns=$(nvram get wan_dns1_x)
 local_chnlist_file=/tmp/chnlist.txt
 cdn_url=https://cdn.jsdelivr.net/gh/Loyalsoldier/v2ray-rules-dat@release/direct-list.txt
+local_gfwlist_file=/tmp/gfw.txt
+gfw_url=https://cdn.jsdelivr.net/gh/Loyalsoldier/v2ray-rules-dat@release/gfw.txt
+
 
 func_del_rule(){
     if [ -n "$(pidof chinadns-ng)" ] ; then
@@ -69,11 +72,19 @@ func_del_ipt(){
 }
 
 cdn_file_d(){
-    if [ ! -f "local_chnlist_file" ]
+    if [ ! -f "$local_chnlist_file" ]
     then
         curl -k -s -o $local_chnlist_file --connect-timeout 10 --retry 3 $cdn_url && \
         #wget -t 5 -T 10 -c --no-check-certificate -O- $cdn_url > $local_chnlist_file && \
         chmod 644 "$local_chnlist_file"
+    fi
+}
+
+gfw_file_d(){
+    if [ ! -f "$local_gfwlist_file" ]
+    then
+        curl -k -s -o $local_gfwlist_file --connect-timeout 10 --retry 3 $gfw_url && \
+        chmod 644 "$local_gfwlist_file"
     fi
 }
 
@@ -123,6 +134,7 @@ gfw_dns(){
 }
 
 func_conf(){
+    cdn_file_d && sleep 3
     if grep -q "min-cache-ttl" "$DNSMASQ_RURE"
     then
         echo ''
@@ -133,10 +145,15 @@ EOF
     fi
     #ipset_init && \
     #gfw_dns && \
-    cdn_file_d && sleep 5
+    gfw_file_d && sleep 3
     if [ -f "$local_chnlist_file" ]
     then
-        /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute -M -m $local_chnlist_file >/dev/null 2>&1 &
+        if [ -f "$local_gfwlist_file" ]
+        then
+            /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute -M -m $local_chnlist_file -g $local_gfwlist_file >/dev/null 2>&1 &
+	else
+            /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute -M -m $local_chnlist_file >/dev/null 2>&1 &
+	fi
     else
         /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
     fi
