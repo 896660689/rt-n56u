@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2023-07-24
+# Compile:by-lanse	2023-07-26
 
 modprobe xt_set
 modprobe ip_set_hash_ip
@@ -16,8 +16,6 @@ local_chnlist_file=/tmp/chnlist.txt
 cdn_url=https://cdn.jsdelivr.net/gh/896660689/OS/bypass-lan-china.acl
 local_gfwlist_file=/tmp/gfw.txt
 gfw_url=https://cdn.jsdelivr.net/gh/Loyalsoldier/v2ray-rules-dat@release/gfw.txt
-
-
 
 func_del_rule(){
     if [ -n "$(pidof chinadns-ng)" ] ; then
@@ -297,4 +295,5 @@ stop)
     exit 1
     ;;
 esac
+
 
