@@ -115,14 +115,24 @@ include_ac_rules() {
 	*$1
 	:gfwlist - [0:0]
 	-A gfwlist -d $SS_SERVER_LINK -j RETURN
- -A gfwlist -d 0.0.0.0/8 -j RETURN
- -A gfwlist -d 10.0.0.0/8 -j RETURN
- -A gfwlist -d 127.0.0.0/8 -j RETURN
- -A gfwlist -d 169.254.0.0/16 -j RETURN
- -A gfwlist -d 172.16.0.0/12 -j RETURN
- -A gfwlist -d 192.168.0.0/16 -j RETURN
- -A gfwlist -d 224.0.0.0/4 -j RETURN
- -A gfwlist -d 240.0.0.0/4 -j RETURN
+	-A gfwlist -d 0.0.0.0/8 -j RETURN
+	-A gfwlist -d 10.0.0.0/8 -j RETURN
+ 	-A gfwlist -d 100.64.0.0/10 -j RETURN
+	-A gfwlist -d 127.0.0.0/8 -j RETURN
+	-A gfwlist -d 169.254.0.0/16 -j RETURN
+	-A gfwlist -d 172.16.0.0/12 -j RETURN
+	-A gfwlist -d 192.0.0.0/24 -j RETURN
+ 	-A gfwlist -d 192.0.2.0/24 -j RETURN
+  	-A gfwlist -d 192.88.99.0/24 -j RETURN
+  	-A gfwlist -d 192.168.0.0/16 -j RETURN
+	-A gfwlist -d 198.18.0.0/15 -j RETURN
+	-A gfwlist -d 198.51.100.0/24 -j RETURN
+	-A gfwlist -d 169.254.0.0/16 -j RETURN
+	-A gfwlist -d 203.0.113.0/24 -j RETURN
+ 	-A gfwlist -d 224.0.0.0/4 -j RETURN
+	-A gfwlist -d 240.0.0.0/4 -j RETURN
+	-A gfwlist -d 255.255.255.255/32 -j RETURN
+ 
 	-A gfwlist -m set --match-set chnroute dst -j RETURN
 	COMMIT
 EOF
