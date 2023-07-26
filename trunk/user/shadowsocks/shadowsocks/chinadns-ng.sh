@@ -205,7 +205,6 @@ cat <<-EOF | grep -E "^([0-9]{1,3}\.){3}[0-9]{1,3}"
 203.0.113.0/24
 224.0.0.0/4
 240.0.0.0/4
-255.255.255.255/32
 EOF
 }
 
@@ -279,6 +278,7 @@ func_stop(){
     func_del_ipt && \
     logger -t "[CHINADNS-NG]" "已停止运行 !"
     [ -f $local_chnlist_file ] && rm -rf $local_chnlist_file
+    [ -f $local_gfwlist_file ] && rm -rf $local_gfwlist_file
     if [ $(nvram get ss_mode) = "3" ]
     then
         echo "V2RAY Not closed "
@@ -297,3 +297,4 @@ stop)
     exit 1
     ;;
 esac
+
