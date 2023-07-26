@@ -131,7 +131,6 @@ include_ac_rules() {
 	-A gfwlist -d 203.0.113.0/24 -j RETURN
  	-A gfwlist -d 224.0.0.0/4 -j RETURN
 	-A gfwlist -d 240.0.0.0/4 -j RETURN
-	-A gfwlist -d 255.255.255.255/32 -j RETURN
  
 	-A gfwlist -m set --match-set chnroute dst -j RETURN
 	COMMIT
@@ -174,3 +173,4 @@ done
 flush_path && flush_rules && ipset_init && ipt_nat && export_ipt_rules
 [ "$?" = 0 ] || loger 3 "Start failed!"
 exit $?
+
