@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2023-07-24
+# Compile:by-lanse	2023-07-26
 
 modprobe xt_set
 modprobe ip_set_hash_ip
@@ -12,8 +12,12 @@ STORAGE_V2SH="$STORAGE/storage_v2ray.sh"
 ss_tunnel_local_port=$(nvram get ss-tunnel_local_port)
 ss_local_port=$(nvram get ss_local_port)
 wan_dns=$(nvram get wan_dns1_x)
+dns2_ip=$(nvram get ss-tunnel_remote | awk -F '[:/]' '{print $1}')
+
 local_chnlist_file=/tmp/chnlist.txt
-cdn_url=https://cdn.jsdelivr.net/gh/Loyalsoldier/v2ray-rules-dat@release/direct-list.txt
+cdn_url=https://cdn.jsdelivr.net/gh/896660689/OS/bypass-lan-china.acl
+local_gfwlist_file=/tmp/gfw.txt
+gfw_url=https://cdn.jsdelivr.net/gh/Loyalsoldier/v2ray-rules-dat@release/gfw.txt
 
 func_del_rule(){
     if [ -n "$(pidof chinadns-ng)" ] ; then
@@ -56,6 +60,7 @@ func_del_ipt(){
     $ipt -D CNNG_OUT -d 192.168.0.0/16 -j RETURN
     $ipt -D CNNG_OUT -d 224.0.0.0/4 -j RETURN
     $ipt -D CNNG_OUT -d 240.0.0.0/4 -j RETURN
+    $ipt -D CNNG_OUT -p tcp -j RETURN -m mark --mark 0xff
     #$ipt -D CNNG_PRE -m set --match-set gfwlist dst -j CNNG_OUT
     #$ipt -D CNNG_PRE -j CNNG_OUT
     $ipt -D CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports $ss_local_port
@@ -64,16 +69,25 @@ func_del_ipt(){
     for setname in $(ipset -n list | grep "gateway"); do
         ipset destroy "$setname" 2>/dev/null
     done
-    $ipt -D PREROUTING -j CNNG_OUT
-    $ipt -D OUTPUT -j CNNG_PRE
+    $ipt -D PREROUTING -i br0 -p tcp -j CNNG_OUT
+    $ipt -D OUTPUT -p udp -d $dns2_ip --dport 53 -j REDIRECT --to-ports $ss_local_port
+    $ipt -D OUTPUT -p tcp -j CNNG_PRE
 }
 
 cdn_file_d(){
-    if [ ! -f "local_chnlist_file" ]
+    if [ ! -f "$local_chnlist_file" ]
     then
         curl -k -s -o $local_chnlist_file --connect-timeout 10 --retry 3 $cdn_url && \
         #wget -t 5 -T 10 -c --no-check-certificate -O- $cdn_url > $local_chnlist_file && \
         chmod 644 "$local_chnlist_file"
+    fi
+}
+
+gfw_file_d(){
+    if [ ! -f "$local_gfwlist_file" ]
+    then
+        curl -k -s -o $local_gfwlist_file --connect-timeout 10 --retry 3 $gfw_url && \
+        chmod 644 "$local_gfwlist_file"
     fi
 }
 
@@ -118,7 +132,6 @@ EOF
 }
 
 gfw_dns(){
-    dns2_ip=$(nvram get ss-tunnel_remote | awk -F '[:/]' '{print $1}')
     ipset add gfwlist $dns2_ip 2>/dev/null
 }
 
@@ -131,18 +144,23 @@ func_conf(){
 min-cache-ttl=1800
 EOF
     fi
-    ipset_init && \
-    gfw_dns && \
+    #ipset_init && \
+    #gfw_dns && \
     cdn_file_d && sleep 5
-    if [ -f "$local_chnlist_file" ]
-    then
-        /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute -M -m $local_chnlist_file >/dev/null 2>&1 &
+    gfw_file_d &
+    wait && echo "gfw"
+    if [ -f "$local_chnlist_file" ]; then
+        if [ -f "$local_gfwlist_file" ]; then
+            /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns,114.114.114.114 -t 127.0.0.1#$ss_tunnel_local_port -g $local_gfwlist_file -4 chnroute -M -m $local_chnlist_file >/dev/null 2>&1 &
+	else
+            /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns,114.114.114.114 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute -M -m $local_chnlist_file >/dev/null 2>&1 &
+	fi
     else
         /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
     fi
     if [ $(nvram get sdns_enable) = "1" ]; then
         if grep -q "no-resolv" "$DNSMASQ_RURE"
-        then
+	then
             echo ''
         else
             cat >> $DNSMASQ_RURE << EOF
@@ -175,13 +193,20 @@ gen_lan_ip(){
 cat <<-EOF | grep -E "^([0-9]{1,3}\.){3}[0-9]{1,3}"
 0.0.0.0/8
 10.0.0.0/8
+100.64.0.0/10
 127.0.0.0/8
 169.254.0.0/16
 172.16.0.0/12
+192.0.0.0/24
 192.0.2.0/24
+192.88.99.0/24
 192.168.0.0/16
+198.18.0.0/15
+198.51.100.0/24
+203.0.113.0/24
 224.0.0.0/4
 240.0.0.0/4
+255.255.255.255/32
 EOF
 }
 
@@ -206,15 +231,17 @@ ipt="iptables -t nat"
 $ipt -N CNNG_OUT
 $ipt -N CNNG_PRE
 
-$ipt -A PREROUTING -j CNNG_OUT
-$ipt -A OUTPUT -j CNNG_PRE
+$ipt -A PREROUTING -i br0 -p tcp -j CNNG_OUT
+$ipt -A OUTPUT -p tcp -j CNNG_PRE
+$ipt -A OUTPUT -p udp -d $dns2_ip --dport 53 -j REDIRECT --to-ports $ss_local_port
+
 $ipt -A CNNG_PRE -d $v2_address -p tcp -m tcp ! --dport 53 -j RETURN
 $ipt -A CNNG_PRE -m set --match-set gateway dst -j RETURN
 #$ipt -A CNNG_PRE -m set --match-set chnroute dst -j RETURN
 $ipt -A CNNG_OUT -m set --match-set chnroute dst -j RETURN
 $ipt -A CNNG_OUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-ports 65353
-
 $ipt -A CNNG_OUT -p tcp -j CNNG_PRE
+$ipt -A CNNG_OUT -p tcp -j RETURN -m mark --mark 0xff
 $ipt -A CNNG_PRE -p tcp -j REDIRECT --to-ports 12345
 
 $ipt -A CNNG_OUT -d 0.0.0.0/8 -j RETURN
@@ -225,6 +252,8 @@ $ipt -A CNNG_OUT -d 172.16.0.0/12 -j RETURN
 $ipt -A CNNG_OUT -d 192.168.0.0/16 -j RETURN
 $ipt -A CNNG_OUT -d 224.0.0.0/4 -j RETURN
 $ipt -A CNNG_OUT -d 240.0.0.0/4 -j RETURN
+$ipt -A CNNG_OUT -d 255.255.255.255/32 -j RETURN
+
 #$ipt -A CNNG_PRE -j CNNG_OUT
 #$ipt -A CNNG_PRE -m set --match-set gfwlist dst -j CNNG_OUT
 $ipt -A CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports $ss_local_port
@@ -247,14 +276,17 @@ func_start(){
     wait
     echo "dns"
     func_conf
+    sh $SSR_HOME/tproxy.sh start && \
     logger -t "[CHINADNS-NG]" "开始运行…"
 }
 
 func_stop(){
     func_del_rule && \
     func_del_ipt && \
+    sh $SSR_HOME/tproxy.sh stop
     logger -t "[CHINADNS-NG]" "已停止运行 !"
     [ -f $local_chnlist_file ] && rm -rf $local_chnlist_file
+    [ -f $local_gfwlist_file ] && rm -rf $local_gfwlist_file
     if [ $(nvram get ss_mode) = "3" ]
     then
         echo "V2RAY Not closed "
@@ -273,5 +305,4 @@ stop)
     exit 1
     ;;
 esac
-
 
