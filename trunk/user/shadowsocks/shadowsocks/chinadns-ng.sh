@@ -51,7 +51,7 @@ func_del_ipt(){
     $ipt -D CNNG_OUT -m set --match-set chnroute dst -j RETURN
     $ipt -D CNNG_OUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-ports 65353
     $ipt -D CNNG_OUT -p tcp -j CNNG_PRE
-    $ipt -D CNNG_OUT -p tcp -j RETURN -m mark --mark 0xff
+    $ipt -D CNNG_PRE -p tcp -j RETURN -m mark --mark 0xff
     $ipt -D CNNG_PRE -p tcp -j REDIRECT --to-ports 12345
     $ipt -D CNNG_OUT -d 0.0.0.0/8 -j RETURN
     $ipt -D CNNG_OUT -d 10.0.0.0/8 -j RETURN
@@ -239,7 +239,7 @@ $ipt -A CNNG_PRE -m set --match-set gateway dst -j RETURN
 $ipt -A CNNG_OUT -m set --match-set chnroute dst -j RETURN
 $ipt -A CNNG_OUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-ports 65353
 $ipt -A CNNG_OUT -p tcp -j CNNG_PRE
-$ipt -A CNNG_OUT -p tcp -j RETURN -m mark --mark 0xff
+$ipt -A CNNG_PRE -p tcp -j RETURN -m mark --mark 0xff
 $ipt -A CNNG_PRE -p tcp -j REDIRECT --to-ports 12345
 
 $ipt -A CNNG_OUT -d 0.0.0.0/8 -j RETURN
