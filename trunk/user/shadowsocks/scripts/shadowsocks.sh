@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2023-07-13
+# Compile:by-lanse	2023-07-27
 
 export PATH=$PATH:/etc/storage/shadowsocks
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etc/storage/shadowsocks
@@ -384,8 +384,8 @@ func_start(){
             loger $ss_bin "ShadowsocksR Start up" || { ss-rules -f && loger $ss_bin "ShadowsocksR Start fail!"; }
         fi
         func_cron && \
-        /sbin/restart_dhcpd
-        wait
+        restart_dhcpd
+        wait && \
         logger -t "[ShadowsocksR]" "开始运行…"
     else
         exit 0
@@ -397,12 +397,12 @@ func_stop(){
     /usr/bin/ss-tunnel.sh stop &
     /bin/sh $SSR_HOME/chinadns-ng.sh stop &
     /bin/sh $SSR_HOME/redsocks.sh stop &
-    /bin/sh $SSR_HOME/v2ray.sh stop && sleep 5
-    func_ss_Close && \
+    /bin/sh $SSR_HOME/v2ray.sh stop &
+    sleep 3 && func_ss_Close && \
     ipt_ss_del && \
     func_ss_down &
-    /sbin/restart_dhcpd
-    wait
+    restart_dhcpd
+    wait && restart_firewall &
     logger -t "[ShadowsocksR]" "已停止运行!"
 }
 
@@ -425,5 +425,4 @@ restart)
     exit 1
     ;;
 esac
-
 
