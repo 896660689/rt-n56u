@@ -384,7 +384,7 @@ func_start(){
             loger $ss_bin "ShadowsocksR Start up" || { ss-rules -f && loger $ss_bin "ShadowsocksR Start fail!"; }
         fi
         func_cron && \
-        restart_dhcpd
+        /sbin/restart_dhcpd
         wait && \
         logger -t "[ShadowsocksR]" "开始运行…"
     else
@@ -401,7 +401,7 @@ func_stop(){
     sleep 3 && func_ss_Close && \
     ipt_ss_del && \
     func_ss_down &
-    restart_dhcpd
+    /sbin/restart_dhcpd
     wait && restart_firewall &
     logger -t "[ShadowsocksR]" "已停止运行!"
 }
