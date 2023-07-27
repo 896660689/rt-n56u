@@ -51,6 +51,7 @@ func_del_ipt(){
     $ipt -D CNNG_OUT -m set --match-set chnroute dst -j RETURN
     $ipt -D CNNG_OUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-ports 65353
     $ipt -D CNNG_OUT -p tcp -j CNNG_PRE
+    $ipt -D CNNG_OUT -p tcp -j RETURN -m mark --mark 0xff
     $ipt -D CNNG_PRE -p tcp -j REDIRECT --to-ports 12345
     $ipt -D CNNG_OUT -d 0.0.0.0/8 -j RETURN
     $ipt -D CNNG_OUT -d 10.0.0.0/8 -j RETURN
@@ -60,7 +61,6 @@ func_del_ipt(){
     $ipt -D CNNG_OUT -d 192.168.0.0/16 -j RETURN
     $ipt -D CNNG_OUT -d 224.0.0.0/4 -j RETURN
     $ipt -D CNNG_OUT -d 240.0.0.0/4 -j RETURN
-    $ipt -D CNNG_OUT -p tcp -j RETURN -m mark --mark 0xff
     #$ipt -D CNNG_PRE -m set --match-set gfwlist dst -j CNNG_OUT
     #$ipt -D CNNG_PRE -j CNNG_OUT
     $ipt -D CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports $ss_local_port
@@ -70,7 +70,6 @@ func_del_ipt(){
         ipset destroy "$setname" 2>/dev/null
     done
     $ipt -D PREROUTING -i br0 -p tcp -j CNNG_OUT
-    $ipt -D OUTPUT -p udp -d $dns2_ip --dport 53 -j REDIRECT --to-ports $ss_local_port
     $ipt -D OUTPUT -p tcp -j CNNG_PRE
 }
 
@@ -233,7 +232,6 @@ $ipt -N CNNG_PRE
 
 $ipt -A PREROUTING -i br0 -p tcp -j CNNG_OUT
 $ipt -A OUTPUT -p tcp -j CNNG_PRE
-$ipt -A OUTPUT -p udp -d $dns2_ip --dport 53 -j REDIRECT --to-ports $ss_local_port
 
 $ipt -A CNNG_PRE -d $v2_address -p tcp -m tcp ! --dport 53 -j RETURN
 $ipt -A CNNG_PRE -m set --match-set gateway dst -j RETURN
