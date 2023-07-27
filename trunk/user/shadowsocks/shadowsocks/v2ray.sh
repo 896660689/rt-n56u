@@ -155,7 +155,7 @@ v2_tmp_json(){
         "enabled": true,
         "concurrency": 8
       },
-      "tag": "proxy",
+      "tag": "direct",
       "streamSettings": {
         "network": "$v2_docking_mode",
         "security": "$v2_tls",
