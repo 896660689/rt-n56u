@@ -135,7 +135,7 @@ EOF
             /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns,114.114.114.114 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute -M -m $local_chnlist_file >/dev/null 2>&1 &
 	fi
     else
-        /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
+        /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns,114.114.114.114 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
     fi
     if [ $(nvram get sdns_enable) = "1" ]; then
         if grep -q "no-resolv" "$DNSMASQ_RURE"
