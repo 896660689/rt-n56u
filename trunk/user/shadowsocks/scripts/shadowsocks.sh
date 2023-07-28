@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2023-07-27
+# Compile:by-lanse	2023-07-29
 
 export PATH=$PATH:/etc/storage/shadowsocks
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etc/storage/shadowsocks
@@ -125,6 +125,7 @@ func_ss_Close(){
     if [ -n "$(pidof pdnsd)" ] ; then
         killall pdnsd >/dev/null 2>&1
         kill -9 "$(pidof pdnsd)" >/dev/null 2>&1
+        restart_dns
     fi
     if grep -q "ssr-watchcat" "$TIME_SCRIPT"
     then
