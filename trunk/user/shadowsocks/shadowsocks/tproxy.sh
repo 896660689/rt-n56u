@@ -11,6 +11,7 @@ start_iptables() {
 
     # connection-mark -> packet-mark
     iptables -t mangle -A CNNG_OUT -j CONNMARK --restore-mark
+    iptables -t mangle -A CNNG_OUT -m mark --mark 0x2333 -j RETURN
 
     # please modify MyIP, MyPort, etc.
     # ignore traffic sent to ss-server
@@ -62,6 +63,7 @@ stop_iptables() {
     ##################### PREROUTING #####################
     iptables -t mangle -D PREROUTING -p tcp -m mark --mark 0x2333 -j TPROXY --on-ip 127.0.0.1 --on-port "$forwarding_port" &>/dev/null
     iptables -t mangle -D PREROUTING -p udp -m mark --mark 0x2333 -j TPROXY --on-ip 127.0.0.1 --on-port "$forwarding_port" &>/dev/null
+    iptables -t mangle -D CNNG_OUT -m mark --mark 0x2333 -j RETURN
 
     iptables -t mangle -D PREROUTING -p tcp -m addrtype ! --src-type LOCAL ! --dst-type LOCAL -j CNNG_OUT &>/dev/null
     iptables -t mangle -D PREROUTING -p udp -m addrtype ! --src-type LOCAL ! --dst-type LOCAL -j CNNG_OUT &>/dev/null
