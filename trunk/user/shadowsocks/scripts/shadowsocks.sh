@@ -139,6 +139,7 @@ func_ss_Close(){
     if grep -q "gfwlist" "$DNSMASQ_RURE"
     then
         sed -i '/listen-address/d; /min-cache/d; /gfwlist/d; /log/d' $DNSMASQ_RURE &
+        restart_dhcpd
     fi
 }
 
@@ -383,8 +384,7 @@ func_start(){
             echo "run"
             loger $ss_bin "ShadowsocksR Start up" || { ss-rules -f && loger $ss_bin "ShadowsocksR Start fail!"; }
         fi
-        func_cron && \
-        /sbin/restart_dhcpd
+        func_cron &
         wait && \
         logger -t "[ShadowsocksR]" "开始运行…"
     else
@@ -401,7 +401,6 @@ func_stop(){
     sleep 3 && func_ss_Close && \
     ipt_ss_del && \
     func_ss_down &
-    /sbin/restart_dhcpd
     wait && restart_firewall &
     logger -t "[ShadowsocksR]" "已停止运行!"
 }
