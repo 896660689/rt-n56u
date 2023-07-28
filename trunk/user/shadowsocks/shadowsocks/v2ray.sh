@@ -13,7 +13,9 @@ SS_LOCAL_PORT_LINK=$(nvram get ss_local_port)
 ss_tunnel_local_port=$(nvram get ss-tunnel_local_port)
 SS_LAN_IP=$(nvram get lan_ipaddr)
 local_chnlist_file=/tmp/chnlist.txt
-cdn_url=https://cdn.jsdelivr.net/gh/896660689/OS/chnlist.txt
+cdn_url=https://cdn.jsdelivr.net/gh/896660689/OS/bypass-lan-china.acl
+local_gfwlist_file=/tmp/gfw.txt
+gfw_url=https://cdn.jsdelivr.net/gh/Loyalsoldier/v2ray-rules-dat@release/gfw.txt
 
 V2RUL=/tmp/V2mi.txt
 
@@ -191,7 +193,7 @@ func_china_file(){
         sleep 3 && \
         awk '!/^$/&&!/^#/{printf("add chnroute %s'" "'\n",$0)}' $dir_chnroute_file | ipset restore &
     fi
-    cdn_file_d &
+    sleep 2 cdn_file_d && sleep 3 && gfw_file_d &
 }
 
 cdn_file_d(){
@@ -200,6 +202,14 @@ cdn_file_d(){
         curl -k -s -o $local_chnlist_file --connect-timeout 10 --retry 3 $cdn_url && \
         #wget -t 5 -T 10 -c --no-check-certificate -O- $cdn_url > $local_chnlist_file && \
         chmod 644 "$local_chnlist_file"
+    fi
+}
+
+gfw_file_d(){
+    if [ ! -f "$local_gfwlist_file" ]
+    then
+        curl -k -s -o $local_gfwlist_file --connect-timeout 10 --retry 3 $gfw_url && \
+        chmod 644 "$local_gfwlist_file"
     fi
 }
 
@@ -215,11 +225,10 @@ func_start(){
     then
         func_Del_rule && \
         func_china_file &
+        wait && echo "cdn+gfw"
         echo -e "\033[41;37m 部署 [v2ray] 文件,请稍后...\e[0m\n"
         v2_server_file && \
         func_download &
-        wait
-        echo ""
         func_v2_running &
         logger -t "[v2ray]" "开始运行…"
     else
