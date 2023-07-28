@@ -15,9 +15,7 @@ wan_dns=$(nvram get wan_dns1_x)
 dns2_ip=$(nvram get ss-tunnel_remote | awk -F '[:/]' '{print $1}')
 
 local_chnlist_file=/tmp/chnlist.txt
-cdn_url=https://cdn.jsdelivr.net/gh/896660689/OS/bypass-lan-china.acl
 local_gfwlist_file=/tmp/gfw.txt
-gfw_url=https://cdn.jsdelivr.net/gh/Loyalsoldier/v2ray-rules-dat@release/gfw.txt
 
 func_del_rule(){
     if [ -n "$(pidof chinadns-ng)" ] ; then
@@ -62,7 +60,6 @@ func_del_ipt(){
     $ipt -D CNNG_OUT -d 224.0.0.0/4 -j RETURN
     $ipt -D CNNG_OUT -d 240.0.0.0/4 -j RETURN
     #$ipt -D CNNG_PRE -m set --match-set gfwlist dst -j CNNG_OUT
-    #$ipt -D CNNG_PRE -j CNNG_OUT
     $ipt -D CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports $ss_local_port
 
     iptables-save -c | grep -v gateway | iptables-restore -c
@@ -71,23 +68,6 @@ func_del_ipt(){
     done
     $ipt -D PREROUTING -i br0 -p tcp -j CNNG_OUT
     $ipt -D OUTPUT -p tcp -j CNNG_PRE
-}
-
-cdn_file_d(){
-    if [ ! -f "$local_chnlist_file" ]
-    then
-        curl -k -s -o $local_chnlist_file --connect-timeout 10 --retry 3 $cdn_url && \
-        #wget -t 5 -T 10 -c --no-check-certificate -O- $cdn_url > $local_chnlist_file && \
-        chmod 644 "$local_chnlist_file"
-    fi
-}
-
-gfw_file_d(){
-    if [ ! -f "$local_gfwlist_file" ]
-    then
-        curl -k -s -o $local_gfwlist_file --connect-timeout 10 --retry 3 $gfw_url && \
-        chmod 644 "$local_gfwlist_file"
-    fi
 }
 
 ipset_init() {
@@ -145,9 +125,6 @@ EOF
     fi
     #ipset_init && \
     #gfw_dns && \
-    cdn_file_d && sleep 5
-    gfw_file_d &
-    wait && echo "gfw"
     if [ -f "$local_chnlist_file" ]; then
         if [ -f "$local_gfwlist_file" ]; then
             /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns,114.114.114.114 -t 127.0.0.1#$ss_tunnel_local_port -g $local_gfwlist_file -4 chnroute -M -m $local_chnlist_file >/dev/null 2>&1 &
@@ -252,9 +229,8 @@ $ipt -A CNNG_OUT -d 224.0.0.0/4 -j RETURN
 $ipt -A CNNG_OUT -d 240.0.0.0/4 -j RETURN
 $ipt -A CNNG_OUT -d 255.255.255.255/32 -j RETURN
 
-#$ipt -A CNNG_PRE -j CNNG_OUT
-#$ipt -A CNNG_PRE -m set --match-set gfwlist dst -j CNNG_OUT
 $ipt -A CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports $ss_local_port
+#$ipt -A CNNG_PRE -m set --match-set gfwlist dst -j CNNG_OUT
 
 cat <<-CAT >>$FWI
 iptables-save -c | grep -v CNNG_ | iptables-restore -c
