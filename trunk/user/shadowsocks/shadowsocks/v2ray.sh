@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2023-03-06
+# Compile:by-lanse	2023-07-29
 
 v2_home="/tmp/v2fly"
 v2_json="$v2_home/config.json"
@@ -193,7 +193,6 @@ func_china_file(){
         sleep 3 && \
         awk '!/^$/&&!/^#/{printf("add chnroute %s'" "'\n",$0)}' $dir_chnroute_file | ipset restore &
     fi
-    sleep 2 cdn_file_d && sleep 3 && gfw_file_d &
 }
 
 cdn_file_d(){
@@ -225,7 +224,10 @@ func_start(){
     then
         func_Del_rule && \
         func_china_file &
-        wait && echo "cdn+gfw"
+        seep 3
+        cdn_file_d && \
+        gfw_file_d &
+        wait && \
         echo -e "\033[41;37m 部署 [v2ray] 文件,请稍后...\e[0m\n"
         v2_server_file && \
         func_download &
