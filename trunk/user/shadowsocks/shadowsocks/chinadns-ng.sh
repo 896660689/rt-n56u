@@ -53,12 +53,15 @@ func_del_ipt(){
     $ipt -D CNNG_PRE -p tcp -j REDIRECT --to-ports 12345
     $ipt -D CNNG_OUT -d 0.0.0.0/8 -j RETURN
     $ipt -D CNNG_OUT -d 10.0.0.0/8 -j RETURN
+    $ipt -D CNNG_OUT -d 100.64.0.0/10 -j RETURN
     $ipt -D CNNG_OUT -d 127.0.0.0/8 -j RETURN
     $ipt -D CNNG_OUT -d 169.254.0.0/16 -j RETURN
     $ipt -D CNNG_OUT -d 172.16.0.0/12 -j RETURN
     $ipt -D CNNG_OUT -d 192.168.0.0/16 -j RETURN
     $ipt -D CNNG_OUT -d 224.0.0.0/4 -j RETURN
     $ipt -D CNNG_OUT -d 240.0.0.0/4 -j RETURN
+    $ipt -D CNNG_OUT -d 255.255.255.255/32 -j RETURN
+
     #$ipt -D CNNG_PRE -m set --match-set gfwlist dst -j CNNG_OUT
     $ipt -D CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports $ss_local_port
 
@@ -221,6 +224,7 @@ $ipt -A CNNG_PRE -p tcp -j REDIRECT --to-ports 12345
 
 $ipt -A CNNG_OUT -d 0.0.0.0/8 -j RETURN
 $ipt -A CNNG_OUT -d 10.0.0.0/8 -j RETURN
+$ipt -A CNNG_OUT -d 100.64.0.0/10 -j RETURN
 $ipt -A CNNG_OUT -d 127.0.0.0/8 -j RETURN
 $ipt -A CNNG_OUT -d 169.254.0.0/16 -j RETURN
 $ipt -A CNNG_OUT -d 172.16.0.0/12 -j RETURN
