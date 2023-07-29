@@ -5,13 +5,15 @@ all :
 	( if [ ! -f chnroute.txt ]; then \
 		wget -t3 -4 --timeout=5 -O chnroute.txt.tmp '$(url)' && \
 		awk -F\| '/CN\|ipv4/ { printf("%s/%d\n", $$4, 32-log($$5)/log(2)) }' < chnroute.txt.tmp > chnroute.txt && \
-		rm -f chnroute.txt.tmp && tar jcf chnroute.bz2 chnroute.txt ;\
+		rm -f chnroute.txt.tmp && tar jcf chnroute.bz2 chnroute.txt && \
+		tar jcf chnlist.bz2 chnlist.txt ; \
 	fi )
 
 romfs:
 	chmod -R +x ./scripts
 	$(ROMFSINST) $(THISDIR)/scripts/ /usr/bin/
 	$(ROMFSINST) -d $(THISDIR)/chnroute.bz2 /etc_ro/chnroute.bz2
+	$(ROMFSINST) -d $(THISDIR)/chnlist.bz2 /etc_ro/chnlist.bz2
 
 clean :
 	rm -f chnroute.*
