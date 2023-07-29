@@ -13,7 +13,6 @@ SS_LOCAL_PORT_LINK=$(nvram get ss_local_port)
 ss_tunnel_local_port=$(nvram get ss-tunnel_local_port)
 SS_LAN_IP=$(nvram get lan_ipaddr)
 local_chnlist_file=/tmp/chnlist.txt
-cdn_url=https://cdn.jsdelivr.net/gh/896660689/OS/bypass-lan-china.acl
 local_gfwlist_file=/tmp/gfw.txt
 gfw_url=https://cdn.jsdelivr.net/gh/Loyalsoldier/v2ray-rules-dat@release/gfw.txt
 
@@ -196,10 +195,8 @@ func_china_file(){
 }
 
 cdn_file_d(){
-    if [ ! -f "local_chnlist_file" ]
-    then
-        curl -k -s -o $local_chnlist_file --connect-timeout 10 --retry 3 $cdn_url && \
-        #wget -t 5 -T 10 -c --no-check-certificate -O- $cdn_url > $local_chnlist_file && \
+    if [ ! -f "$local_chnlist_file" ] || [ ! -s "$local_chnlist_file" ] ; then
+        tar jxf "/etc_ro/chnlist.bz2" -C "/tmp"
         chmod 644 "$local_chnlist_file"
     fi
 }
@@ -224,7 +221,7 @@ func_start(){
     then
         func_Del_rule && \
         func_china_file &
-        seep 3
+        seep 2
         cdn_file_d && \
         gfw_file_d &
         wait && \
@@ -249,6 +246,8 @@ func_stop(){
         [ -d "$v2_home" ] && rm -rf $v2_home
     fi
     [ -f "$V2RUL" ] && rm -rf $V2RUL
+    [ -f "$local_chnlist_file" ] && rm -rf $local_chnlist_file
+    [ -f "$local_gfwlist_file" ] && rm -rf $local_gfwlist_file
     [ -f "/var/run/v2ray-watchdog.pid" ] && rm -rf /var/run/v2ray-watchdog.pid
     logger -t "[v2ray]" "已停止运行 !"
 }
