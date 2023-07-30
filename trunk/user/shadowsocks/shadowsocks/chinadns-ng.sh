@@ -254,14 +254,12 @@ func_start(){
     wait
     echo "dns"
     func_conf
-    sh $SSR_HOME/tproxy.sh start && \
     logger -t "[CHINADNS-NG]" "开始运行…"
 }
 
 func_stop(){
     func_del_rule && \
     func_del_ipt && \
-    sh $SSR_HOME/tproxy.sh stop
     logger -t "[CHINADNS-NG]" "已停止运行 !"
     [ -f $local_chnlist_file ] && rm -rf $local_chnlist_file
     [ -f $local_gfwlist_file ] && rm -rf $local_gfwlist_file
