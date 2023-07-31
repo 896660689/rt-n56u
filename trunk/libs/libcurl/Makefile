@@ -1,5 +1,5 @@
-SRC_NAME=curl-8.1.1
-SRC_URL=https://github.com/curl/curl/releases/download/curl-8_1_1/curl-8.1.1.tar.xz
+SRC_NAME=curl-8.1.2
+SRC_URL=https://github.com/curl/curl/releases/download/curl-8_1_2/curl-8.1.2.tar.xz
 
 LDFLAGS += -Wl,-rpath-link=$(STAGEDIR)/lib
 
@@ -29,7 +29,7 @@ configure:
 	./configure \
 		--prefix=$(STAGEDIR) \
 		--enable-static \
-		--disable-shared \
+		--enable-shared \
 		$(if $(CONFIG_IPV6),--enable-ipv6,--disable-ipv6) \
 		--disable-gopher \
 		--disable-ldap \
@@ -55,10 +55,11 @@ configure:
 		--without-libssh2 \
 		--without-krb4 \
 		--without-nss \
+		--without-ca-path \
+		--with-ca-bundle=/etc/ssl/certs/ca-certificates.crt \
 		--with-random=/dev/urandom \
 		--with-zlib=$(STAGEDIR) \
 		--with-ssl=$(STAGEDIR) \
-		--with-ca-bundle=/etc/ssl/cert.pem \
 		--host=$(HOST_TARGET) \
 		--build=$(HOST_BUILD) ; \
 	)
