@@ -95,14 +95,6 @@ v2_tmp_json(){
     "error": "none",
     "loglevel": "warning"
   },
-  "dns": {
-    "servers": [
-      "1.1.1.1",
-      "8.8.8.8",
-      "208.67.220.220",
-      "localhost"
-    ]
-  },
   "policy": {
     "levels": {
       "5": {
