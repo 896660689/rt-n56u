@@ -42,6 +42,8 @@ func_del_ipt(){
         }
         sleep 2 && flush_iptables net
     fi
+    ip rule del fwmark 0x01/0x01 table 100 2>/dev/null
+    ip route del local 0.0.0.0/0 dev lo table 100 2>/dev/null
     ipt="iptables -t nat"
     $ipt -D CNNG_PRE -d $v2_address -p tcp -m tcp ! --dport 53 -j RETURN
     $ipt -D CNNG_PRE -m set --match-set gateway dst -j RETURN
@@ -162,6 +164,8 @@ EOF
 }
 
 func_gmlan(){
+ip rule add fwmark 0x01/0x01 table 100 2>/dev/null
+ip route add local 0.0.0.0/0 dev lo table 100 2>/dev/null
 ipset -! restore <<-EOF
 create gateway hash:net hashsize 64
 $(gen_lan_ip | sed -e "s/^/add gateway /")
