@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2023-03-06
+# Compile:by-lanse	2023-07-29
 
 export PATH=$PATH:/etc/storage/shadowsocks
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etc/storage/shadowsocks
@@ -125,6 +125,7 @@ func_ss_Close(){
     if [ -n "$(pidof pdnsd)" ] ; then
         killall pdnsd >/dev/null 2>&1
         kill -9 "$(pidof pdnsd)" >/dev/null 2>&1
+        restart_dns
     fi
     if grep -q "ssr-watchcat" "$TIME_SCRIPT"
     then
@@ -139,6 +140,7 @@ func_ss_Close(){
     if grep -q "gfwlist" "$DNSMASQ_RURE"
     then
         sed -i '/listen-address/d; /min-cache/d; /gfwlist/d; /log/d' $DNSMASQ_RURE &
+        restart_dhcpd
     fi
 }
 
@@ -166,7 +168,6 @@ youtube.com
 youneed.win
 livestream.com
 githubusercontent.com
-gtv.org
 
 EOF
         chmod 644 $STORAGE/ss_dom.sh
@@ -360,10 +361,10 @@ func_start(){
         else
             func_chnroute_file &
         fi
-        wait
-        echo "mode"
         func_gfwlist_list && \
         func_port_agent_mode &
+        wait
+        echo "mode"
         if [ "$ss_mode" = "3" ]
         then
             logger -t "[v2ray]" "开始部署 [v2ray] 代理模式..."
@@ -384,9 +385,8 @@ func_start(){
             echo "run"
             loger $ss_bin "ShadowsocksR Start up" || { ss-rules -f && loger $ss_bin "ShadowsocksR Start fail!"; }
         fi
-        func_cron && \
-        /sbin/restart_dhcpd
-        wait
+        func_cron &
+        wait && \
         logger -t "[ShadowsocksR]" "开始运行…"
     else
         exit 0
@@ -402,7 +402,6 @@ func_stop(){
     func_ss_Close && \
     ipt_ss_del && \
     func_ss_down &
-    /sbin/restart_dhcpd
     wait
     logger -t "[ShadowsocksR]" "已停止运行!"
 }
@@ -426,4 +425,3 @@ restart)
     exit 1
     ;;
 esac
-
