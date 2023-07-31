@@ -1942,14 +1942,12 @@ static int shadowsocks_status_hook(int eid, webs_t wp, int argc, char **argv)
 	if (ss_status_code == 0){
 		ss_status_code = pids("v2ray");
 	}
-	if (ss_status_code == 0){
-		ss_status_code = pids("trojan");
-	}
 	websWrite(wp, "function shadowsocks_status() { return %d;}\n", ss_status_code);
 	int ss_tunnel_status_code = pids("ss-local");
 	websWrite(wp, "function shadowsocks_tunnel_status() { return %d;}\n", ss_tunnel_status_code);
 	return 0;
 }
+#endif
 
 static int rules_count_hook(int eid, webs_t wp, int argc, char **argv)
 {
@@ -1981,8 +1979,6 @@ static int rules_count_hook(int eid, webs_t wp, int argc, char **argv)
 #endif
 	return 0;
 }
-
-#endif
 
 #if defined(APP_SHADOWSOCKS)
 static int dnsforwarder_status_hook(int eid, webs_t wp, int argc, char **argv)
@@ -4156,4 +4152,3 @@ struct ej_handler ej_handlers[] =
 	{ "openvpn_cli_cert_hook", openvpn_cli_cert_hook},
 	{ NULL, NULL }
 };
-
