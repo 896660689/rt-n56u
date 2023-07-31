@@ -3,7 +3,7 @@
 pidfile="/var/v2-watchcat"
 SSR_HOME="$STORAGE/shadowsocks"
 SS_SCRIPT="/usr/bin/shadowsocks.sh"
-Global_WEBSITE="http://www.google.com/"
+Global_WEBSITE="https://www.google.com/"
 CN_WEBSITE="www.baidu.com"
 
 LOGFILE="/tmp/ss-watchcat.log"
