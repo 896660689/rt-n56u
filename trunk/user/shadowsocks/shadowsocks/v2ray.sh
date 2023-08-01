@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2023-03-06
+# Compile:by-lanse	2023-07-29
 
 v2_home="/tmp/v2fly"
 v2_json="$v2_home/config.json"
@@ -12,6 +12,9 @@ STORAGE_V2SH="$STORAGE/storage_v2ray.sh"
 SS_LOCAL_PORT_LINK=$(nvram get ss_local_port)
 ss_tunnel_local_port=$(nvram get ss-tunnel_local_port)
 SS_LAN_IP=$(nvram get lan_ipaddr)
+local_chnlist_file=/tmp/chnlist.txt
+local_gfwlist_file=/tmp/gfw.txt
+gfw_url=https://cdn.jsdelivr.net/gh/Loyalsoldier/v2ray-rules-dat@release/gfw.txt
 
 V2RUL=/tmp/V2mi.txt
 
@@ -153,7 +156,7 @@ v2_tmp_json(){
         "enabled": true,
         "concurrency": 8
       },
-      "tag": "proxy",
+      "tag": "direct",
       "streamSettings": {
         "network": "$v2_docking_mode",
         "security": "$v2_tls",
@@ -191,6 +194,21 @@ func_china_file(){
     fi
 }
 
+cdn_file_d(){
+    if [ ! -f "$local_chnlist_file" ] || [ ! -s "$local_chnlist_file" ] ; then
+        tar jxf "/etc_ro/chnlist.bz2" -C "/tmp"
+        chmod 644 "$local_chnlist_file"
+    fi
+}
+
+gfw_file_d(){
+    if [ ! -f "$local_gfwlist_file" ]
+    then
+        curl -k -s -o $local_gfwlist_file --connect-timeout 10 --retry 3 $gfw_url && \
+        chmod 644 "$local_gfwlist_file"
+    fi
+}
+
 func_v2_running(){
     v2_addmi
     v2_tmp_json
@@ -202,12 +220,13 @@ func_start(){
     if [ "$ss_mode" = "3" ]
     then
         func_Del_rule && \
-        func_china_file &
+        func_china_file && seep 3
+        cdn_file_d && seep 3
+        gfw_file_d &
+        wait && \
         echo -e "\033[41;37m 部署 [v2ray] 文件,请稍后...\e[0m\n"
         v2_server_file && \
-        func_download &
-        wait
-        echo ""
+        func_download && \
         func_v2_running &
         logger -t "[v2ray]" "开始运行…"
     else
@@ -226,6 +245,8 @@ func_stop(){
         [ -d "$v2_home" ] && rm -rf $v2_home
     fi
     [ -f "$V2RUL" ] && rm -rf $V2RUL
+    [ -f "$local_chnlist_file" ] && rm -rf $local_chnlist_file
+    [ -f "$local_gfwlist_file" ] && rm -rf $local_gfwlist_file
     [ -f "/var/run/v2ray-watchdog.pid" ] && rm -rf /var/run/v2ray-watchdog.pid
     logger -t "[v2ray]" "已停止运行 !"
 }
@@ -245,4 +266,5 @@ v2_file)
     exit 1
     ;;
 esac
+
 
