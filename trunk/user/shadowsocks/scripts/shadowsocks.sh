@@ -378,12 +378,16 @@ func_start(){
             echo -e "\033[41;37m 部署 [ShadowsocksR] 文件,请稍后...\e[0m\n"
             func_gen_ss_json && \
             func_gen_ss2_json && \
-            ln -sf $ss_json.main $ss_json && \
-            func_start_ss_redir && \
-            func_start_ss_rules &
-            wait
-            echo "run"
-            loger $ss_bin "ShadowsocksR Start up" || { ss-rules -f && loger $ss_bin "ShadowsocksR Start fail!"; }
+            ln -sf $ss_json.main $ss_json &
+            if [ "$ss_mode" = "2" ]
+            then
+                echo "gfw"
+            else
+                func_start_ss_redir && \
+                func_start_ss_rules &
+                wait
+                loger $ss_bin "ShadowsocksR Start up" || { ss-rules -f && loger $ss_bin "ShadowsocksR Start fail!"; }
+            fi
         fi
         func_cron &
         wait && \
@@ -425,3 +429,4 @@ restart)
     exit 1
     ;;
 esac
+
