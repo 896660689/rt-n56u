@@ -220,14 +220,13 @@ func_start(){
     if [ "$ss_mode" = "3" ]
     then
         func_Del_rule && \
-        func_china_file &
-        seep 2
-        cdn_file_d && \
+        func_china_file && seep 3
+        cdn_file_d && seep 3
         gfw_file_d &
         wait && \
         echo -e "\033[41;37m 部署 [v2ray] 文件,请稍后...\e[0m\n"
         v2_server_file && \
-        func_download &
+        func_download && \
         func_v2_running &
         logger -t "[v2ray]" "开始运行…"
     else
@@ -267,4 +266,5 @@ v2_file)
     exit 1
     ;;
 esac
+
 
