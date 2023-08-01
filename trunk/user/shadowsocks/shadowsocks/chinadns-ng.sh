@@ -31,18 +31,7 @@ func_del_rule(){
 }
 
 func_del_ipt(){
-    if [ $(nvram get ss_enable) = "0" ]
-    then
-        flush_iptables(){
-            ipt="iptables -t $1"
-            DAT=$(iptables-save -t $1)
-            eval $(echo "$DAT" | grep "CNNG" | sed -e 's/^-A/$ipt -D/' -e 's/$/;/')
-            for chain in $(echo "$DAT" | awk '/^:CNNG/{print $1}'); do
-                $ipt -F ${chain:1} 2>/dev/null && $ipt -X ${chain:1}
-            done
-        }
-        sleep 2 && flush_iptables net
-    fi
+    ipt="iptables -t nat"
     ip rule del fwmark 0x01/0x01 table 100 2>/dev/null
     ip route del local 0.0.0.0/0 dev lo table 100 2>/dev/null
     ipt="iptables -t nat"
@@ -65,6 +54,10 @@ func_del_ipt(){
     
     $ipt -D CNNG_PRE -m set --match-set gfwlist dst -j CNNG_OUT
     $ipt -D CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports $ss_local_port
+    $ipt -F CNNG_OUT
+    $ipt -X CNNG_OUT
+    $ipt -F CNNG_PRE
+    $ipt -X CNNG_PRE
 
     iptables-save -c | grep -v gateway | iptables-restore -c
     for setname in $(ipset -n list | grep "gateway"); do
@@ -282,4 +275,5 @@ stop)
     exit 1
     ;;
 esac
+
 
