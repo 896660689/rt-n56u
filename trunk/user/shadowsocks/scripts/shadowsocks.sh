@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2023-07-29
+# Compile:by-lanse	2023-08-02
 
 export PATH=$PATH:/etc/storage/shadowsocks
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etc/storage/shadowsocks
@@ -227,13 +227,13 @@ func_gfwlist_import(){
     if [ -s "$STORAGE/ss_dom.sh" ]
     then
         cat $STORAGE/ss_dom.sh | grep -v '^#' | grep -v "^$" \
-        |sed -e "/.*/s/.*/server=\/&\/127.0.0.1#"$ss_tunnel_local_port"\nipset=\/&\/gfwlist/" > $STORAGE/gfwlist/gfw_custom.conf && \
+        |sed -e "/.*/s/.*/server=\/&\/$SS2_SERVER_LINK#"$ss_tunnel_local_port"\nipset=\/&\/gfwlist/" > $STORAGE/gfwlist/gfw_custom.conf && \
         chmod 644 $STORAGE/gfwlist/gfw_custom.conf
     fi
     if [ -s "$STORAGE/ss_pc.sh" ]
     then
         cat $STORAGE/ss_pc.sh | grep -v '^#' | grep -v "^$" \
-        |awk '{printf("server=/%s/127.0.0.1\n", $1, $1 )}' >> $STORAGE/dnsmasq/dnsmasq.conf && \
+        |awk '{printf("server=/%s/$SS2_SERVER_LINK\n", $1, $1 )}' >> $STORAGE/dnsmasq/dnsmasq.conf && \
         cat $STORAGE/dnsmasq/dnsmasq.conf |awk '!a[$0]++' > $STORAGE/dnsmasq/dmq2.servers && \
         mv -f $STORAGE/dnsmasq/dmq2.servers $STORAGE/dnsmasq/dnsmasq.conf
     fi
@@ -269,7 +269,7 @@ func_port_agent_mode(){
         logger "Local agent"
     elif [ "$ss_router_proxy" = "2" ]
     then
-        /usr/bin/dns-forwarder -b 127.0.0.1 -p $ss_tunnel_local_port -s $ss_tunnel_remote >/dev/null 2>&1 &
+        /usr/bin/dns-forwarder -b $SS2_SERVER_LINK -p $ss_tunnel_local_port -s $ss_tunnel_remote >/dev/null 2>&1 &
         logger -t "[DNS]" "使用 [dns-forwarder] 解析方式 !"
     elif [ "$ss_router_proxy" = "3" ]
     then
@@ -281,7 +281,7 @@ func_port_agent_mode(){
         logger -t "[DNS]" "使用 [pdnsd] 解析方式 !"
     elif [ "$ss_router_proxy" = "5" ]
     then
-        /usr/bin/dns2tcp -L127.0.0.1#$ss_tunnel_local_port -R"$dns2_port" >/dev/null 2>&1 &
+        /usr/bin/dns2tcp -L $SS2_SERVER_LINK#$ss_tunnel_local_port -R"$dns2_port" >/dev/null 2>&1 &
         logger -t "[DNS]" "使用 [dns2tcp] 解析方式 !"
     else
         logger -t "[DNS]" "未开启代理解析 !"
@@ -338,7 +338,7 @@ func_v2fly(){
 }
 
 func_redsocks(){
-    /bin/sh $SSR_HOME/redsocks.sh start 127.0.0.1 $SS_LOCAL_PORT_LINK
+    /bin/sh $SSR_HOME/redsocks.sh start $SS2_SERVER_LINK $SS_LOCAL_PORT_LINK
     if [ -f /tmp/V2mi.txt ] ; then
         v2_address=$(cat /tmp/V2mi.txt | grep "add:" | awk -F '[:/]' '{print $2}')
         /bin/sh $SSR_HOME/redsocks.sh iptables $v2_address
@@ -369,10 +369,10 @@ func_start(){
         then
             logger -t "[v2ray]" "开始部署 [v2ray] 代理模式..."
             func_v2fly && \
-            func_redsocks &
+            func_redsocks && \
+            func_chinadns_ng &
             wait
             echo "v2"
-            func_chinadns_ng &
             restart_firewall &
         else
             echo -e "\033[41;37m 部署 [ShadowsocksR] 文件,请稍后...\e[0m\n"
@@ -390,7 +390,7 @@ func_start(){
             fi
         fi
         func_cron &
-        wait && \
+        wait
         logger -t "[ShadowsocksR]" "开始运行…"
     else
         exit 0
@@ -402,7 +402,7 @@ func_stop(){
     /usr/bin/ss-tunnel.sh stop &
     /bin/sh $SSR_HOME/chinadns-ng.sh stop &
     /bin/sh $SSR_HOME/redsocks.sh stop &
-    /bin/sh $SSR_HOME/v2ray.sh stop && sleep 5
+    /bin/sh $SSR_HOME/v2ray.sh stop && sleep 3
     func_ss_Close && \
     ipt_ss_del && \
     func_ss_down &
@@ -429,4 +429,6 @@ restart)
     exit 1
     ;;
 esac
+
+
 
