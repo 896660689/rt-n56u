@@ -9,6 +9,7 @@ STORAGE="/etc/storage"
 SSR_HOME="$STORAGE/shadowsocks"
 DNSMASQ_RURE="$STORAGE/dnsmasq/dnsmasq.conf"
 STORAGE_V2SH="$STORAGE/storage_v2ray.sh"
+SS_SERVER_LINK=$(nvram get ss_server)
 ss_tunnel_local_port=$(nvram get ss-tunnel_local_port)
 ss_local_port=$(nvram get ss_local_port)
 wan_dns=$(nvram get wan_dns1_x)
@@ -49,10 +50,11 @@ func_del_ipt(){
     $ipt -D CNNG_PRE -m set --match-set gateway dst -j RETURN
     #$ipt -D CNNG_PRE -m set --match-set chnroute dst -j RETURN
     $ipt -D CNNG_OUT -m set --match-set chnroute dst -j RETURN
-    $ipt -D CNNG_OUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-ports 65353
+    $ipt -D CNNG_OUT -p udp -d $SS_SERVER_LINK --dport 53 -j REDIRECT --to-ports 65353
     $ipt -D CNNG_OUT -p tcp -j CNNG_PRE
     $ipt -D CNNG_PRE -p tcp -j RETURN -m mark --mark 0xff
     $ipt -D CNNG_PRE -p tcp -j REDIRECT --to-ports 12345
+    $ipt -D CNNG_OUT -d $SS_SERVER_LINK -j RETURN
     $ipt -D CNNG_OUT -d 0.0.0.0/8 -j RETURN
     $ipt -D CNNG_OUT -d 10.0.0.0/8 -j RETURN
     $ipt -D CNNG_OUT -d 127.0.0.0/8 -j RETURN
@@ -129,12 +131,12 @@ EOF
     gfw_dns && \
     if [ -f "$local_chnlist_file" ]; then
         if [ -f "$local_gfwlist_file" ]; then
-            /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns,114.114.114.114 -t 127.0.0.1#$ss_tunnel_local_port -g $local_gfwlist_file -4 chnroute -M -m $local_chnlist_file >/dev/null 2>&1 &
+            /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns,114.114.114.114 -t $SS_SERVER_LINK#$ss_tunnel_local_port -g $local_gfwlist_file -4 chnroute -M -m $local_chnlist_file >/dev/null 2>&1 &
 	else
-            /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns,114.114.114.114 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute -M -m $local_chnlist_file >/dev/null 2>&1 &
+            /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns,114.114.114.114 -t $SS_SERVER_LINK#$ss_tunnel_local_port -4 chnroute -M -m $local_chnlist_file >/dev/null 2>&1 &
 	fi
     else
-        /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns,114.114.114.114 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
+        /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns,114.114.114.114 -t $SS_SERVER_LINK#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
     fi
     if [ $(nvram get sdns_enable) = "1" ]; then
         if grep -q "no-resolv" "$DNSMASQ_RURE"
@@ -218,11 +220,12 @@ $ipt -A CNNG_PRE -d $v2_address -p tcp -m tcp ! --dport 53 -j RETURN
 $ipt -A CNNG_PRE -m set --match-set gateway dst -j RETURN
 #$ipt -A CNNG_PRE -m set --match-set chnroute dst -j RETURN
 $ipt -A CNNG_OUT -m set --match-set chnroute dst -j RETURN
-$ipt -A CNNG_OUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-ports 65353
+$ipt -A CNNG_OUT -p udp -d $SS_SERVER_LINK --dport 53 -j REDIRECT --to-ports 65353
 $ipt -A CNNG_OUT -p tcp -j CNNG_PRE
 $ipt -A CNNG_PRE -p tcp -j RETURN -m mark --mark 0xff
 $ipt -A CNNG_PRE -p tcp -j REDIRECT --to-ports 12345
 
+$ipt -A CNNG_OUT -d $SS_SERVER_LINK -j RETURN
 $ipt -A CNNG_OUT -d 0.0.0.0/8 -j RETURN
 $ipt -A CNNG_OUT -d 10.0.0.0/8 -j RETURN
 $ipt -A CNNG_OUT -d 127.0.0.0/8 -j RETURN
