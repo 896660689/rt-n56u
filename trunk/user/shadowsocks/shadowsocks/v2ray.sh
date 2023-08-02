@@ -14,7 +14,6 @@ ss_tunnel_local_port=$(nvram get ss-tunnel_local_port)
 SS_LAN_IP=$(nvram get lan_ipaddr)
 local_chnlist_file=/tmp/chnlist.txt
 local_gfwlist_file=/tmp/gfw.txt
-gfw_url=https://cdn.jsdelivr.net/gh/Loyalsoldier/v2ray-rules-dat@release/gfw.txt
 
 V2RUL=/tmp/V2mi.txt
 
@@ -196,15 +195,7 @@ func_china_file(){
 cdn_file_d(){
     if [ ! -f "$local_chnlist_file" ] || [ ! -s "$local_chnlist_file" ] ; then
         tar jxf "/etc_ro/chnlist.bz2" -C "/tmp"
-        chmod 644 "$local_chnlist_file"
-    fi
-}
-
-gfw_file_d(){
-    if [ ! -f "$local_gfwlist_file" ]
-    then
-        curl -k -s -o $local_gfwlist_file --connect-timeout 10 --retry 3 $gfw_url && \
-        chmod 644 "$local_gfwlist_file"
+        chmod 644 "$local_chnlist_file $local_gfwlist_file"
     fi
 }
 
@@ -221,8 +212,6 @@ func_start(){
         func_Del_rule && \
         func_china_file && seep 3
         cdn_file_d && seep 3
-        gfw_file_d &
-        wait && \
         echo -e "\033[41;37m 部署 [v2ray] 文件,请稍后...\e[0m\n"
         v2_server_file && \
         func_download && \
