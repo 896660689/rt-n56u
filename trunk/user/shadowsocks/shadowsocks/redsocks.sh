@@ -104,7 +104,6 @@ $ipt -A $CHAIN_NAME -d 0.0.0.0/8 -j RETURN
 $ipt -A $CHAIN_NAME -d 127.0.0.0/8 -j RETURN
 $ipt -A $CHAIN_NAME -d 172.16.0.0/12 -j RETURN
 $ipt -A $CHAIN_NAME -d 192.168.0.0/16 -j RETURN
-$ipt -A $CHAIN_NAME -d 224.0.0.0/4 -j RETURN
 $ipt -A $CHAIN_NAME -d 240.0.0.0/4 -j RETURN
 $ipt -A $CHAIN_NAME -m set --match-set chnroute dst -j RETURN
 $ipt -A $CHAIN_NAME -p tcp -j REDIRECT --to-ports 12345
@@ -156,7 +155,6 @@ $ipt -D $CHAIN_NAME -d 0.0.0.0/8 -j RETURN
 $ipt -D $CHAIN_NAME -d 127.0.0.0/8 -j RETURN
 $ipt -D $CHAIN_NAME -d 172.16.0.0/12 -j RETURN
 $ipt -D $CHAIN_NAME -d 192.168.0.0/16 -j RETURN
-$ipt -D $CHAIN_NAME -d 224.0.0.0/4 -j RETURN
 $ipt -D $CHAIN_NAME -d 240.0.0.0/4 -j RETURN
 $ipt -D $CHAIN_NAME -m set --match-set chnroute dst -j RETURN
 $ipt -D $CHAIN_NAME -p tcp -j REDIRECT --to-ports 12345
