@@ -99,7 +99,6 @@ flush_ipt_rules(){
 ipt="iptables -t nat"
 $ipt -N $CHAIN_NAME
 
-$ipt -A $CHAIN_NAME -d $REMOTE_IP -j RETURN
 $ipt -A $CHAIN_NAME -d 0.0.0.0/8 -j RETURN
 $ipt -A $CHAIN_NAME -d 127.0.0.0/8 -j RETURN
 $ipt -A $CHAIN_NAME -d 172.16.0.0/12 -j RETURN
