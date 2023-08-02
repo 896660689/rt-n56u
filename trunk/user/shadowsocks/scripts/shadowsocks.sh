@@ -361,10 +361,10 @@ func_start(){
         else
             func_chnroute_file &
         fi
-        func_gfwlist_list && \
-        func_port_agent_mode &
         wait
         echo "mode"
+        func_gfwlist_list && \
+        func_port_agent_mode &
         if [ "$ss_mode" = "3" ]
         then
             logger -t "[v2ray]" "开始部署 [v2ray] 代理模式..."
@@ -429,6 +429,4 @@ restart)
     exit 1
     ;;
 esac
-
-
 
