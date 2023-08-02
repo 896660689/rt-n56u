@@ -46,7 +46,7 @@ ss2_obfs_param=$(nvram get ss2_obfs_param)
 dns2_ip=$(nvram get ss-tunnel_remote | awk -F '[:/]' '{print $1}')
 dns2_port=$(nvram get ss-tunnel_remote | sed 's/:/#/g')
 
-check_music(){
+check_music() {
 if [ $(nvram get wyy_enable) = "1" ]; then
     logger -t "[ShadowsocksR]" "系统检测到音乐解锁或 [SMT] 正在运行, 请改变使用 [gfwlist] 以外其它代理模式, 再重启 [ShadowsocksR], 程序将退出!"
     nvram get ss_enable=0
@@ -54,6 +54,7 @@ if [ $(nvram get wyy_enable) = "1" ]; then
 fi
 }
 
+func_ss_ssr() {
 if [ "${SS_TYPE:-0}" = "0" ] ; then
     ln -sf /usr/bin/ss-orig-redir $ss_proc
 elif [ "${SS_TYPE:-0}" = "1" ] ; then
@@ -63,6 +64,7 @@ elif [ "${SS_TYPE:-0}" = "1" ] ; then
     ss_obfs_param=$(nvram get ss_obfs_param)
     ln -sf /usr/bin/ssr-redir $ss_proc
 fi
+}
 
 loger() {
     logger -st "$1" "$2"
@@ -75,14 +77,14 @@ get_arg_udp() {
     fi
 }
 
-get_arg_out(){
+get_arg_out() {
     if [ "$ss_router_proxy" = "1" ]
     then
         echo "-o"
     fi
 }
 
-get_wan_bp_list(){
+get_wan_bp_list() {
     wanip="$(nvram get wan_ipaddr)"
     [ -n "$wanip" ] && [ "$wanip" != "0.0.0.0" ] && bp="-b $wanip" || bp=""
     if [ "$ss_mode" = "1" ]
@@ -92,7 +94,7 @@ get_wan_bp_list(){
     echo "$bp"
 }
 
-get_ipt_ext(){
+get_ipt_ext() {
     if [ "$ss_lower_port_only" = "1" ]
     then
         echo '-e "--dport 22:1023"'
@@ -102,18 +104,18 @@ get_ipt_ext(){
     fi
 }
 
-func_start_ss_redir(){
+func_start_ss_redir() {
     sh -c "$ss_bin -c $ss_json $(get_arg_udp) & "
     return $?
 }
 
-func_start_ss_rules(){
+func_start_ss_rules() {
     ss-rules -f
     sh -c "ss-rules -s $SS_SERVER_LINK -l $SS_LOCAL_PORT_LINK $(get_wan_bp_list) -d SS_SPEC_WAN_AC $(get_ipt_ext) $(get_arg_out) $(get_arg_udp)"
     return $?
 }
 
-func_ss_Close(){
+func_ss_Close() {
     loger $ss_bin "stop"; ss-rules -f &
     if [ -n "$(pidof ss-redir)" ] ; then
         killall ss-redir >/dev/null 2>&1
@@ -144,7 +146,7 @@ func_ss_Close(){
     fi
 }
 
-func_ss_down(){
+func_ss_down() {
     if [ "$SS_ENABLE" = "0" ]
     then
         [ -f /tmp/ss-redir.json ] && rm -rf /tmp/ss-redir.json && sleep 1
@@ -158,7 +160,7 @@ func_ss_down(){
     fi
 }
 
-func_gfwlist_list(){
+func_gfwlist_list() {
     if [ ! -f "$STORAGE/ss_dom.sh" ] || [ ! -s "$STORAGE/ss_dom.sh" ]
     then
         cat > "$STORAGE/ss_dom.sh" <<EOF
@@ -185,7 +187,7 @@ EOF
     sh $SSR_HOME/v2ray.sh v2_file
 }
 
-func_gen_ss_json(){
+func_gen_ss_json() {
     cat > "$ss_json.main" <<EOF
 {
     "server": "$SS_SERVER_LINK",
@@ -204,7 +206,7 @@ func_gen_ss_json(){
 EOF
 }
 
-func_gen_ss2_json(){
+func_gen_ss2_json() {
     cat > "$ss_json.backup" <<EOF
 {
     "server": "$SS2_SERVER_LINK",
@@ -223,7 +225,7 @@ func_gen_ss2_json(){
 EOF
 }
 
-func_gfwlist_import(){
+func_gfwlist_import() {
     if [ -s "$STORAGE/ss_dom.sh" ]
     then
         cat $STORAGE/ss_dom.sh | grep -v '^#' | grep -v "^$" \
@@ -239,7 +241,7 @@ func_gfwlist_import(){
     fi
 }
 
-func_chnroute_file(){
+func_chnroute_file() {
     if [ ! -f "$dir_chnroute_file" ] || [ ! -s "$dir_chnroute_file" ] ; then
         [ ! -d $STORAGE/chinadns ] && mkdir -p "$STORAGE/chinadns"
         tar jxf "/etc_ro/chnroute.bz2" -C "$STORAGE/chinadns"
@@ -247,7 +249,7 @@ func_chnroute_file(){
     fi
 }
 
-func_gfwlist_file(){
+func_gfwlist_file() {
     sh $SSR_HOME/update_gfwlist.sh force &
     sleep 2
     func_gfwlist_import
@@ -262,7 +264,7 @@ func_gfwlist_file(){
     fi
 }
 
-func_port_agent_mode(){
+func_port_agent_mode() {
     if [ "$ss_router_proxy" = "1" ]
     then
         killall -q pdnsd && killall -q dns-forwarder && killall -q dnsproxy && killall -q dns2tcp &
@@ -288,7 +290,7 @@ func_port_agent_mode(){
     fi
 }
 
-func_cron(){
+func_cron() {
     if [ "$SS_WATCHCAT" = "1" ] ; then
         if [ "$ss_mode" = "3" ]
         then
@@ -309,7 +311,7 @@ EOF
     fi
 }
 
-dog_restart(){
+dog_restart() {
     if [ -n "$(pidof ss-redir)" ] ; then
         killall ss-redir >/dev/null 2>&1
         kill -9 "$(pidof ss-redir)" >/dev/null 2>&1
@@ -317,27 +319,25 @@ dog_restart(){
     sleep 2 && $ss_bin -c $ss_json -b 0.0.0.0 -l $SS_LOCAL_PORT_LINK >/dev/null 2>&1 &
 }
 
-ipt_ss_del()
-{
+ipt_ss_del() {
     iptables-save -c | grep -v "gfwlist" | iptables-restore -c
     for setname in $(ipset -n list | grep "gfwlist"); do
         ipset destroy "$setname" 2>/dev/null
     done
 }
 
-func_sshome_file(){
-    [ ! -f "$ss_folder" ] && sleep 8
+func_sshome_file() {
     if [ ! -d "$SSR_HOME" ] ; then
         sleep 10 && tar zxf "$ss_folder" -C "$STORAGE" && \
         /sbin/mtd_storage.sh save
     fi
 }
 
-func_v2fly(){
+func_v2fly() {
     /bin/sh $SSR_HOME/v2ray.sh start
 }
 
-func_redsocks(){
+func_redsocks() {
     /bin/sh $SSR_HOME/redsocks.sh start $SS2_SERVER_LINK $SS_LOCAL_PORT_LINK
     if [ -f /tmp/V2mi.txt ] ; then
         v2_address=$(cat /tmp/V2mi.txt | grep "add:" | awk -F '[:/]' '{print $2}')
@@ -345,11 +345,11 @@ func_redsocks(){
     fi
 }
 
-func_chinadns_ng(){
+func_chinadns_ng() {
     /bin/sh $SSR_HOME/chinadns-ng.sh start
 }
 
-func_start(){
+func_start() {
     ulimit -n 65536
     if [ "$SS_ENABLE" = "1" ]
     then
@@ -373,6 +373,7 @@ func_start(){
             func_chinadns_ng &
         else
             echo -e "\033[41;37m 部署 [ShadowsocksR] 文件,请稍后...\e[0m\n"
+            func_ss_ssr && \
             func_gen_ss_json && \
             func_gen_ss2_json && \
             ln -sf $ss_json.main $ss_json &
@@ -394,7 +395,7 @@ func_start(){
     fi
 }
 
-func_stop(){
+func_stop() {
     nvram set ss-tunnel_enable=0
     /usr/bin/ss-tunnel.sh stop &
     /bin/sh $SSR_HOME/chinadns-ng.sh stop &
