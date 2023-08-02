@@ -368,11 +368,10 @@ func_start(){
         if [ "$ss_mode" = "3" ]
         then
             logger -t "[v2ray]" "开始部署 [v2ray] 代理模式..."
-            func_v2fly && \
+            func_v2fly && wait \
             func_redsocks && \
             func_chinadns_ng &
-            wait
-            echo "v2"
+            wait \
             restart_firewall &
         else
             echo -e "\033[41;37m 部署 [ShadowsocksR] 文件,请稍后...\e[0m\n"
