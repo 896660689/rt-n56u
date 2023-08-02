@@ -18,6 +18,17 @@ dns2_ip=$(nvram get ss-tunnel_remote | awk -F '[:/]' '{print $1}')
 local_chnlist_file=/tmp/chnlist.txt
 local_gfwlist_file=/tmp/gfw.txt
 
+func_v2txt(){
+V2RUL=/tmp/V2mi.txt
+[ ! -f "$V2RUL" ] && $SSR_HOME/v2ray.sh v2txt_d
+if grep -q "vmess" "$STORAGE_V2SH"
+then
+    v2_address=$(sed -n "2p" $V2RUL | cut -f 2 -d ":")
+else
+    v2_address=$(cat $STORAGE_V2SH | grep "address" | awk -F '[:/]' '{print $2}')
+fi
+}
+
 func_del_rule(){
     if [ -n "$(pidof chinadns-ng)" ] ; then
         killall chinadns-ng >/dev/null 2>&1
@@ -34,7 +45,6 @@ func_del_ipt(){
     ipt="iptables -t nat"
     ip rule del fwmark 0x01/0x01 table 100 2>/dev/null
     ip route del local 0.0.0.0/0 dev lo table 100 2>/dev/null
-    ipt="iptables -t nat"
     $ipt -D CNNG_PRE -d $v2_address -p tcp -m tcp ! --dport 53 -j RETURN
     $ipt -D CNNG_PRE -m set --match-set gateway dst -j RETURN
     $ipt -D CNNG_OUT -m set --match-set chnroute dst -j RETURN
@@ -190,14 +200,6 @@ return 0
 }
 
 func_ipt_n(){
-if grep -q "vmess" "$STORAGE_V2SH"
-then
-    V2RUL=/tmp/V2mi.txt
-    v2_address=$(sed -n "2p" $V2RUL | cut -f 2 -d ":")
-else
-    v2_address=$(cat $STORAGE_V2SH | grep "address" | awk -F '[:/]' '{print $2}')
-fi
-sleep 2
 ipt="iptables -t nat"
 
 $ipt -N CNNG_OUT
@@ -235,6 +237,7 @@ return 0
 }
 
 func_start(){
+    func_v2txt && \
     func_del_rule && \
     echo -e "\033[41;37m 部署 [CHINADNS-NG] 文件,请稍后...\e[0m\n"
     func_del_ipt
@@ -246,6 +249,7 @@ func_start(){
 }
 
 func_stop(){
+    func_v2txt && \
     func_del_rule && \
     func_del_ipt &
     [ -f $local_chnlist_file ] && rm -rf $local_chnlist_file
@@ -269,5 +273,4 @@ stop)
     exit 1
     ;;
 esac
-
 
