@@ -37,13 +37,11 @@ func_del_ipt(){
     ipt="iptables -t nat"
     $ipt -D CNNG_PRE -d $v2_address -p tcp -m tcp ! --dport 53 -j RETURN
     $ipt -D CNNG_PRE -m set --match-set gateway dst -j RETURN
-    #$ipt -D CNNG_PRE -m set --match-set chnroute dst -j RETURN
     $ipt -D CNNG_OUT -m set --match-set chnroute dst -j RETURN
     $ipt -D CNNG_OUT -p udp -d $SS_SERVER_LINK --dport 53 -j REDIRECT --to-ports 65353
     $ipt -D CNNG_OUT -p tcp -j CNNG_PRE
     $ipt -D CNNG_PRE -p tcp -j RETURN -m mark --mark 0xff
     $ipt -D CNNG_PRE -p tcp -j REDIRECT --to-ports 12345
-    $ipt -D CNNG_OUT -d $SS_SERVER_LINK -j RETURN
     $ipt -D CNNG_OUT -d 0.0.0.0/8 -j RETURN
     $ipt -D CNNG_OUT -d 10.0.0.0/8 -j RETURN
     $ipt -D CNNG_OUT -d 127.0.0.0/8 -j RETURN
@@ -52,7 +50,6 @@ func_del_ipt(){
     $ipt -D CNNG_OUT -d 224.0.0.0/4 -j RETURN
     $ipt -D CNNG_OUT -d 240.0.0.0/4 -j RETURN
     
-    $ipt -D CNNG_PRE -m set --match-set gfwlist dst -j CNNG_OUT
     $ipt -D CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports $ss_local_port
     $ipt -F CNNG_OUT
     $ipt -X CNNG_OUT
@@ -76,34 +73,34 @@ EOF
 }
 
 gen_wa_fw_ip() {
-	cat <<-EOF | grep -E "^([0-9]{1,3}\.){3}[0-9]{1,3}"
-		216.58.200.238
-		217.160.0.201
-		172.217.160.78
-		172.217.24.3
-		172.217.160.110
-		104.244.42.129
-		104.18.9.230
-		104.18.27.103
-		67.228.126.62
-		176.9.146.200
-		46.4.7.165
-		195.201.59.244
-		136.243.22.80
-		78.46.27.186
-		85.10.210.166
-		91.108.12.0/22
-		91.108.4.0/22
-		91.108.8.0/22
-		91.108.16.0/22
-		91.108.20.0/22
-		91.108.36.0/23
-		91.108.38.0/23
-		91.108.56.0/22
-		149.154.160.0/20
-		149.154.164.0/22
-		204.246.176.0/20
-		149.154.172.0/22
+    cat <<-EOF | grep -E "^([0-9]{1,3}\.){3}[0-9]{1,3}"
+216.58.200.238
+217.160.0.201
+172.217.160.78
+172.217.24.3
+172.217.160.110
+104.244.42.129
+104.18.9.230
+104.18.27.103
+67.228.126.62
+176.9.146.200
+46.4.7.165
+195.201.59.244
+136.243.22.80
+78.46.27.186
+85.10.210.166
+91.108.12.0/22
+91.108.4.0/22
+91.108.8.0/22
+91.108.16.0/22
+91.108.20.0/22
+91.108.36.0/23
+91.108.38.0/23
+91.108.56.0/22
+149.154.160.0/20
+149.154.164.0/22
+204.246.176.0/20
+149.154.172.0/22
 EOF
 }
 
@@ -165,7 +162,7 @@ EOF
 }
 
 gen_lan_ip(){
-cat <<-EOF | grep -E "^([0-9]{1,3}\.){3}[0-9]{1,3}"
+    cat <<-EOF | grep -E "^([0-9]{1,3}\.){3}[0-9]{1,3}"
 0.0.0.0/8
 10.0.0.0/8
 100.64.0.0/10
@@ -211,14 +208,12 @@ $ipt -I OUTPUT -p tcp -j CNNG_PRE
 
 $ipt -A CNNG_PRE -d $v2_address -p tcp -m tcp ! --dport 53 -j RETURN
 $ipt -A CNNG_PRE -m set --match-set gateway dst -j RETURN
-#$ipt -A CNNG_PRE -m set --match-set chnroute dst -j RETURN
 $ipt -A CNNG_OUT -m set --match-set chnroute dst -j RETURN
 $ipt -A CNNG_OUT -p udp -d $SS_SERVER_LINK --dport 53 -j REDIRECT --to-ports 65353
 $ipt -A CNNG_OUT -p tcp -j CNNG_PRE
 $ipt -A CNNG_PRE -p tcp -j RETURN -m mark --mark 0xff
 $ipt -A CNNG_PRE -p tcp -j REDIRECT --to-ports 12345
 
-$ipt -A CNNG_OUT -d $SS_SERVER_LINK -j RETURN
 $ipt -A CNNG_OUT -d 0.0.0.0/8 -j RETURN
 $ipt -A CNNG_OUT -d 10.0.0.0/8 -j RETURN
 $ipt -A CNNG_OUT -d 127.0.0.0/8 -j RETURN
@@ -228,7 +223,6 @@ $ipt -A CNNG_OUT -d 224.0.0.0/4 -j RETURN
 $ipt -A CNNG_OUT -d 240.0.0.0/4 -j RETURN
 
 $ipt -A CNNG_OUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports $ss_local_port
-$ipt -A CNNG_PRE -m set --match-set gfwlist dst -j CNNG_OUT
 
 cat <<-CAT >>$FWI
 iptables-save -c | grep -v CNNG_ | iptables-restore -c
