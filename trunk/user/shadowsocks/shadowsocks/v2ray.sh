@@ -68,7 +68,6 @@ func_v2txt_d(){
 }
 
 v2_addmi(){
-func_v2txt_d
 if [ -f "$V2RUL" ] ; then
     v2_address=$(cat $V2RUL | grep "add:" | awk -F '[:/]' '{print $2}')
     v2_port=$(cat $V2RUL | grep "port:" | awk -F '[:/]' '{print $2}')
@@ -213,11 +212,10 @@ func_start(){
     if [ "$ss_mode" = "3" ]
     then
         func_Del_rule && \
-        v2_server_file && \
-        func_china_file && \
-        v2_addmi && \
-        cdn_file_d && \
+        v2_server_file && func_v2txt_d && v2_addmi && \
         echo -e "\033[41;37m 部署 [v2ray] 文件,请稍后...\e[0m\n"
+        func_china_file && \
+        cdn_file_d && \
         func_download && \
         func_v2_running &
         logger -t "[v2ray]" "开始运行…"
@@ -227,7 +225,7 @@ func_start(){
 }
 
 func_stop(){
-    func_Del_rule &
+    func_Del_rule && \
     iptables-save -c | grep -v "chnroute" | iptables-restore -c
     for setname in $(ipset -n list | grep "chnroute"); do
         sleep 3 && ipset destroy "$setname" 2>/dev/null
@@ -254,6 +252,7 @@ v2_file)
     v2_server_file
     ;;
 v2txt_d)
+    v2_server_file
     func_v2txt_d
     ;;
 *)
