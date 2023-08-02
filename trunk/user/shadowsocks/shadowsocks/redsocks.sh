@@ -15,7 +15,6 @@ REDSOCKS_CONF="$TMP_HOME/$BINARY_NAME.conf"
 CHAIN_NAME="REDSOCKS"
 SET_NAME="chnroute"
 SOCKS_LOG="/tmp/ss-watchcat.log"
-SS_SERVER_LINK=$(nvram get ss_server)
 ss_router_proxy=$(nvram get ss_router_proxy)
 v2_port=$(cat /tmp/V2mi.txt | grep "port:" | awk -F '[:/]' '{print $2}') 
 SOCKS5_IP=$(nvram get lan_ipaddr)
@@ -101,9 +100,7 @@ ipt="iptables -t nat"
 $ipt -N $CHAIN_NAME
 
 $ipt -A $CHAIN_NAME -d $REMOTE_IP -j RETURN
-$ipt -A $CHAIN_NAME -d $SS_SERVER_LINK -j RETURN
 $ipt -A $CHAIN_NAME -d 0.0.0.0/8 -j RETURN
-$ipt -A $CHAIN_NAME -d 10.0.0.0/8 -j RETURN
 $ipt -A $CHAIN_NAME -d 127.0.0.0/8 -j RETURN
 $ipt -A $CHAIN_NAME -d 172.16.0.0/12 -j RETURN
 $ipt -A $CHAIN_NAME -d 192.168.0.0/16 -j RETURN
@@ -155,9 +152,7 @@ sleep 3 && flush_iptables nat &
 fi
 ipt="iptables -t nat"
 $ipt -D $CHAIN_NAME -d $REMOTE_IP -j RETURN
-$ipt -D $CHAIN_NAME -d $SS_SERVER_LINK -j RETURN
 $ipt -D $CHAIN_NAME -d 0.0.0.0/8 -j RETURN
-$ipt -D $CHAIN_NAME -d 10.0.0.0/8 -j RETURN
 $ipt -D $CHAIN_NAME -d 127.0.0.0/8 -j RETURN
 $ipt -D $CHAIN_NAME -d 172.16.0.0/12 -j RETURN
 $ipt -D $CHAIN_NAME -d 192.168.0.0/16 -j RETURN
