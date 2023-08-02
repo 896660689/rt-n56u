@@ -21,9 +21,7 @@ func_download(){
     if [ ! -f "$v2_home/v2ray" ]
     then
         mkdir -p "$v2_home"
-        #curl -k -s -o $v2_home/v2ray --connect-timeout 10 --retry 3 $v2fly_url && \
-        ln -sf /usr/bin/xray $v2_home/v2ray && \
-        chmod 777 "$v2_home/v2ray"
+        ln -sf /usr/bin/xray $v2_home/v2ray
     fi
 }
 
@@ -58,13 +56,19 @@ EOF
     fi
 }
 
+func_v2txt_d(){
+    if [ ! -f "$V2RUL" ] ; then
+        if grep -q "vmess" "$STORAGE_V2SH"
+        then
+            cat "$STORAGE_V2SH" | sed "s/vmess:\/\//vmess:/" | grep "vmess" | sed 's/:/\n/g' | sed '1d' | sed 's/}//g' \
+            | /bin/base64 -d | sed -e 's/^ *//' -e 's/{/\n/g' -e 's/,/\n/g' -e 's/.$//g' -e 's/"//g' -e 's/: /:/g' \
+            | sort -n | uniq > $V2RUL
+        fi
+    fi
+}
+
 v2_addmi(){
-if grep -q "vmess" "$STORAGE_V2SH"
-then
-    cat "$STORAGE_V2SH" | sed "s/vmess:\/\//vmess:/" | grep "vmess" | sed 's/:/\n/g' | sed '1d' | sed 's/}//g' \
-    | /bin/base64 -d | sed -e 's/^ *//' -e 's/{/\n/g' -e 's/,/\n/g' -e 's/.$//g' -e 's/"//g' -e 's/: /:/g' \
-    | sort -n | uniq > $V2RUL
-fi
+func_v2txt_d
 if [ -f "$V2RUL" ] ; then
     v2_address=$(cat $V2RUL | grep "add:" | awk -F '[:/]' '{print $2}')
     v2_port=$(cat $V2RUL | grep "port:" | awk -F '[:/]' '{print $2}')
@@ -189,18 +193,17 @@ func_china_file(){
     then
         ipset -N chnroute hash:net && \
         awk '!/^$/&&!/^#/{printf("add chnroute %s'" "'\n",$0)}' $dir_chnroute_file | ipset restore &
+        wait && echo "ipcdn"
     fi
 }
 
 cdn_file_d(){
     if [ ! -f "$local_chnlist_file" ] || [ ! -s "$local_chnlist_file" ] ; then
-        tar jxf "/etc_ro/chnlist.bz2" -C "/tmp"
-        chmod 644 "$local_chnlist_file $local_gfwlist_file"
+        tar jxf "/etc_ro/chnlist.bz2" -C "/tmp" && sleep 3
     fi
 }
 
 func_v2_running(){
-    v2_addmi
     v2_tmp_json
     cd "$v2_home"
     ./v2ray >/dev/null 2>&1 &
@@ -210,10 +213,11 @@ func_start(){
     if [ "$ss_mode" = "3" ]
     then
         func_Del_rule && \
-        func_china_file && seep 3
-        cdn_file_d && seep 3
-        echo -e "\033[41;37m 部署 [v2ray] 文件,请稍后...\e[0m\n"
         v2_server_file && \
+        func_china_file && \
+        v2_addmi && \
+        cdn_file_d && \
+        echo -e "\033[41;37m 部署 [v2ray] 文件,请稍后...\e[0m\n"
         func_download && \
         func_v2_running &
         logger -t "[v2ray]" "开始运行…"
@@ -249,10 +253,12 @@ stop)
 v2_file)
     v2_server_file
     ;;
+v2txt_d)
+    func_v2txt_d
+    ;;
 *)
-    echo "Usage: $0 { start | stop | v2_file }"
+    echo "Usage: $0 { start | stop | v2_file | v2txt_d }"
     exit 1
     ;;
 esac
-
 
