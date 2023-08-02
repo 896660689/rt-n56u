@@ -39,7 +39,7 @@ flush_path() {
 	else
 		logger -t "[Dnsmasq]" "添加 [gfwlist] 启动路径 ..."
 		sed -i '/listen-address/d; /min-cache/d; /gfwlist/d; /log/d' $DNSMASQ_RURE && sleep 2
-		echo -e "listen-address=$ROUTE_VLAN,127.0.0.1
+		echo -e "listen-address=$ROUTE_VLAN,$SS_SERVER_LINK
 # 开启日志选项
 #log-queries
 #log-facility=/var/log/ss-watchcat.log
@@ -116,10 +116,8 @@ include_ac_rules() {
 	:gfwlist - [0:0]
 	-A gfwlist -d 0.0.0.0/8 -j RETURN
 	-A gfwlist -d 127.0.0.0/8 -j RETURN
-	-A gfwlist -d $SS_SERVER_LINK -j RETURN
 	-A gfwlist -d 172.16.0.0/12 -j RETURN
 	-A gfwlist -d 192.168.0.0/16 -j RETURN
-	-A gfwlist -d 224.0.0.0/4 -j RETURN
 	-A gfwlist -d 240.0.0.0/4 -j RETURN
 	COMMIT
 EOF
