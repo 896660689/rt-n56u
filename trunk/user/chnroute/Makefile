@@ -6,7 +6,7 @@ all :
 		wget -t3 -4 --timeout=5 -O chnroute.txt.tmp '$(url)' && \
 		awk -F\| '/CN\|ipv4/ { printf("%s/%d\n", $$4, 32-log($$5)/log(2)) }' < chnroute.txt.tmp > chnroute.txt && \
 		rm -f chnroute.txt.tmp && tar jcf chnroute.bz2 chnroute.txt && \
-		tar jcf chnlist.bz2 chnlist.txt ; \
+		tar jcf chnlist.bz2 chnlist.txt gfw.txt ; \
 	fi )
 
 romfs:
