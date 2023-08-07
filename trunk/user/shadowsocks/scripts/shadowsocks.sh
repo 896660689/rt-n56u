@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2023-08-02
+# Compile:by-lanse	2023-08-07
 
 export PATH=$PATH:/etc/storage/shadowsocks
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etc/storage/shadowsocks
@@ -245,7 +245,7 @@ func_chnroute_file() {
     if [ ! -f "$dir_chnroute_file" ] || [ ! -s "$dir_chnroute_file" ] ; then
         [ ! -d $STORAGE/chinadns ] && mkdir -p "$STORAGE/chinadns"
         tar jxf "/etc_ro/chnroute.bz2" -C "$STORAGE/chinadns"
-        chmod 644 "$dir_chnroute_file" && /sbin/mtd_storage.sh save
+        chmod -R 644 "$STORAGE/chinadns" && /sbin/mtd_storage.sh save
     fi
 }
 
