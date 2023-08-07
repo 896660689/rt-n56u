@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2023-07-29
+# Compile:by-lanse	2023-08-07
 
 v2_home="/tmp/v2fly"
 v2_json="$v2_home/config.json"
@@ -7,8 +7,10 @@ v2fly_url="https://cdn.jsdelivr.net/gh/896660689/OS/v2fly/v2ray"
 ss_mode=$(nvram get ss_mode)
 STORAGE="/etc/storage"
 dir_chnroute_file="$STORAGE/chinadns/chnroute.txt"
+dir_chnroute6_file="$STORAGE/chinadns/chnroute6.txt"
 SSR_HOME="$STORAGE/shadowsocks"
 STORAGE_V2SH="$STORAGE/storage_v2ray.sh"
+SS_ENABLE=$(nvram get ss_enable)
 SS_LOCAL_PORT_LINK=$(nvram get ss_local_port)
 ss_tunnel_local_port=$(nvram get ss-tunnel_local_port)
 SS_LAN_IP=$(nvram get lan_ipaddr)
@@ -230,13 +232,13 @@ func_stop(){
     for setname in $(ipset -n list | grep "chnroute"); do
         sleep 3 && ipset destroy "$setname" 2>/dev/null
     done
-    if [ $(nvram get ss_enable) = "0" ]
+    if [ $SS_ENABLE = "0" ]
     then
         [ -d "$v2_home" ] && rm -rf $v2_home
+        [ -d "$STORAGE/chinadns" ] && rm -rf $STORAGE/chinadns
+        [ -f "$local_gfwlist_file" ] && rm -rf $local_gfwlist_file
     fi
     [ -f "$V2RUL" ] && rm -rf $V2RUL
-    [ -f "$local_chnlist_file" ] && rm -rf $local_chnlist_file
-    [ -f "$local_gfwlist_file" ] && rm -rf $local_gfwlist_file
     [ -f "/var/run/v2ray-watchdog.pid" ] && rm -rf /var/run/v2ray-watchdog.pid
     logger -t "[v2ray]" "已停止运行 !"
 }
