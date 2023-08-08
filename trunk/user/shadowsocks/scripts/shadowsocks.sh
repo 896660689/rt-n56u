@@ -46,9 +46,6 @@ ss2_obfs_param=$(nvram get ss2_obfs_param)
 dns2_ip=$(nvram get ss-tunnel_remote | awk -F '[:/]' '{print $1}')
 dns2_port=$(nvram get ss-tunnel_remote | sed 's/:/#/g')
 
-V2RUL=/tmp/V2mi.txt
-v2_address=$(sed -n "2p" $V2RUL | cut -f 2 -d ":")
-
 check_music() {
 if [ $(nvram get wyy_enable) = "1" ]; then
     logger -t "[ShadowsocksR]" "系统检测到音乐解锁或 [SMT] 正在运行, 请改变使用 [gfwlist] 以外其它代理模式, 再重启 [ShadowsocksR], 程序将退出!"
@@ -353,6 +350,9 @@ func_redsocks() {
 
 func_chinadns_ng() {
     /bin/sh $SSR_HOME/chinadns-ng.sh start
+
+V2RUL=/tmp/V2mi.txt
+v2_address=$(sed -n "2p" $V2RUL | cut -f 2 -d ":")
 }
 
 func_start() {
@@ -377,7 +377,8 @@ func_start() {
             func_v2fly && sleep 8 && \
             func_redsocks && sleep 3 && \
             func_chinadns_ng &
-            sh -c "ss-rules -s $v2_address -l $SS_LOCAL_PORT_LINK $(get_wan_bp_list) -d SS_SPEC_WAN_AC $(get_ipt_ext) $(get_arg_out) $(get_arg_udp)
+            wait && \
+            sh -c "ss-rules -s $v2_address -l $SS_LOCAL_PORT_LINK $(get_wan_bp_list) -d SS_SPEC_WAN_AC $(get_ipt_ext) $(get_arg_out) $(get_arg_udp)"
             loger "xray Start up" || { ss-rules -f && loger "xray Start fail!";}
         else
             echo -e "\033[41;37m 部署 [ShadowsocksR] 文件,请稍后...\e[0m\n"
@@ -431,8 +432,9 @@ restart)
     func_start
     ;;
 *)
-    echo "Usage: $0 { start | stop | restart }"
+    echo "Usage: $0 { start | stop | restart | dog_up}"
     exit 1
     ;;
 esac
+
 
