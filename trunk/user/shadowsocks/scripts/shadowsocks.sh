@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2023-08-07
+# Compile:by-lanse	2023-08-09
 
 export PATH=$PATH:/etc/storage/shadowsocks
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etc/storage/shadowsocks
@@ -104,7 +104,7 @@ get_ipt_ext() {
     elif [ "$ss_lower_port_only" = "2" ]
     then
         echo '-e "-m multiport --dports 53,80,443"'
-	elif [ "$ss_lower_port_only" = "5" ]
+    elif [ "$ss_lower_port_only" = "5" ]
     then
         echo '-e "-m multiport --dports 53,80,443"'
     fi
@@ -377,7 +377,8 @@ func_start() {
             func_v2fly && sleep 8 && \
             func_redsocks && sleep 3 && \
             func_chinadns_ng &
-			sh -c "ss-rules -s $v2_address -l $SS_LOCAL_PORT_LINK $(get_wan_bp_list) -d SS_SPEC_WAN_AC $(get_ipt_ext) $(get_arg_out) 
+            sh -c "ss-rules -s $v2_address -l $SS_LOCAL_PORT_LINK $(get_wan_bp_list) -d SS_SPEC_WAN_AC $(get_ipt_ext) $(get_arg_out) $(get_arg_udp)
+            loger "xray Start up" || { ss-rules -f && loger "xray Start fail!";}
         else
             echo -e "\033[41;37m 部署 [ShadowsocksR] 文件,请稍后...\e[0m\n"
             func_ss_ssr && \
