@@ -126,8 +126,8 @@ func_conf(){
 min-cache-ttl=1800
 EOF
     fi
-    ipset_init && \
-    gfw_dns && \
+    #ipset_init && \
+    #gfw_dns && \
     if [ -f "$local_chnlist_file" ]; then
         if [ -f "$local_gfwlist_file" ]; then
             /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns,114.114.114.114 -t $SS_SERVER_LINK#$ss_tunnel_local_port -g $local_gfwlist_file -4 chnroute -M -m $local_chnlist_file >/dev/null 2>&1 &
@@ -238,8 +238,8 @@ func_start(){
     func_v2txt && \
     func_del_rule && \
     echo -e "\033[41;37m 部署 [CHINADNS-NG] 文件,请稍后...\e[0m\n"
-    func_del_ipt
-    func_gmlan && flush_ipt_file && func_ipt_n
+    #func_del_ipt
+    #func_gmlan && flush_ipt_file && func_ipt_n
     wait
     echo "dns"
     func_conf
@@ -249,7 +249,7 @@ func_start(){
 func_stop(){
     func_v2txt && \
     func_del_rule && \
-    func_del_ipt &
+    #func_del_ipt &
     [ -f $local_chnlist_file ] && rm -rf $local_chnlist_file
     [ -f $local_gfwlist_file ] && rm -rf $local_gfwlist_file
     logger -t "[CHINADNS-NG]" "已停止运行 !"
