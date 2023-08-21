@@ -374,8 +374,8 @@ func_start() {
         if [ "$ss_mode" = "3" ]
         then
             logger -t "[v2ray]" "开始部署 [v2ray] 代理模式..."
-            func_v2fly && sleep 8 && \
-            func_redsocks && sleep 3 && \
+            func_v2fly && wait && \
+            func_redsocks && \
             func_chinadns_ng &
             wait && \
             sh -c "ss-rules -s $v2_address -l $SS_LOCAL_PORT_LINK $(get_wan_bp_list) -d SS_SPEC_WAN_AC $(get_ipt_ext) $(get_arg_out) $(get_arg_udp)"
