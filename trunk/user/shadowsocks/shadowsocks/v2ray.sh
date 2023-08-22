@@ -200,7 +200,7 @@ func_china_file(){
 
 cdn_file_d(){
     if [ ! -f "$local_chnlist_file" ] || [ ! -s "$local_chnlist_file" ] ; then
-        tar jxf "/etc_ro/chnlist.bz2" -C "/tmp" && sleep 3
+        tar jxf "/etc_ro/chnlist.bz2" -C "/tmp"
     fi
 }
 
