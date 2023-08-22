@@ -216,8 +216,8 @@ func_start(){
         func_Del_rule && \
         v2_server_file && func_v2txt_d && v2_addmi && \
         echo -e "\033[41;37m 部署 [v2ray] 文件,请稍后...\e[0m\n"
-        func_china_file && \
         cdn_file_d && \
+        func_china_file && \
         func_download && \
         func_v2_running &
         logger -t "[v2ray]" "开始运行…"
