@@ -1,21 +1,16 @@
 #!/bin/sh
-# Compile:by-lanse	2023-08-07
+# Compile:by-lanse	2021-03-21
 
 v2_home="/tmp/v2fly"
 v2_json="$v2_home/config.json"
-v2fly_url="https://cdn.jsdelivr.net/gh/896660689/OS/v2fly/v2ray"
 ss_mode=$(nvram get ss_mode)
 STORAGE="/etc/storage"
 dir_chnroute_file="$STORAGE/chinadns/chnroute.txt"
-dir_chnroute6_file="$STORAGE/chinadns/chnroute6.txt"
 SSR_HOME="$STORAGE/shadowsocks"
 STORAGE_V2SH="$STORAGE/storage_v2ray.sh"
-SS_ENABLE=$(nvram get ss_enable)
 SS_LOCAL_PORT_LINK=$(nvram get ss_local_port)
 ss_tunnel_local_port=$(nvram get ss-tunnel_local_port)
 SS_LAN_IP=$(nvram get lan_ipaddr)
-local_chnlist_file=/tmp/chnlist.txt
-local_gfwlist_file=/tmp/gfw.txt
 
 V2RUL=/tmp/V2mi.txt
 
@@ -23,7 +18,8 @@ func_download(){
     if [ ! -f "$v2_home/v2ray" ]
     then
         mkdir -p "$v2_home"
-        ln -sf /usr/bin/xray $v2_home/v2ray
+        curl -k -s -o $v2_home/v2ray --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/896660689/OS/v2fly/v2ray && \
+        chmod 777 "$v2_home/v2ray"
     fi
 }
 
@@ -58,18 +54,13 @@ EOF
     fi
 }
 
-func_v2txt_d(){
-    if [ ! -f "$V2RUL" ] ; then
-        if grep -q "vmess" "$STORAGE_V2SH"
-        then
-            cat "$STORAGE_V2SH" | sed "s/vmess:\/\//vmess:/" | grep "vmess" | sed 's/:/\n/g' | sed '1d' | sed 's/}//g' \
-            | /bin/base64 -d | sed -e 's/^ *//' -e 's/{/\n/g' -e 's/,/\n/g' -e 's/.$//g' -e 's/"//g' -e 's/: /:/g' \
-            | sort -n | uniq > $V2RUL
-        fi
-    fi
-}
-
 v2_addmi(){
+if grep -q "vmess" "$STORAGE_V2SH"
+then
+    cat "$STORAGE_V2SH" | sed "s/vmess:\/\//vmess:/" | grep "vmess" | sed 's/:/\n/g' | sed '1d' | sed 's/}//g' \
+    | /bin/base64 -d | sed -e 's/^ *//' -e 's/{/\n/g' -e 's/,/\n/g' -e 's/.$//g' -e 's/"//g' -e 's/: /:/g' \
+    | sort -n | uniq > $V2RUL
+fi
 if [ -f "$V2RUL" ] ; then
     v2_address=$(cat $V2RUL | grep "add:" | awk -F '[:/]' '{print $2}')
     v2_port=$(cat $V2RUL | grep "port:" | awk -F '[:/]' '{print $2}')
@@ -102,8 +93,8 @@ v2_tmp_json(){
   "dns": {
     "servers": [
       "1.1.1.1",
-      "8.8.8.8",
       "208.67.220.220",
+      "8.8.4.4",
       "localhost"
     ]
   },
@@ -149,18 +140,13 @@ v2_tmp_json(){
             "users": [
               {
                 "id": "$v2_userid",
-                "alterId": $v2_alterId,
-                "security": "auto"
+                "alterId": $v2_alterId
               }
             ]
           }
         ]
       },
-      "mux": {
-        "enabled": true,
-        "concurrency": 8
-      },
-      "tag": "direct",
+      "tag": "proxy",
       "streamSettings": {
         "network": "$v2_docking_mode",
         "security": "$v2_tls",
@@ -175,6 +161,10 @@ v2_tmp_json(){
             "Host": "$v2_domain_name"
           }
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 8
       }
     }
   ]
@@ -184,27 +174,22 @@ EOF
 
 func_Del_rule(){
     if [ -n "$(pidof v2ray)" ] ; then
-        killall v2ray >/dev/null 2>&1
-        kill -9 "$(pidof v2ray)" >/dev/null 2>&1
+        killall v2ray &
+        sleep 2
     fi
 }
 
 func_china_file(){
     if [ -f "$dir_chnroute_file" ] || [ -s "$dir_chnroute_file" ]
     then
-        ipset -N chnroute hash:net && \
+        ipset -N chnroute hash:net
+        sleep 3 && \
         awk '!/^$/&&!/^#/{printf("add chnroute %s'" "'\n",$0)}' $dir_chnroute_file | ipset restore &
-        wait && echo "ipcdn"
-    fi
-}
-
-cdn_file_d(){
-    if [ ! -f "$local_chnlist_file" ] || [ ! -s "$local_chnlist_file" ] ; then
-        tar jxf "/etc_ro/chnlist.bz2" -C "/tmp"
     fi
 }
 
 func_v2_running(){
+    v2_addmi
     v2_tmp_json
     cd "$v2_home"
     ./v2ray >/dev/null 2>&1 &
@@ -214,11 +199,12 @@ func_start(){
     if [ "$ss_mode" = "3" ]
     then
         func_Del_rule && \
-        v2_server_file && func_v2txt_d && v2_addmi && \
+        func_china_file &
         echo -e "\033[41;37m 部署 [v2ray] 文件,请稍后...\e[0m\n"
-        cdn_file_d && \
-        func_china_file && \
-        func_download && \
+        v2_server_file && \
+        func_download &
+        wait
+        echo ""
         func_v2_running &
         logger -t "[v2ray]" "开始运行…"
     else
@@ -227,16 +213,11 @@ func_start(){
 }
 
 func_stop(){
-    func_Del_rule && \
-    iptables-save -c | grep -v "chnroute" | iptables-restore -c
-    for setname in $(ipset -n list | grep "chnroute"); do
-        ipset destroy "$setname" 2>/dev/null
-    done
-    if [ $SS_ENABLE = "0" ]
+    func_Del_rule &
+    sleep 2 && ipset -X gfwlist 2>/dev/null &
+    if [ $(nvram get ss_enable) = "0" ]
     then
         [ -d "$v2_home" ] && rm -rf $v2_home
-        [ -d "$STORAGE/chinadns" ] && rm -rf $STORAGE/chinadns
-        [ -f "$local_gfwlist_file" ] && rm -rf $local_gfwlist_file
     fi
     [ -f "$V2RUL" ] && rm -rf $V2RUL
     [ -f "/var/run/v2ray-watchdog.pid" ] && rm -rf /var/run/v2ray-watchdog.pid
@@ -253,14 +234,9 @@ stop)
 v2_file)
     v2_server_file
     ;;
-v2txt_d)
-    v2_server_file
-    func_v2txt_d
-    ;;
 *)
-    echo "Usage: $0 { start | stop | v2_file | v2txt_d }"
+    echo "Usage: $0 { start | stop | v2_file }"
     exit 1
     ;;
 esac
-
 

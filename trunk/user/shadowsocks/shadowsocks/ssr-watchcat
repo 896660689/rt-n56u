@@ -4,7 +4,7 @@ pidfile="/var/ssr-watchcat"
 SS_JSON="/tmp/ss-redir.json"
 CURRENT=$(ls -l $SS_JSON | awk -F "." '{print $4}')
 SS_SCRIPT="/usr/bin/shadowsocks.sh"
-Global_WEBSITE="www.google.com/"
+Global_WEBSITE="http://www.google.com/"
 CN_WEBSITE="www.baidu.com"
 
 LOGFILE="/tmp/ss-watchcat.log"
@@ -23,7 +23,6 @@ loger(){
 
 ge_Problem(){
 	wget --spider --quiet --timeout=3 $Global_WEBSITE > /dev/null 2>&1
-	wait
 	return $?
 }
 
