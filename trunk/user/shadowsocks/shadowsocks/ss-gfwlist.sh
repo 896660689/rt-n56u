@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2020-06-28
+# Compile:by-lanse	2020-08-01
 
 modprobe xt_set
 modprobe ip_set_hash_ip
@@ -39,7 +39,7 @@ flush_path() {
 	else
 		logger -t "[Dnsmasq]" "添加 [gfwlist] 启动路径 ..."
 		sed -i '/listen-address/d; /min-cache/d; /gfwlist/d; /log/d' $DNSMASQ_RURE && sleep 2
-		echo -e "listen-address=$ROUTE_VLAN,127.0.0.1
+		echo -e "listen-address=$ROUTE_VLAN,$SS_SERVER_LINK
 # 开启日志选项
 #log-queries
 #log-facility=/var/log/ss-watchcat.log
@@ -56,10 +56,6 @@ conf-dir=/etc/storage/gfwlist/" > $DNSMASQ_TMP
 }
 
 flush_rules() {
-	iptables-save -c | grep -v "gfwlist" | iptables-restore -c
-	for setname in $(ipset -n list | grep "gfwlist"); do
-		ipset destroy "$setname" 2>/dev/null
-	done
 	FWI="/tmp/shadowsocks_iptables.save"
 	[ -n "$FWI" ] && echo '# firewall include file' >$FWI && \
 	chmod +x $FWI
@@ -109,8 +105,8 @@ EOF
 ipt_nat() {
 	include_ac_rules nat
 	ipt="iptables -t nat"
-	$ipt -A PREROUTING -i br0 -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-port $SS_LOCAL_PORT_LINK || return 1
-	$ipt -A OUTPUT -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-port $SS_LOCAL_PORT_LINK
+	$ipt -I PREROUTING -i br0 -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-port $SS_LOCAL_PORT_LINK || return 1
+	$ipt -I OUTPUT -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-port $SS_LOCAL_PORT_LINK
 	return $?
 }
 
@@ -118,9 +114,11 @@ include_ac_rules() {
 	iptables-restore -n <<-EOF
 	*$1
 	:gfwlist - [0:0]
-	-A gfwlist -d $SS_SERVER_LINK -j RETURN
+	-A gfwlist -d 0.0.0.0/8 -j RETURN
 	-A gfwlist -d 127.0.0.0/8 -j RETURN
+	-A gfwlist -d 172.16.0.0/12 -j RETURN
 	-A gfwlist -d 192.168.0.0/16 -j RETURN
+	-A gfwlist -d 240.0.0.0/4 -j RETURN
 	COMMIT
 EOF
 }
@@ -161,4 +159,3 @@ done
 flush_path && flush_rules && ipset_init && ipt_nat && export_ipt_rules
 [ "$?" = 0 ] || loger 3 "Start failed!"
 exit $?
-
