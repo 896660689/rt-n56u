@@ -251,7 +251,7 @@ func_chnroute_file() {
 
 func_gfwlist_file() {
     sh $SSR_HOME/update_gfwlist.sh force &
-    sleep 2
+    wait
     func_gfwlist_import
     sh $SSR_HOME/ss-gfwlist.sh -f
     if [ "$ss_mode" = "2" ]
