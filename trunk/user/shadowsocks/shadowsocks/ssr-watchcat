@@ -4,7 +4,7 @@ pidfile="/var/ssr-watchcat"
 SS_JSON="/tmp/ss-redir.json"
 CURRENT=$(ls -l $SS_JSON | awk -F "." '{print $4}')
 SS_SCRIPT="/usr/bin/shadowsocks.sh"
-Global_WEBSITE="http://www.google.com/"
+Global_WEBSITE="https://www.youtube.com/"
 CN_WEBSITE="www.baidu.com"
 
 LOGFILE="/tmp/ss-watchcat.log"
