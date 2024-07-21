@@ -325,7 +325,7 @@ ipt_ss_del() {
 
 func_sshome_file(){
     if [ ! -d "$SSR_HOME" ] ; then
-        sleep 10 && tar zxf "$ss_folder" -C "$STORAGE" && \
+        sleep 6 && tar zxf "$ss_folder" -C "$STORAGE" && \
         /sbin/mtd_storage.sh save
     fi
 }
@@ -350,17 +350,29 @@ func_start(){
     ulimit -n 65536
     if [ "$SS_ENABLE" = "1" ]
     then
-        [ "$ss_mode" = "2" ] && check_music
+	    [ "$ss_mode" = "2" ] && check_music
+	    func_sshome_file && \
         [ ! -f dir_gfwlist_file] && sh $SSR_HOME/update_gfwlist.sh force &
-        func_sshome_file && \
-        if [ "$ss_mode" = "2" ]
-        then
-            func_gfwlist_file &
-        else
+	    if [ "$ss_mode" = "1" ]
+	    then
             func_chnroute_file &
-        fi
-        wait
-        echo ""
+            wait
+            echo -e "\033[41;37m 部署 [ShadowsocksR] 文件,请稍后...\e[0m\n"
+            func_ss_ssr && \
+            func_gen_ss_json && \
+            func_gen_ss2_json && \
+            ln -sf $ss_json.main $ss_json &
+            func_start_ss_redir && \
+            func_start_ss_rules &
+            wait
+            echo ""
+            loger $ss_bin "ShadowsocksR Start up" || { ss-rules -f && loger $ss_bin "ShadowsocksR Start fail!"; }
+	    elif [ "$ss_mode" = "2" ]
+	    then
+            func_gfwlist_file &
+            wait
+            echo ""
+	    fi
         func_gfwlist_list && \
         func_port_agent_mode &
         if [ "$ss_mode" = "3" ]
@@ -370,22 +382,6 @@ func_start(){
             func_redsocks && \
             func_chinadns_ng &
             wait && restart_firewall &
-        else
-            echo -e "\033[41;37m 部署 [ShadowsocksR] 文件,请稍后...\e[0m\n"
-            func_ss_ssr && \
-            func_gen_ss_json && \
-            func_gen_ss2_json && \
-            ln -sf $ss_json.main $ss_json &
-            if [ "$ss_mode" = "2" ]
-            then
-                echo "gfw"
-            else
-            func_start_ss_redir && \
-            func_start_ss_rules &
-            wait
-            echo ""
-            loger $ss_bin "ShadowsocksR Start up" || { ss-rules -f && loger $ss_bin "ShadowsocksR Start fail!"; }
-            fi
         fi
         func_cron &
         wait
