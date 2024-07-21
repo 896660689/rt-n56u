@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2021-03-26
+# Compile:by-lanse	2024-07-21
 
 export PATH=$PATH:/etc/storage/shadowsocks
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etc/storage/shadowsocks
@@ -42,18 +42,19 @@ ss2_protocol=$(nvram get ss2_protocol)
 ss2_proto_param=$(nvram get ss2_proto_param)
 ss2_obfs=$(nvram get ss2_obfs)
 ss2_obfs_param=$(nvram get ss2_obfs_param)
-v2_address=$(cat /tmp/V2mi.txt | grep "add:" | awk -F '[:/]' '{print $2}')
+
 dns2_ip=$(nvram get ss-tunnel_remote | awk -F '[:/]' '{print $1}')
 dns2_port=$(nvram get ss-tunnel_remote | sed 's/:/#/g')
 
 check_music(){
-if [ $(nvram get wyy_enable) = "1" ] && [ $(nvram get sdns_enable) = "1" ]; then
+if [ $(nvram get wyy_enable) = "1" ]; then
     logger -t "[ShadowsocksR]" "系统检测到音乐解锁或 [SMT] 正在运行, 请改变使用 [gfwlist] 以外其它代理模式, 再重启 [ShadowsocksR], 程序将退出!"
     nvram get ss_enable=0
     exit 0
 fi
 }
 
+func_ss_ssr() {
 if [ "${SS_TYPE:-0}" = "0" ] ; then
     ln -sf /usr/bin/ss-orig-redir $ss_proc
 elif [ "${SS_TYPE:-0}" = "1" ] ; then
@@ -63,6 +64,7 @@ elif [ "${SS_TYPE:-0}" = "1" ] ; then
     ss_obfs_param=$(nvram get ss_obfs_param)
     ln -sf /usr/bin/ssr-redir $ss_proc
 fi
+}
 
 loger() {
     logger -st "$1" "$2"
@@ -116,20 +118,16 @@ func_start_ss_rules(){
 func_ss_Close(){
     loger $ss_bin "stop"; ss-rules -f &
     if [ -n "$(pidof ss-redir)" ] ; then
-        killall ss-redir >/dev/null 2>&1 &
-        sleep 2
+        killall ss-redir >/dev/null 2>&1
+        kill -9 "$(pidof ss-redir)" >/dev/null 2>&1
     fi
     kill -9 $(busybox ps -w | grep dns-forwarder | grep -v grep | awk '{print $1}') >/dev/null 2>&1
     kill -9 $(busybox ps -w | grep dnsproxy | grep -v grep | awk '{print $1}') >/dev/null 2>&1
     kill -9 $(busybox ps -w | grep dns2tcp | grep -v grep | awk '{print $1}') >/dev/null 2>&1
     if [ -n "$(pidof pdnsd)" ] ; then
-        killall pdnsd >/dev/null 2>&1 &
-        sleep 2
+        killall pdnsd >/dev/null 2>&1
+        kill -9 "$(pidof pdnsd)" >/dev/null 2>&1
     fi
-    iptables -t nat -X gfwlist >/dev/null 2>&1
-    iptables-save -c | grep -v "gfwlist" | iptables-restore -c && sleep 2
-    ipset flush gfwlist 2>/dev/null &
-    sleep 2
     if grep -q "ssr-watchcat" "$TIME_SCRIPT"
     then
         sed -i '/ssr-watchcat/d' "$TIME_SCRIPT" >/dev/null 2>&1
@@ -137,12 +135,13 @@ func_ss_Close(){
     fi
     if grep -q "v2ray-watchdog" "$TIME_SCRIPT"
     then
-        sed -i '/v2ray-watchdog/d' "$TIME_SCRIPT" >/dev/null 2>&1
+        sed -i '/v2ray-watchdog/d; /V2RAY-网络正常/d' "$TIME_SCRIPT" >/dev/null 2>&1
         sleep 2
     fi
     if grep -q "gfwlist" "$DNSMASQ_RURE"
     then
         sed -i '/listen-address/d; /min-cache/d; /gfwlist/d; /log/d' $DNSMASQ_RURE &
+        restart_dhcpd
     fi
 }
 
@@ -229,13 +228,13 @@ func_gfwlist_import(){
     if [ -s "$STORAGE/ss_dom.sh" ]
     then
         cat $STORAGE/ss_dom.sh | grep -v '^#' | grep -v "^$" \
-        |sed -e "/.*/s/.*/server=\/&\/127.0.0.1#"$ss_tunnel_local_port"\nipset=\/&\/gfwlist/" > $STORAGE/gfwlist/gfw_custom.conf && \
+        |sed -e "/.*/s/.*/server=\/&\/$SS2_SERVER_LINK#"$ss_tunnel_local_port"\nipset=\/&\/gfwlist/" > $STORAGE/gfwlist/gfw_custom.conf && \
         chmod 644 $STORAGE/gfwlist/gfw_custom.conf
     fi
     if [ -s "$STORAGE/ss_pc.sh" ]
     then
         cat $STORAGE/ss_pc.sh | grep -v '^#' | grep -v "^$" \
-        |awk '{printf("server=/%s/127.0.0.1\n", $1, $1 )}' >> $STORAGE/dnsmasq/dnsmasq.conf && \
+        |awk '{printf("server=/%s/$SS2_SERVER_LINK\n", $1, $1 )}' >> $STORAGE/dnsmasq/dnsmasq.conf && \
         cat $STORAGE/dnsmasq/dnsmasq.conf |awk '!a[$0]++' > $STORAGE/dnsmasq/dmq2.servers && \
         mv -f $STORAGE/dnsmasq/dmq2.servers $STORAGE/dnsmasq/dnsmasq.conf
     fi
@@ -245,13 +244,13 @@ func_chnroute_file(){
     if [ ! -f "$dir_chnroute_file" ] || [ ! -s "$dir_chnroute_file" ] ; then
         [ ! -d $STORAGE/chinadns ] && mkdir -p "$STORAGE/chinadns"
         tar jxf "/etc_ro/chnroute.bz2" -C "$STORAGE/chinadns"
-        chmod 644 "$dir_chnroute_file" && /sbin/mtd_storage.sh save
+        chmod -R 644 "$STORAGE/chinadns" && /sbin/mtd_storage.sh save
     fi
 }
 
 func_gfwlist_file(){
-    /etc/storage/shadowsocks/update_gfwlist.sh force &
-    sleep 2
+    sh $SSR_HOME/update_gfwlist.sh force &
+    wait
     func_gfwlist_import
     sh $SSR_HOME/ss-gfwlist.sh -f
     if [ "$ss_mode" = "2" ]
@@ -271,7 +270,7 @@ func_port_agent_mode(){
         logger "Local agent"
     elif [ "$ss_router_proxy" = "2" ]
     then
-        /usr/bin/dns-forwarder -b 127.0.0.1 -p $ss_tunnel_local_port -s $ss_tunnel_remote >/dev/null 2>&1 &
+        /usr/bin/dns-forwarder -b $SS2_SERVER_LINK -p $ss_tunnel_local_port -s $ss_tunnel_remote >/dev/null 2>&1 &
         logger -t "[DNS]" "使用 [dns-forwarder] 解析方式 !"
     elif [ "$ss_router_proxy" = "3" ]
     then
@@ -283,7 +282,7 @@ func_port_agent_mode(){
         logger -t "[DNS]" "使用 [pdnsd] 解析方式 !"
     elif [ "$ss_router_proxy" = "5" ]
     then
-        /usr/bin/dns2tcp -L127.0.0.1#$ss_tunnel_local_port -R"$dns2_port" >/dev/null 2>&1 &
+        /usr/bin/dns2tcp -L $SS2_SERVER_LINK#$ss_tunnel_local_port -R"$dns2_port" >/dev/null 2>&1 &
         logger -t "[DNS]" "使用 [dns2tcp] 解析方式 !"
     else
         logger -t "[DNS]" "未开启代理解析 !"
@@ -296,12 +295,16 @@ func_cron(){
         then
             sed -i '/v2ray-watchdog/d' "$TIME_SCRIPT"
             cat >> "$TIME_SCRIPT" << EOF
-*/3 * * * * $SSR_HOME/v2ray-watchdog 2>&1 >/dev/null &
+*/3 * * * * sh $SSR_HOME/v2ray-watchdog 2>&1 >/dev/null &
+EOF
+            sed -i '/V2RAY-网络正常/d' "$TIME_SCRIPT"
+            cat >> "$TIME_SCRIPT" << EOF
+0 */6 * * * sed -i '/V2RAY-网络正常/d' "/tmp/ss-watchcat.log" &
 EOF
         else
             sed -i '/ssr-watchcat/d' "$TIME_SCRIPT"
             cat >> "$TIME_SCRIPT" << EOF
-*/3 * * * * $SSR_HOME/ssr-watchcat 2>&1 >/dev/null &
+*/3 * * * * sh $SSR_HOME/ssr-watchcat 2>&1 >/dev/null &
 EOF
         fi
     fi
@@ -310,12 +313,19 @@ EOF
 dog_restart(){
     if [ -n "$(pidof ss-redir)" ] ; then
         killall ss-redir >/dev/null 2>&1
+        kill -9 "$(pidof ss-redir)" >/dev/null 2>&1
     fi
     sleep 2 && $ss_bin -c $ss_json -b 0.0.0.0 -l $SS_LOCAL_PORT_LINK >/dev/null 2>&1 &
 }
 
+ipt_ss_del() {
+    iptables-save -c | grep -v "gfwlist" | iptables-restore -c
+    for setname in $(ipset -n list | grep "gfwlist"); do
+        ipset destroy "$setname" 2>/dev/null
+    done
+}
+
 func_sshome_file(){
-    [ ! -f "$ss_folder" ] && sleep 8
     if [ ! -d "$SSR_HOME" ] ; then
         sleep 10 && tar zxf "$ss_folder" -C "$STORAGE" && \
         /sbin/mtd_storage.sh save
@@ -327,8 +337,11 @@ func_v2fly(){
 }
 
 func_redsocks(){
-    /bin/sh $SSR_HOME/redsocks.sh start 127.0.0.1 $SS_LOCAL_PORT_LINK
-    /bin/sh $SSR_HOME/redsocks.sh iptables $v2_address
+    /bin/sh $SSR_HOME/redsocks.sh start $SS2_SERVER_LINK $SS_LOCAL_PORT_LINK
+    if [ -f /tmp/V2mi.txt ] ; then
+        v2_address=$(cat /tmp/V2mi.txt | grep "add:" | awk -F '[:/]' '{print $2}')
+        /bin/sh $SSR_HOME/redsocks.sh iptables $v2_address
+    fi
 }
 
 func_chinadns_ng(){
@@ -354,22 +367,28 @@ func_start(){
         if [ "$ss_mode" = "3" ]
         then
             logger -t "[v2ray]" "开始部署 [v2ray] 代理模式..."
-            func_v2fly && \
+            func_v2fly && wait && \
             func_redsocks && \
             func_chinadns_ng &
         else
             echo -e "\033[41;37m 部署 [ShadowsocksR] 文件,请稍后...\e[0m\n"
+            func_ss_ssr && \
             func_gen_ss_json && \
             func_gen_ss2_json && \
-            ln -sf $ss_json.main $ss_json && \
+            ln -sf $ss_json.main $ss_json &
+            if [ "$ss_mode" = "2" ]
+            then
+                echo "gfw"
+            else
             func_start_ss_redir && \
             func_start_ss_rules &
             wait
             echo ""
             loger $ss_bin "ShadowsocksR Start up" || { ss-rules -f && loger $ss_bin "ShadowsocksR Start fail!"; }
+            fi
         fi
-        func_cron && \
-        restart_firewall &
+        func_cron &
+        wait
         logger -t "[ShadowsocksR]" "开始运行…"
     else
         exit 0
@@ -379,14 +398,13 @@ func_start(){
 func_stop(){
     nvram set ss-tunnel_enable=0
     /usr/bin/ss-tunnel.sh stop &
-    sleep 1 && /bin/sh $SSR_HOME/v2ray.sh stop &
-    sleep 1 && /bin/sh $SSR_HOME/redsocks.sh stop &
-    sleep 1 && /bin/sh $SSR_HOME/chinadns-ng.sh stop &
-    sleep 1 && func_ss_Close &
-    sleep 1 && func_ss_down &
+    /bin/sh $SSR_HOME/chinadns-ng.sh stop &
+    /bin/sh $SSR_HOME/redsocks.sh stop &
+    /bin/sh $SSR_HOME/v2ray.sh stop &
+    func_ss_Close && \
+    ipt_ss_del && \
+    func_ss_down &
     wait
-    echo ""
-    ipset -X gfwlist 2>/dev/null &
     restart_dhcpd && logger -t "[ShadowsocksR]" "已停止运行!"
 }
 
@@ -409,4 +427,3 @@ restart)
     exit 1
     ;;
 esac
-
