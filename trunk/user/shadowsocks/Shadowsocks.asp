@@ -642,7 +642,7 @@ function getHash(){
                                             </tr>
 
                                             <tr>
-                                                <th><#menu5_16_13#></th>
+                                                <th width="50%"><#menu5_16_13#></th>
                                                 <td>
                                                     <div class="main_itoggle">
                                                         <div id="ss-tunnel_enable_on_of">
@@ -657,7 +657,7 @@ function getHash(){
                                             </tr>
 
                                             <tr>
-                                                <th><#running_status#></th>
+                                                <th width="50%"><#running_status#></th>
                                                 <td id="ss_tunnel_status" colspan="3"></td>
                                             </tr>
 
@@ -666,7 +666,7 @@ function getHash(){
                                                 <td>
                                                     <div class="main_itoggle">
                                                         <div id="ss_udp_on_of">
-                                                            <input type="checkbox" <% nvram_match_x("", "ss_udp", "1", "value=1 checked"); %><% nvram_match_x("", "ss_udp", "0", "value=0"); %>>
+                                                            <input type="checkbox" id="ss_udp_fake" <% nvram_match_x("", "ss_udp", "1", "value=1 checked"); %><% nvram_match_x("", "ss_udp", "0", "value=0"); %>>
                                                         </div>
                                                     </div>
                                                     <div style="position: absolute; margin-left: -10000px;">
