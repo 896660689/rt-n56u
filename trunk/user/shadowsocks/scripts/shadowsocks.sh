@@ -351,7 +351,7 @@ func_start(){
     if [ "$SS_ENABLE" = "1" ]
     then
         [ "$ss_mode" = "2" ] && check_music
-        [ -f dir_gfwlist_file] && sh $SSR_HOME/update_gfwlist.sh force &
+        [ ! -f dir_gfwlist_file] && sh $SSR_HOME/update_gfwlist.sh force &
         func_sshome_file && \
         if [ "$ss_mode" = "2" ]
         then
