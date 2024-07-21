@@ -325,7 +325,7 @@ ipt_ss_del() {
 
 func_sshome_file(){
     if [ ! -d "$SSR_HOME" ] ; then
-        sleep 6 && tar zxf "$ss_folder" -C "$STORAGE" && \
+        sleep 8 && tar zxf "$ss_folder" -C "$STORAGE" && \
         /sbin/mtd_storage.sh save
     fi
     [ ! -f dir_gfwlist_file] && sh $SSR_HOME/update_gfwlist.sh force &
