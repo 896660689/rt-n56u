@@ -241,7 +241,6 @@ function getHash(){
                                     </div>
                                     <div id="wnd_ss_add">
                                         <table width="100%" cellpadding="4" cellspacing="0" class="table">
-                                            <div class="alert alert-info" style="margin: 8px;">可选---Shadowsocks -- ShadowsocksR---科学上网</div>
                                             <tr>
                                                 <th width="50%"><#menu5_16_2#></th>
                                                 <td>
@@ -437,7 +436,6 @@ function getHash(){
 
                                     <div id="wnd_ss_ssl" style="display:none;">
                                         <table width="100%" cellpadding="4" cellspacing="0" class="table">
-                                            <div class="alert alert-info" style="margin: 8px;"><#Node_type#></div>
                                             <tr>
                                                 <th width="50%" ><#menu5_16_30#></th>
                                                 <td style="border-top: -1 none;" colspan="2">
@@ -636,7 +634,6 @@ function getHash(){
 
                                     <div id="wnd_ss_cli" style="display:none;">
                                         <table width="100%" cellpadding="4" cellspacing="0" class="table">
-                                            <div class="alert alert-info" style="margin: 8px;"><#Server_settings_rule_update#></div>
                                             <tr>
                                                 <th width="50%"><#InetControl#></th>
                                                 <td style="border-top: -1 none;" colspan="2">
@@ -730,4 +727,3 @@ function getHash(){
 
 </body>
 </html>
-
