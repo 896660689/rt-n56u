@@ -236,8 +236,8 @@ func_stop(){
     if [ $SS_ENABLE = "0" ]
     then
         [ -d "$v2_home" ] && rm -rf $v2_home
-        [ -d "$STORAGE/chinadns" ] && rm -rf $STORAGE/chinadns
-        [ -f "$local_gfwlist_file" ] && rm -rf $local_gfwlist_file
+        #[ -d "$STORAGE/chinadns" ] && rm -rf $STORAGE/chinadns
+        #[ -f "$local_gfwlist_file" ] && rm -rf $local_gfwlist_file
     fi
     [ -f "$V2RUL" ] && rm -rf $V2RUL
     [ -f "/var/run/v2ray-watchdog.pid" ] && rm -rf /var/run/v2ray-watchdog.pid
