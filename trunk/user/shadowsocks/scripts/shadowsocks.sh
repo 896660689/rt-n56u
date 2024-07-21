@@ -153,8 +153,8 @@ func_ss_down(){
         [ -f /tmp/ss-redir.json.main ] && rm -rf /tmp/ss-redir.json.main && sleep 1
         [ -f /tmp/ss-redir.json.backup ] && rm -rf /tmp/ss-redir.json.backup && sleep 1
         [ -d /var/pdnsd ] && rm -rf /var/pdnsd && sleep 1
-        [ -d $STORAGE/gfwlist ] && rm -rf $STORAGE/gfwlist && sleep 1
-        [ -d $STORAGE/chinadns ] && rm -rf $STORAGE/chinadns && sleep 1
+        #[ -d $STORAGE/gfwlist ] && rm -rf $STORAGE/gfwlist && sleep 1
+        #[ -d $STORAGE/chinadns ] && rm -rf $STORAGE/chinadns && sleep 1
         [ -f /tmp/shadowsocks_iptables.save ] && rm -rf /tmp/shadowsocks_iptables.save
     fi
 }
@@ -351,7 +351,7 @@ func_start(){
     if [ "$SS_ENABLE" = "1" ]
     then
         [ "$ss_mode" = "2" ] && check_music
-        sh $SSR_HOME/update_gfwlist.sh force &
+        [ -f dir_gfwlist_file] && sh $SSR_HOME/update_gfwlist.sh force &
         func_sshome_file && \
         if [ "$ss_mode" = "2" ]
         then
