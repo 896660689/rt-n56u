@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2024-07-21
+# Compile:by-lanse	2024-07-22
 
 export PATH=$PATH:/etc/storage/shadowsocks
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etc/storage/shadowsocks
@@ -241,6 +241,7 @@ func_gfwlist_import(){
 }
 
 func_chnroute_file(){
+    [ ! -d $STORAGE/gfwlist ] && /bin/sh $SSR_HOME/update_gfwlist.sh force &
     if [ ! -f "$dir_chnroute_file" ] || [ ! -s "$dir_chnroute_file" ] ; then
         [ ! -d $STORAGE/chinadns ] && mkdir -p "$STORAGE/chinadns"
         tar jxf "/etc_ro/chnroute.bz2" -C "$STORAGE/chinadns"
@@ -328,7 +329,6 @@ func_sshome_file(){
         sleep 8 && tar zxf "$ss_folder" -C "$STORAGE" && \
         /sbin/mtd_storage.sh save
     fi
-    [ ! -f dir_gfwlist_file] && sh $SSR_HOME/update_gfwlist.sh force &
 }
 
 func_v2fly(){
@@ -351,8 +351,9 @@ func_start(){
     ulimit -n 65536
     if [ "$SS_ENABLE" = "1" ]
     then
-	[ "$ss_mode" = "2" ] && check_music
-	func_sshome_file && \
+        [ "$ss_mode" = "2" ] && check_music
+        func_sshome_file &
+        wait
         if [ "$ss_mode" = "1" ]
 	then
             func_chnroute_file &
@@ -423,3 +424,4 @@ restart)
     exit 1
     ;;
 esac
+
