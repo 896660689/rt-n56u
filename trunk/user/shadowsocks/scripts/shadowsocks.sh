@@ -249,8 +249,6 @@ func_chnroute_file(){
 }
 
 func_gfwlist_file(){
-    sh $SSR_HOME/update_gfwlist.sh force &
-    wait
     func_gfwlist_import
     sh $SSR_HOME/ss-gfwlist.sh -f
     if [ "$ss_mode" = "2" ]
@@ -353,6 +351,7 @@ func_start(){
     if [ "$SS_ENABLE" = "1" ]
     then
         [ "$ss_mode" = "2" ] && check_music
+        sh $SSR_HOME/update_gfwlist.sh force &
         func_sshome_file && \
         if [ "$ss_mode" = "2" ]
         then
@@ -367,9 +366,10 @@ func_start(){
         if [ "$ss_mode" = "3" ]
         then
             logger -t "[v2ray]" "开始部署 [v2ray] 代理模式..."
-            func_v2fly && wait && \
+            func_v2fly && \
             func_redsocks && \
             func_chinadns_ng &
+            wait && restart_firewall &
         else
             echo -e "\033[41;37m 部署 [ShadowsocksR] 文件,请稍后...\e[0m\n"
             func_ss_ssr && \
