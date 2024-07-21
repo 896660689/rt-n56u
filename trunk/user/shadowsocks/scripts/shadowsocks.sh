@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2024-07-22
+# Compile:by-lanse	2024-07-21
 
 export PATH=$PATH:/etc/storage/shadowsocks
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/etc/storage/shadowsocks
@@ -250,7 +250,6 @@ func_chnroute_file(){
 }
 
 func_gfwlist_file(){
-    func_gfwlist_import
     sh $SSR_HOME/ss-gfwlist.sh -f
     if [ "$ss_mode" = "2" ]
     then
@@ -354,11 +353,12 @@ func_start(){
         [ "$ss_mode" = "2" ] && check_music
         func_sshome_file &
         wait
+        func_chnroute_file && \
+        echo -e "\033[41;37m 部署 [ShadowsocksR] 文件,请稍后...\e[0m\n"
+        func_gfwlist_list && \
+        func_gfwlist_import && \
         if [ "$ss_mode" = "1" ]
 	then
-            func_chnroute_file &
-            wait
-            echo -e "\033[41;37m 部署 [ShadowsocksR] 文件,请稍后...\e[0m\n"
             func_ss_ssr && \
             func_gen_ss_json && \
             func_gen_ss2_json && \
@@ -368,13 +368,12 @@ func_start(){
             wait
             echo ""
             loger $ss_bin "ShadowsocksR Start up" || { ss-rules -f && loger $ss_bin "ShadowsocksR Start fail!"; }
-	elif [ "$ss_mode" = "2" ]
-	then
+        elif [ "$ss_mode" = "2" ]
+        then
             func_gfwlist_file &
             wait
             echo ""
-	fi
-        func_gfwlist_list && \
+        fi
         func_port_agent_mode &
         if [ "$ss_mode" = "3" ]
         then
@@ -382,7 +381,7 @@ func_start(){
             func_v2fly && \
             func_redsocks && \
             func_chinadns_ng &
-            wait && restart_firewall &
+            wait && restart_firewall
         fi
         func_cron &
         wait
@@ -424,4 +423,3 @@ restart)
     exit 1
     ;;
 esac
-
