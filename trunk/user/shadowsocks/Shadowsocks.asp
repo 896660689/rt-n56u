@@ -105,6 +105,9 @@ function fill_ss_tunnel_status(status_code){
 	else if (status_code == 1)
 		stext = "<#Running#>";
 	$("ss_tunnel_status").innerHTML = '<span class="label label-' + (status_code != 0 ? 'success' : 'warning') + '">' + stext + '</span>';
+	$("domestic_ip").innerHTML = '<iframe src="http://ip.3322.net" height="30" scrolling="no" frameborder="0" marginheight="0" marginwidth="0"></iframe>';
+	$("foreign_ip").innerHTML = '<iframe src="https://ifconfig.me/ip" height="30" scrolling="no" frameborder="0" marginheight="0" marginwidth="0"></iframe>';
+	$("gg_status").innerHTML = '<span><img alt="无法访问" src="https://www.google.com/favicon.ico?' + new Date().getTime() + '" /></span>';
 }
 
 function applyRule(){
@@ -205,6 +208,16 @@ function getHash(){
                                 <div>
                                     <ul class="nav nav-tabs" style="margin-bottom: 10px;">
                                         <li class="active">
+                                            <a href="Shadowsocks.asp"><#menu5_16#></a>
+                                        </li>
+                                        <li id="ssrurllink">
+                                            <a href="SSR_URL_Analysis.asp"><#menu5_16_44#></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <ul class="nav nav-tabs" style="margin-bottom: 10px;">
+                                        <li class="active">
                                             <a id="tab_ss_add" href="#add"><#Client_settings#></a>
                                         </li>
                                         <li>
@@ -221,6 +234,11 @@ function getHash(){
 
                                 <div class="row-fluid">
                                     <div id="tabMenu" class="submenuBlock"></div>
+                                    <div class="alert alert-info" style="margin: 10px;">---V2RAY---Shadowsocks-----科学上网</br>
+                                        支持-SS-SSR-主副双账号切换.支持-V2ray-URL-自动解析或手动账号
+                                        <br />&nbsp;<span style="color:#E53333;">注意:</span>
+                                        <br />&nbsp;<span style="color:#E53333;">运行状态需要启动节点后<input type="button" id="btn_reconnect" class="btn btn-info" value="刷新页面" onclick="window.location.reload();" tabindex="1"> 获取运行状态</span>
+                                    </div>
                                     <div id="wnd_ss_add">
                                         <table width="100%" cellpadding="4" cellspacing="0" class="table">
                                             <div class="alert alert-info" style="margin: 8px;">可选---Shadowsocks -- ShadowsocksR---科学上网</div>
@@ -245,6 +263,22 @@ function getHash(){
                                             </tr>
 
                                             <tr>
+                                                <th width="50%">国内IP
+					    </th>
+					        <td id="domestic_ip"></td>
+					    </tr>
+					    <tr>
+					    <th width="50%">国外IP
+					    </th>
+					        <td id="foreign_ip"></td>
+					    </tr>
+					    <tr>
+					    <th width="50%">谷歌访问
+					    </th>
+					        <td id="gg_status"></td>
+					    </tr>
+
+                                            <tr>
                                                 <th width="50%" style="border-top: 0 none;" ><#InetControl#></th>
                                                 <td style="border-top: 0 none;" colspan="3">
                                                     <input type="button" id="btn_connect_1" class="btn btn-info" value=<#Connect#> onclick="submitInternet('Reconnect');">
@@ -261,7 +295,6 @@ function getHash(){
                                                         <option value="1" <% nvram_match_x("","ss_mode", "1","selected"); %>><#ChnRoute#></option>
                                                         <option value="2" <% nvram_match_x("","ss_mode", "2","selected"); %>><#GfwList#></option>
                                                         <option value="3" <% nvram_match_x("","ss_mode", "3","selected"); %>><#V2ray#></option>
-                                                        <option value="4" <% nvram_match_x("","ss_mode", "4","selected"); %>><#Trojan#></option>
                                                     </select>
                                                     <br />&nbsp;<span style="color:#888;">选择代理模式</span>
                                                 </td>
