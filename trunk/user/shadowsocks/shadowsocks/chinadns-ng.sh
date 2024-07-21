@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compile:by-lanse	2020-03-24
+# Compile:by-lanse	2024-07-21
 
 modprobe xt_set
 modprobe ip_set_hash_ip
@@ -9,22 +9,40 @@ STORAGE="/etc/storage"
 SSR_HOME="$STORAGE/shadowsocks"
 DNSMASQ_RURE="$STORAGE/dnsmasq/dnsmasq.conf"
 STORAGE_V2SH="$STORAGE/storage_v2ray.sh"
-
+SS_SERVER_LINK=$(nvram get ss_server)
 ss_tunnel_local_port=$(nvram get ss-tunnel_local_port)
+ss_local_port=$(nvram get ss_local_port)
+wan_dns=$(nvram get wan_dns1_x)
+dns2_ip=$(nvram get ss-tunnel_remote | awk -F '[:/]' '{print $1}')
+
+local_chnlist_file=/tmp/chnlist.txt
+local_gfwlist_file=/tmp/gfw.txt
+
+func_v2txt(){
+V2RUL=/tmp/V2mi.txt
+[ ! -f "$V2RUL" ] && $SSR_HOME/v2ray.sh v2txt_d
+if grep -q "vmess" "$STORAGE_V2SH"
+then
+    v2_address=$(sed -n "2p" $V2RUL | cut -f 2 -d ":")
+else
+    v2_address=$(cat $STORAGE_V2SH | grep "address" | awk -F '[:/]' '{print $2}')
+fi
+}
 
 func_del_rule(){
     if [ -n "$(pidof chinadns-ng)" ] ; then
-        killall chinadns-ng >/dev/null 2>&1 &
-        sleep 2
+        killall chinadns-ng >/dev/null 2>&1
+        kill -9 "$(pidof chinadns-ng)" >/dev/null 2>&1
     fi
-    if grep -q "no-resolv" "$DNSMASQ_RURE"
+    if grep -q "65353" "$DNSMASQ_RURE"
     then
-        sed -i '/no-resolv/d; /server=127.0.0.1/d' $DNSMASQ_RURE
+        sed -i '/no-resolv/d; /server=127.0.0.1/d; /min-cache-ttl/d' $DNSMASQ_RURE
+        restart_dhcpd
     fi
 }
 
 func_del_ipt(){
-iptables-save -c | grep -v CNNG_ | iptables-restore -c && sleep 1
+iptables-save -c | grep -v CNNG_ | iptables-restore -c
 for setname in $(ipset -n list | grep "gateway"); do
     ipset destroy "$setname" 2>/dev/null
 done
@@ -36,7 +54,7 @@ func_cdn_file(){
 }
 
 func_cnng_file(){
-    /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c 119.29.29.29#53 -t 127.0.0.1#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
+    /usr/bin/chinadns-ng -b 0.0.0.0 -l 65353 -c $wan_dns,114.114.114.114 -t $SS_SERVER_LINK#$ss_tunnel_local_port -4 chnroute >/dev/null 2>&1 &
     if grep -q "no-resolv" "$DNSMASQ_RURE"
     then
         sed -i '/no-resolv/d; /server=127.0.0.1/d' $DNSMASQ_RURE
@@ -59,13 +77,20 @@ gen_lan_ip(){
 cat <<-EOF | grep -E "^([0-9]{1,3}\.){3}[0-9]{1,3}"
 0.0.0.0/8
 10.0.0.0/8
+100.64.0.0/10
 127.0.0.0/8
 169.254.0.0/16
 172.16.0.0/12
+192.0.0.0/24
 192.0.2.0/24
+192.88.99.0/24
 192.168.0.0/16
+198.18.0.0/15
+198.51.100.0/24
+203.0.113.0/24
 224.0.0.0/4
 240.0.0.0/4
+255.255.255.255/32
 EOF
 }
 
@@ -111,6 +136,7 @@ return 0
 }
 
 func_start(){
+    func_v2txt && \
     func_del_rule && \
     echo -e "\033[41;37m 部署 [CHINADNS-NG] 文件,请稍后...\e[0m\n"
     #func_cdn_file &
@@ -125,15 +151,16 @@ func_start(){
 }
 
 func_stop(){
-    func_del_rule && sleep 1
-    func_del_ipt && sleep 1
+    func_v2txt && \
+    func_del_rule && \
+    func_del_ipt &
+    [ -f $local_chnlist_file ] && rm -rf $local_chnlist_file
+    [ -f $local_gfwlist_file ] && rm -rf $local_gfwlist_file
+    logger -t "[CHINADNS-NG]" "已停止运行 !"
     if [ $(nvram get ss_mode) = "3" ]
     then
         echo "V2RAY Not closed "
-    else
-        [ -f /tmp/cdn.txt ] && rm -rf /tmp/cdn.txt
     fi
-    sleep 1 && logger -t "[CHINADNS-NG]" "已停止运行 !"
 }
 
 case "$1" in
