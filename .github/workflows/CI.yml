@@ -29,7 +29,7 @@ jobs:
           - build_variant: "mt7620"
             targets: "K2"
           - build_variant: "mt7621"
-            targets: "K2P"
+            targets: "K2P K2P-5.0"
     steps:
       - uses: actions/checkout@v4
       - name: Prepare environment
